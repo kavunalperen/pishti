@@ -7,6 +7,7 @@
 //
 
 #import "PSAppDelegate.h"
+#import "PSMenuViewController.h"
 
 @implementation PSAppDelegate
 
@@ -14,7 +15,10 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
-    self.window.backgroundColor = [UIColor whiteColor];
+    
+    PSMenuViewController* menuVC = [[PSMenuViewController alloc] init];
+    self.window.rootViewController = menuVC;
+    
     [self.window makeKeyAndVisible];
     return YES;
 }
