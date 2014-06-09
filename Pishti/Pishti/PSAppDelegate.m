@@ -8,6 +8,7 @@
 
 #import "PSAppDelegate.h"
 #import "PSMenuViewController.h"
+#import "PSMainNavigationController.h"
 
 @implementation PSAppDelegate
 
@@ -17,9 +18,16 @@
     // Override point for customization after application launch.
     
     PSMenuViewController* menuVC = [[PSMenuViewController alloc] init];
-    self.window.rootViewController = menuVC;
+    PSMainNavigationController* navController = [[PSMainNavigationController alloc] initWithRootViewController:menuVC];
+    navController.delegate = menuVC;
+    navController.navigationBarHidden = YES;
+    self.window.rootViewController = navController;
     
     [self.window makeKeyAndVisible];
+    
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Akzidenz-Grotesk BQ"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Bebas Neue"]);
+    
     return YES;
 }
 

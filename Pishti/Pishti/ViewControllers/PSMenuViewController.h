@@ -7,8 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <QuartzCore/QuartzCore.h>
 #import "PSCommons.h"
+#import "Util.h"
+#import "PSHelpPageViewController.h"
 
-@interface PSMenuViewController : UIViewController
+@interface PSMenuViewController : UIViewController <UINavigationControllerDelegate>
 
 @end
