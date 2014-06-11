@@ -14,4 +14,10 @@
 @property UIColor* strokeColor;
 @property UIColor* fillColor;
 
+@property UIColor* brushColor;
+@property CGFloat brushWidth;
+@property BOOL isBrushActive;
+
+@property NSMutableDictionary* brushes;
+
 @end

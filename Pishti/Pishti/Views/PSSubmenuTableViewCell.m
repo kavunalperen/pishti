@@ -13,6 +13,8 @@
     UIView* backgroundView;
     UIView* selectedBackgroundView;
     UIColor* colorForColorView;
+    
+    CGFloat brushWidth;
 }
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -20,10 +22,12 @@
     if (self) {
         // Initialization code
         [self commonInitializer];
-        if ([reuseIdentifier isEqualToString:FABRIC_SUBMENU_COLOR_CELL_INDETIFIER]) {
+        if ([reuseIdentifier isEqualToString:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER]) {
             [self stylizeForColorCell];
         } else if ([reuseIdentifier isEqualToString:FABRIC_SUBMENU_SIZE_CELL_IDENTIFIER]) {
             [self stylizeForSizeCell];
+        } else if ([reuseIdentifier isEqualToString:FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER]) {
+            [self stylizeForBrushWidthCell];
         }
     }
     return self;
@@ -61,15 +65,32 @@
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
     [self addSubview:self.mainLabel];
 }
+- (void) stylizeForBrushWidthCell
+{
+    self.colorView = [[UIView alloc] initWithFrame:CGRectMake(10.0, 0.0, 110.0, 0.0)];
+    self.colorView.backgroundColor = [UIColor clearColor];
+    [self addSubview:self.colorView];
+}
 - (void) setColorForColorView:(UIColor*)color
 {
     colorForColorView = color;
-    self.colorView.backgroundColor = color;
+    self.colorView.backgroundColor = colorForColorView;
 }
 - (UIColor*) getColorForColorView
 {
     return colorForColorView;
 }
+- (void) setWidthForBrushView:(CGFloat)brushViewWidth
+{
+    brushWidth = brushViewWidth;
+    self.colorView.frame = CGRectMake(10.0, (26.0-brushWidth)*0.5, 110.0, brushWidth);
+    self.colorView.backgroundColor = colorForColorView;
+}
+- (CGFloat) getWidthForBrushView
+{
+    return brushWidth;
+}
+
 - (void) stylizeForSizeCell
 {
     

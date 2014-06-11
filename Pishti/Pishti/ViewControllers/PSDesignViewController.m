@@ -63,6 +63,7 @@
     UIImageView* logoView;
     UIView* otherButtonHolder;
     UIImageView* fabricSubmenuView;
+    UIImageView* brushSubmenuView;
     
     UIButton* profileButton;
     UIImageView* otherButtonsLine1;
@@ -74,13 +75,25 @@
     UITapGestureRecognizer* colorTableOpeningGesture;
     UITapGestureRecognizer* colorTableClosingGesture;
     
+    UILabel* brushColorSelectionValueLabel;
+    UITapGestureRecognizer* brushColorTableOpeningGesture;
+    UITapGestureRecognizer* brushColorTableClosingGesture;
+    
+    UILabel* brushWidthSelectionValueLabel;
+    UITapGestureRecognizer* brushWidthTableOpeningGesture;
+    UITapGestureRecognizer* brushWidthTableClosingGesture;
+    
     NSArray* colors;
     NSArray* colorNames;
+    NSArray* brushWidths;
     
     UIImageView* halfBackgroundLeftView;
     UIImageView* halfBackgroundRightView;
     
     PSModelCanvas* modelCanvas;
+    
+    UIButton* fabricButton;
+    UIButton* brushButton;
 }
 // view related main frames
 - (CGRect) backgroundFrame
@@ -293,6 +306,10 @@
 {
     return CGRectMake(SCREEN_SIZE.height-FABRIC_SUBMENU_WIDTH-80.0, 113.0, FABRIC_SUBMENU_WIDTH, FABRIC_SUBMENU_HEIGHT);
 }
+- (CGRect) brushSubmenuFrame
+{
+    return CGRectMake(SCREEN_SIZE.height-FABRIC_SUBMENU_WIDTH-80.0, 113.0, FABRIC_SUBMENU_WIDTH, FABRIC_SUBMENU_HEIGHT);
+}
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -371,7 +388,15 @@
                    @"MOR",
                    @"FÜME"];
     
-//    colors = @[BLACK_COLOR, GRAY_COLOR, BLUE_COLOR, GREEN_COLOR, ORANGE_COLOR];
+    brushWidths = @[[NSNumber numberWithFloat:4.0],
+                    [NSNumber numberWithFloat:6.0],
+                    [NSNumber numberWithFloat:8.0],
+                    [NSNumber numberWithFloat:10.0],
+                    [NSNumber numberWithFloat:12.0],
+                    [NSNumber numberWithFloat:14.0],
+                    [NSNumber numberWithFloat:16.0],
+                    [NSNumber numberWithFloat:18.0]];
+    
     [self performInitialSetups];
     [self addModelCanvas];
     
@@ -385,6 +410,7 @@
     halfBackgroundRightView.backgroundColor = [UIColor clearColor];
     halfBackgroundRightView.image = [UIImage imageNamed:@"splash_right.png"];
     [self.view addSubview:halfBackgroundRightView];
+    
 }
 - (void) viewWillAppear:(BOOL)animated
 {
@@ -399,10 +425,6 @@
         frame2.origin.x += frame2.size.width;
         halfBackgroundRightView.frame = frame2;
     } completion:^(BOOL finished) {
-//        [halfBackgroundLeftView removeFromSuperview];
-//        halfBackgroundLeftView = nil;
-//        [halfBackgroundRightView removeFromSuperview];
-//        halfBackgroundRightView = nil;
     }];
 }
 - (CGRect) menuBackgroundLeftFrame
@@ -423,32 +445,62 @@
 }
 - (NSInteger) tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return colors.count;
+    if (tableView == self.brushWidthTableView) {
+        return brushWidths.count;
+    } else {
+        return colors.count;
+    }
 }
 - (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    PSSubmenuTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_SUBMENU_COLOR_CELL_INDETIFIER];
-    
-    cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
-    [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
-    
-    return cell;
+    if (tableView == self.brushWidthTableView) {
+        PSSubmenuTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER];
+        
+        [cell setColorForColorView:modelCanvas.brushColor];
+        [cell setWidthForBrushView:[[brushWidths objectAtIndex:indexPath.row] floatValue]];
+        
+        return cell;
+    } else {
+        PSSubmenuTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
+        
+        cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
+        [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
+        
+        return cell;
+    }
 }
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    UIColor* selectedColor = [colors objectAtIndex:indexPath.row];
-    
-    fabricColorSelectionValueLabel.backgroundColor = selectedColor;
-    modelCanvas.fillColor = selectedColor;
-    [modelCanvas setNeedsDisplay];
-    
-    [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    if (tableView == self.fabricSubmenuTableView) {
+        UIColor* selectedColor = [colors objectAtIndex:indexPath.row];
+        
+        fabricColorSelectionValueLabel.backgroundColor = selectedColor;
+        modelCanvas.fillColor = selectedColor;
+        [modelCanvas setNeedsDisplay];
+        
+        [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    } else if (tableView == self.brushSubmenuTableView){
+        UIColor* selectedColor = [colors objectAtIndex:indexPath.row];
+        
+        brushColorSelectionValueLabel.backgroundColor = selectedColor;
+        brushWidthSelectionValueLabel.backgroundColor = selectedColor;
+        modelCanvas.brushColor = selectedColor;
+        [modelCanvas setNeedsDisplay];
+    } else {
+        CGFloat selectedWidth = [[brushWidths objectAtIndex:indexPath.row] floatValue];
+        brushWidthSelectionValueLabel.text = [NSString stringWithFormat:@"  %d point",(int)[[brushWidths objectAtIndex:indexPath.row] floatValue]];
+        modelCanvas.brushWidth = selectedWidth;
+        [modelCanvas setNeedsDisplay];
+    }
 }
 - (void) addModelCanvas
 {
     modelCanvas = [[PSModelCanvas alloc] initWithFrame:CGRectMake(45.0, 0.0, 747.0, 768.0)];
     modelCanvas.strokeColor = [UIColor grayColor];
     modelCanvas.fillColor = [colors objectAtIndex:5];
+    modelCanvas.brushColor = [colors objectAtIndex:0];
+    modelCanvas.brushWidth = 4.0;
+    modelCanvas.isBrushActive = NO;
     [self.view addSubview:modelCanvas];
     
     UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(45.0, 0.0, 747.0, 768.0)];
@@ -468,6 +520,16 @@
     fabricSubmenuView.image = [UIImage imageNamed:@"fabric_submenubg.png"];
     [self.view addSubview:fabricSubmenuView];
     
+    brushSubmenuView = [[UIImageView alloc] initWithFrame:[self brushSubmenuFrame]];
+    brushSubmenuView.backgroundColor = [UIColor clearColor];
+    brushSubmenuView.image = [UIImage imageNamed:@"fabric_submenubg.png"];
+    [self.view addSubview:brushSubmenuView];
+    
+    CGRect brushSubmenuFrame = brushSubmenuView.frame;
+    brushSubmenuFrame.origin.x += brushSubmenuFrame.size.width;
+    brushSubmenuView.frame = brushSubmenuFrame;
+    brushSubmenuView.alpha = 0;
+    
     UIImageView* mainMenuView = [[UIImageView alloc] initWithFrame:[self mainMenuFrame]];
     mainMenuView.backgroundColor = [UIColor clearColor];
     mainMenuView.image = [UIImage imageNamed:@"menu_bg.png"];
@@ -486,18 +548,26 @@
     versionLabel.backgroundColor = [UIColor clearColor];
     versionLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     versionLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    versionLabel.text = @"Pişti Version 0.1.2";
+    versionLabel.text = @"Pişti Version 0.2.0";
     [fabricSubmenuView addSubview:versionLabel];
+    
+    UILabel* versionLabel2 = [[UILabel alloc] initWithFrame:CGRectMake(frame.origin.x, fabricSubmenuView.frame.size.height-30.0, 130.0, 20.0)];
+    versionLabel2.backgroundColor = [UIColor clearColor];
+    versionLabel2.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    versionLabel2.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    versionLabel2.text = @"Pişti Version 0.2.0";
+    [brushSubmenuView addSubview:versionLabel2];
     
     
     // main buttons
-    UIButton* fabricButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricButton = [UIButton buttonWithType:UIButtonTypeCustom];
     fabricButton.backgroundColor = [UIColor clearColor];
     fabricButton.frame = [self fabricButtonFrame];
     [fabricButton setImage:[UIImage imageNamed:@"fabric_btn_normal.png"] forState:UIControlStateNormal];
     [fabricButton setImage:[UIImage imageNamed:@"fabric_btn_highlighted.png"] forState:UIControlStateHighlighted];
     [fabricButton setImage:[UIImage imageNamed:@"fabric_btn_highlighted.png"] forState:UIControlStateSelected];
     fabricButton.selected = YES;
+    [fabricButton addTarget:self action:@selector(openFabricMenu) forControlEvents:UIControlEventTouchUpInside];
     [mainMenuView addSubview:fabricButton];
     
     UIButton* textButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -507,11 +577,13 @@
     [textButton setImage:[UIImage imageNamed:@"text_btn_highlighted.png"] forState:UIControlStateHighlighted];
     [mainMenuView addSubview:textButton];
     
-    UIButton* brushButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    brushButton = [UIButton buttonWithType:UIButtonTypeCustom];
     brushButton.backgroundColor = [UIColor clearColor];
     brushButton.frame = [self brushButtonFrame];
     [brushButton setImage:[UIImage imageNamed:@"brush_btn_normal.png"] forState:UIControlStateNormal];
     [brushButton setImage:[UIImage imageNamed:@"brush_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    [brushButton setImage:[UIImage imageNamed:@"brush_btn_highlighted.png"] forState:UIControlStateSelected];
+    [brushButton addTarget:self action:@selector(openBrushMenu) forControlEvents:UIControlEventTouchUpInside];
     [mainMenuView addSubview:brushButton];
     
     UIButton* imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -714,6 +786,74 @@
     fabricColorSelectionValueSeperator.image = [UIImage imageNamed:@"renk_maske.png"];
     [fabricSubmenuView addSubview:fabricColorSelectionValueSeperator];
     
+    UIImageView* fabricColorSelectionValueSeperator2 = [[UIImageView alloc] initWithFrame:[self fabricColorSelectionValueSeperatorFrame]];
+    fabricColorSelectionValueSeperator2.backgroundColor = [UIColor clearColor];
+    fabricColorSelectionValueSeperator2.image = [UIImage imageNamed:@"renk_maske.png"];
+    
+    CGRect aFrame4 = [self fabricColorSelectionValueSeperatorFrame];
+    UIImageView* fabricColorSelectionValueSeperator3 = [[UIImageView alloc] initWithFrame:CGRectMake(aFrame4.origin.x, aFrame4.origin.y-100.0, aFrame4.size.width, aFrame4.size.height)];
+    fabricColorSelectionValueSeperator3.backgroundColor = [UIColor clearColor];
+    fabricColorSelectionValueSeperator3.image = [UIImage imageNamed:@"renk_maske.png"];
+    
+    
+#pragma mark - Brush related, will be deleted later
+    
+    // fabric color selection
+    UILabel* brushColorSelectionTitleLabel = [[UILabel alloc] initWithFrame:[self fabricColorSelectionTitleFrame]];
+    brushColorSelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    brushColorSelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    brushColorSelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    brushColorSelectionTitleLabel.text = @"Brush Renk Seçimi";
+    [brushSubmenuView addSubview:brushColorSelectionTitleLabel];
+    
+    UIImageView* brushColorSelectionTitleSeperator = [[UIImageView alloc] initWithFrame:[self fabricColorSelectionTitleSeperatorFrame]];
+    brushColorSelectionTitleSeperator.backgroundColor = [UIColor clearColor];
+    brushColorSelectionTitleSeperator.image = [UIImage imageNamed:@"ayrac_koyu.png"];
+    [brushSubmenuView addSubview:brushColorSelectionTitleSeperator];
+    
+    brushColorSelectionValueLabel = [[UILabel alloc] initWithFrame:[self fabricColorSelectionValueFrame]];
+    brushColorSelectionValueLabel.backgroundColor = [colors objectAtIndex:0];
+    brushColorSelectionValueLabel.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    brushColorSelectionValueLabel.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [brushSubmenuView addSubview:brushColorSelectionValueLabel];
+    
+    CGRect aFrame = [self fabricColorSelectionTitleFrame];
+    
+    UILabel* brushWidthSelectionTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(aFrame.origin.x, aFrame.origin.y-100.0, aFrame.size.width, aFrame.size.height)];
+    brushWidthSelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    brushWidthSelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    brushWidthSelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    brushWidthSelectionTitleLabel.text = @"Brush Kalinlik Seçimi";
+    [brushSubmenuView addSubview:brushWidthSelectionTitleLabel];
+    
+    CGRect aFrame2 = [self fabricColorSelectionTitleSeperatorFrame];
+    UIImageView* brushWidthSelectionTitleSeperator = [[UIImageView alloc] initWithFrame:CGRectMake(aFrame2.origin.x, aFrame2.origin.y-100.0, aFrame2.size.width, aFrame2.size.height)];
+    brushWidthSelectionTitleSeperator.backgroundColor = [UIColor clearColor];
+    brushWidthSelectionTitleSeperator.image = [UIImage imageNamed:@"ayrac_koyu.png"];
+    [brushSubmenuView addSubview:brushWidthSelectionTitleSeperator];
+    
+    CGRect aFrame3 = [self fabricColorSelectionValueFrame];
+    brushWidthSelectionValueLabel = [[UILabel alloc] initWithFrame:CGRectMake(aFrame3.origin.x, aFrame3.origin.y-100.0, aFrame3.size.width, aFrame3.size.height)];
+    brushWidthSelectionValueLabel.backgroundColor = [colors objectAtIndex:0];
+    brushWidthSelectionValueLabel.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    brushWidthSelectionValueLabel.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    brushWidthSelectionValueLabel.text = [NSString stringWithFormat:@"  %d point",(int)[[brushWidths objectAtIndex:0] floatValue]];
+    [brushSubmenuView addSubview:brushWidthSelectionValueLabel];
+    
+    brushSubmenuView.userInteractionEnabled = NO;
+    brushColorSelectionValueLabel.userInteractionEnabled = NO;
+    brushColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushColorMenu)];
+    brushColorTableOpeningGesture.delegate = self;
+    [brushColorSelectionValueLabel addGestureRecognizer:brushColorTableOpeningGesture];
+    
+    brushWidthSelectionValueLabel.userInteractionEnabled = NO;
+    brushWidthTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushWidthMenu)];
+    brushWidthTableOpeningGesture.delegate = self;
+    [brushWidthSelectionValueLabel addGestureRecognizer:brushWidthTableOpeningGesture];
+    
+    [brushSubmenuView addSubview:fabricColorSelectionValueSeperator2];
+    [brushSubmenuView addSubview:fabricColorSelectionValueSeperator3];
+    
     // collar type selection
     UILabel* collarTypeSelectionTitleLabel = [[UILabel alloc] initWithFrame:[self collarTypeSelectionTitleFrame]];
     collarTypeSelectionTitleLabel.backgroundColor = [UIColor clearColor];
@@ -774,13 +914,96 @@
     sleeveTypeSelectionValueSeperator.image = [UIImage imageNamed:@"ayrac_acik.png"];
     [fabricSubmenuView addSubview:sleeveTypeSelectionValueSeperator];
     
-    
+}
+- (void) openFabricMenu
+{
+    if (fabricButton.selected) {
+        return;
+    } else {
+        modelCanvas.isBrushActive = NO;
+        fabricButton.selected = YES;
+        brushButton.selected = NO;
+        
+        brushSubmenuView.userInteractionEnabled = NO;
+        
+        brushColorSelectionValueLabel.userInteractionEnabled = NO;
+        [brushColorSelectionValueLabel removeGestureRecognizer:brushColorTableOpeningGesture];
+        brushColorTableOpeningGesture = nil;
+        
+        brushWidthSelectionValueLabel.userInteractionEnabled = NO;
+        [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
+        brushWidthTableOpeningGesture = nil;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            CGRect brushSubmenuFrame = brushSubmenuView.frame;
+            brushSubmenuFrame.origin.x += brushSubmenuFrame.size.width;
+            brushSubmenuView.frame = brushSubmenuFrame;
+        } completion:^(BOOL finished) {
+            brushSubmenuView.alpha = 0.0;
+            fabricSubmenuView.alpha = 1.0;
+            
+            [UIView animateWithDuration:0.5 animations:^{
+                CGRect fabricSubmenuFrame = fabricSubmenuView.frame;
+                fabricSubmenuFrame.origin.x -= fabricSubmenuFrame.size.width;
+                fabricSubmenuView.frame = fabricSubmenuFrame;
+            } completion:^(BOOL finished) {
+                fabricSubmenuView.userInteractionEnabled = YES;
+                
+                fabricColorSelectionValueLabel.userInteractionEnabled = YES;
+                colorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openColorMenu)];
+                colorTableOpeningGesture.delegate = self;
+                [fabricColorSelectionValueLabel addGestureRecognizer:colorTableOpeningGesture];
+            }];
+        }];
+    }
+}
+- (void) openBrushMenu
+{
+    if (brushButton.selected) {
+        return;
+    } else {
+        modelCanvas.isBrushActive = YES;
+        brushButton.selected = YES;
+        fabricButton.selected = NO;
+        
+        fabricSubmenuView.userInteractionEnabled = NO;
+        fabricColorSelectionValueLabel.userInteractionEnabled = NO;
+        [fabricColorSelectionValueLabel removeGestureRecognizer:colorTableOpeningGesture];
+        colorTableOpeningGesture = nil;
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            CGRect fabricSubmenuFrame = fabricSubmenuView.frame;
+            fabricSubmenuFrame.origin.x += fabricSubmenuFrame.size.width;
+            fabricSubmenuView.frame = fabricSubmenuFrame;
+        } completion:^(BOOL finished) {
+            fabricSubmenuView.alpha = 0.0;
+            brushSubmenuView.alpha = 1.0;
+            
+            [UIView animateWithDuration:0.5 animations:^{
+                CGRect brushSubmenuFrame = brushSubmenuView.frame;
+                brushSubmenuFrame.origin.x -= brushSubmenuFrame.size.width;
+                brushSubmenuView.frame = brushSubmenuFrame;
+            } completion:^(BOOL finished) {
+                brushSubmenuView.userInteractionEnabled = YES;
+                
+                brushColorSelectionValueLabel.userInteractionEnabled = YES;
+                brushColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushColorMenu)];
+                brushColorTableOpeningGesture.delegate = self;
+                [brushColorSelectionValueLabel addGestureRecognizer:brushColorTableOpeningGesture];
+                
+                brushWidthSelectionValueLabel.userInteractionEnabled = YES;
+                brushWidthTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushWidthMenu)];
+                brushWidthTableOpeningGesture.delegate = self;
+                [brushWidthSelectionValueLabel addGestureRecognizer:brushWidthTableOpeningGesture];
+            }];
+        }];
+    }
 }
 -(BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
     if (gestureRecognizer == colorTableOpeningGesture) {
         return YES;
-    } else {
+    } else if (gestureRecognizer == colorTableClosingGesture){
         CGPoint point = [touch locationInView:self.view];
         CGPoint locationInView = [self.fabricSubmenuTableView convertPoint:point fromView:self.view];
         if (CGRectContainsPoint(self.fabricSubmenuTableView.bounds, locationInView)) {
@@ -788,6 +1011,28 @@
         } else {
             return YES;
         }
+    } else if (gestureRecognizer == brushColorTableOpeningGesture) {
+        return YES;
+    } else if (gestureRecognizer == brushColorTableClosingGesture) {
+        CGPoint point = [touch locationInView:self.view];
+        CGPoint locationInView = [self.brushSubmenuTableView convertPoint:point fromView:self.view];
+        if (CGRectContainsPoint(self.brushSubmenuTableView.bounds, locationInView)) {
+            return NO;
+        } else {
+            return YES;
+        }
+    } else if (gestureRecognizer == brushWidthTableOpeningGesture) {
+        return YES;
+    } else if (gestureRecognizer == brushWidthTableClosingGesture) {
+        CGPoint point = [touch locationInView:self.view];
+        CGPoint locationInView = [self.brushWidthTableView convertPoint:point fromView:self.view];
+        if (CGRectContainsPoint(self.brushWidthTableView.bounds, locationInView)) {
+            return NO;
+        } else {
+            return YES;
+        }
+    } else {
+        return YES;
     }
 }
 - (void) openColorMenu
@@ -822,9 +1067,79 @@
     self.fabricSubmenuTableView.delegate = self;
     
     [self.fabricSubmenuTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
-    [self.fabricSubmenuTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_INDETIFIER];
+    [self.fabricSubmenuTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
     
     [self.fabricSubmenuTableView reloadData];
+}
+- (void) openBrushColorMenu
+{
+    [brushColorSelectionValueLabel removeGestureRecognizer:brushColorTableOpeningGesture];
+    brushColorTableOpeningGesture = nil;
+    
+    brushColorTableClosingGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(closeBrushColorMenu)];
+    brushColorTableClosingGesture.delegate = self;
+    [self.view addGestureRecognizer:brushColorTableClosingGesture];
+    
+    CGRect frame = [self fabricColorSelectionValueFrame];
+    
+    self.brushSubmenuTableView = [[UITableView alloc] initWithFrame:CGRectMake(frame.origin.x-10.0, frame.origin.y+frame.size.height, frame.size.width+20.0, 149.0)];
+    self.brushSubmenuTableView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    self.brushSubmenuTableView.layer.cornerRadius = 3.0;
+    self.brushSubmenuTableView.layer.shouldRasterize = YES;
+    self.brushSubmenuTableView.layer.rasterizationScale = SCREEN_SCALE;
+    self.brushSubmenuTableView.clipsToBounds = YES;
+    [brushSubmenuView addSubview:self.brushSubmenuTableView];
+    
+    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.fabricSubmenuTableView.frame.size.width, 10.0)];
+    headerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.brushSubmenuTableView setTableHeaderView:headerView];
+    
+    UIView* footerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.fabricSubmenuTableView.frame.size.width, 10.0)];
+    footerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.brushSubmenuTableView setTableFooterView:footerView];
+    
+    self.brushSubmenuTableView.dataSource = self;
+    self.brushSubmenuTableView.delegate = self;
+    
+    [self.brushSubmenuTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    [self.brushSubmenuTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
+    
+    [self.brushSubmenuTableView reloadData];
+}
+- (void) openBrushWidthMenu
+{
+    [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
+    brushWidthTableOpeningGesture = nil;
+    
+    brushWidthTableClosingGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(closeBrushWidthMenu)];
+    brushWidthTableClosingGesture.delegate = self;
+    [self.view addGestureRecognizer:brushWidthTableClosingGesture];
+    
+    CGRect frame = [self fabricColorSelectionValueFrame];
+    
+    self.brushWidthTableView = [[UITableView alloc] initWithFrame:CGRectMake(frame.origin.x-10.0, frame.origin.y+frame.size.height-100.0, frame.size.width+20.0, 149.0)];
+    self.brushWidthTableView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    self.brushWidthTableView.layer.cornerRadius = 3.0;
+    self.brushWidthTableView.layer.shouldRasterize = YES;
+    self.brushWidthTableView.layer.rasterizationScale = SCREEN_SCALE;
+    self.brushWidthTableView.clipsToBounds = YES;
+    [brushSubmenuView addSubview:self.brushWidthTableView];
+    
+    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.fabricSubmenuTableView.frame.size.width, 10.0)];
+    headerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.brushWidthTableView setTableHeaderView:headerView];
+    
+    UIView* footerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.fabricSubmenuTableView.frame.size.width, 10.0)];
+    footerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.brushWidthTableView setTableFooterView:footerView];
+    
+    self.brushWidthTableView.dataSource = self;
+    self.brushWidthTableView.delegate = self;
+    
+    [self.brushWidthTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    [self.brushWidthTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER];
+    
+    [self.brushWidthTableView reloadData];
 }
 - (void) closeColorMenu
 {
@@ -837,6 +1152,30 @@
     colorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openColorMenu)];
     colorTableOpeningGesture.delegate = self;
     [fabricColorSelectionValueLabel addGestureRecognizer:colorTableOpeningGesture];
+}
+- (void) closeBrushColorMenu
+{
+    [self.brushSubmenuTableView removeFromSuperview];
+    self.brushSubmenuTableView = nil;
+    
+    [self.view removeGestureRecognizer:brushColorTableClosingGesture];
+    brushColorTableClosingGesture = nil;
+    
+    brushColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushColorMenu)];
+    brushColorTableOpeningGesture.delegate = self;
+    [brushColorSelectionValueLabel addGestureRecognizer:brushColorTableOpeningGesture];
+}
+- (void) closeBrushWidthMenu
+{
+    [self.brushWidthTableView removeFromSuperview];
+    self.brushWidthTableView = nil;
+    
+    [self.view removeGestureRecognizer:brushWidthTableClosingGesture];
+    brushWidthTableClosingGesture = nil;
+    
+    brushWidthTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushWidthMenu)];
+    brushWidthTableOpeningGesture.delegate = self;
+    [brushWidthSelectionValueLabel addGestureRecognizer:brushWidthTableOpeningGesture];
 }
 - (void) goBackForNow
 {
@@ -862,15 +1201,5 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

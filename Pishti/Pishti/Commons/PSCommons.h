@@ -12,6 +12,7 @@
 #define GREEN_COLOR [UIColor greenColor]
 #define BLUE_COLOR [UIColor blueColor]
 #define ORANGE_COLOR [UIColor orangeColor]
+#define RED_COLOR [UIColor redColor]
 
 // screen related macros
 #define SCREEN_SIZE [UIScreen mainScreen].bounds.size

@@ -10,7 +10,8 @@
 #import "PSCommons.h"
 
 #define FABRIC_SUBMENU_SIZE_CELL_IDENTIFIER @"FabricSubmenuSizeCellIdentifier"
-#define FABRIC_SUBMENU_COLOR_CELL_INDETIFIER @"FabricSubmenuColorCellIdentifier"
+#define FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER @"FabricSubmenuColorCellIdentifier"
+#define FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER @"FabricSubmenuBrushWidthCellIdentifiers"
 
 @interface PSSubmenuTableViewCell : UITableViewCell
 
@@ -20,5 +21,8 @@
 
 - (void) setColorForColorView:(UIColor*)color;
 - (UIColor*) getColorForColorView;
+
+- (void) setWidthForBrushView:(CGFloat)brushViewWidth;
+- (CGFloat) getWidthForBrushView;
 
 @end

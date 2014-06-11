@@ -16,5 +16,7 @@
 @interface PSDesignViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate>
 
 @property UITableView* fabricSubmenuTableView;
+@property UITableView* brushSubmenuTableView;
+@property UITableView* brushWidthTableView;
 
 @end
