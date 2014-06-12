@@ -549,14 +549,14 @@
     versionLabel.backgroundColor = [UIColor clearColor];
     versionLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     versionLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    versionLabel.text = @"Pişti Version 0.2.0";
+    versionLabel.text = @"Pişti Version 0.2.1";
     [fabricSubmenuView addSubview:versionLabel];
     
     UILabel* versionLabel2 = [[UILabel alloc] initWithFrame:CGRectMake(frame.origin.x, fabricSubmenuView.frame.size.height-30.0, 130.0, 20.0)];
     versionLabel2.backgroundColor = [UIColor clearColor];
     versionLabel2.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     versionLabel2.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    versionLabel2.text = @"Pişti Version 0.2.0";
+    versionLabel2.text = @"Pişti Version 0.2.1";
     [brushSubmenuView addSubview:versionLabel2];
     
     
