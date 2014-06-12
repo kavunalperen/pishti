@@ -6,6 +6,13 @@
 //  Copyright (c) 2014 pishti. All rights reserved.
 //
 
+
+typedef enum BRUSH_TYPE
+{
+    BRUSH_TYPE_BASIC_COLOR,
+    BRUSH_TYPE_PATTERN_COLOR
+} BRUSH_TYPE;
+
 #import <UIKit/UIKit.h>
 #import "PSCommons.h"
 
@@ -14,12 +21,14 @@
 @property UIColor* strokeColor;
 @property UIColor* fillColor;
 
+@property NSString* patternImageName;
+@property BRUSH_TYPE brushType;
 @property UIColor* brushColor;
 @property CGFloat brushWidth;
 @property CGFloat brushOpacity;
 @property BOOL isBrushActive;
 
-@property NSMutableDictionary* brushes;
+@property NSMutableArray* brushes;
 
 - (void) deleteLastOne;
 - (void) deleteAll;

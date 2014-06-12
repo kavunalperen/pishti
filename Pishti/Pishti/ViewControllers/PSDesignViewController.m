@@ -94,6 +94,10 @@
     
     UIButton* fabricButton;
     UIButton* brushButton;
+    
+    UIButton* basicBrushButton;
+    UIButton* pattern1BrushButton;
+    UIButton* pattern2BrushButton;
 }
 // view related main frames
 - (CGRect) backgroundFrame
@@ -502,6 +506,8 @@
     modelCanvas.brushWidth = 4.0;
     modelCanvas.brushOpacity = 1.0;
     modelCanvas.isBrushActive = NO;
+    modelCanvas.brushType = BRUSH_TYPE_BASIC_COLOR;
+    modelCanvas.patternImageName = nil;
     [self.view addSubview:modelCanvas];
     
     UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(45.0, 0.0, 747.0, 768.0)];
@@ -799,7 +805,6 @@
     
 #pragma mark - Brush related, will be deleted later
     
-    // fabric color selection
     UILabel* brushColorSelectionTitleLabel = [[UILabel alloc] initWithFrame:[self fabricColorSelectionTitleFrame]];
     brushColorSelectionTitleLabel.backgroundColor = [UIColor clearColor];
     brushColorSelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
@@ -882,7 +887,7 @@
     CGRect aFrame8 = [self fabricColorSelectionValueFrame];
     UIButton* deleteLastOneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     deleteLastOneButton.backgroundColor = [UIColor clearColor];
-    deleteLastOneButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+200.0, aFrame8.size.width, aFrame8.size.height);
+    deleteLastOneButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+180.0, aFrame8.size.width, aFrame8.size.height);
     [deleteLastOneButton setTitle:@"Delete Last One" forState:UIControlStateNormal];
     [deleteLastOneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [deleteLastOneButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
@@ -891,12 +896,43 @@
     
     UIButton* deleteAllButton = [UIButton buttonWithType:UIButtonTypeCustom];
     deleteAllButton.backgroundColor = [UIColor clearColor];
-    deleteAllButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+300.0, aFrame8.size.width, aFrame8.size.height);
+    deleteAllButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+220.0, aFrame8.size.width, aFrame8.size.height);
     [deleteAllButton setTitle:@"Delete All" forState:UIControlStateNormal];
     [deleteAllButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [deleteAllButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
     [deleteAllButton addTarget:self action:@selector(deleteAllBrushes) forControlEvents:UIControlEventTouchUpInside];
     [brushSubmenuView addSubview:deleteAllButton];
+    
+    basicBrushButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    basicBrushButton.backgroundColor = [UIColor clearColor];
+    basicBrushButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+270.0, aFrame8.size.width, aFrame8.size.height);
+    [basicBrushButton setTitle:@"Basic Type" forState:UIControlStateNormal];
+    [basicBrushButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [basicBrushButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [basicBrushButton setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
+    [basicBrushButton addTarget:self action:@selector(basicBrushTypeClicked) forControlEvents:UIControlEventTouchUpInside];
+    [brushSubmenuView addSubview:basicBrushButton];
+    basicBrushButton.selected = YES;
+    
+    pattern1BrushButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    pattern1BrushButton.backgroundColor = [UIColor clearColor];
+    pattern1BrushButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+320.0, aFrame8.size.width, aFrame8.size.height);
+    [pattern1BrushButton setTitle:@"Pattern1" forState:UIControlStateNormal];
+    [pattern1BrushButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [pattern1BrushButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [pattern1BrushButton setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
+    [pattern1BrushButton addTarget:self action:@selector(pattern1BrushTypeClicked) forControlEvents:UIControlEventTouchUpInside];
+    [brushSubmenuView addSubview:pattern1BrushButton];
+    
+    pattern2BrushButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    pattern2BrushButton.backgroundColor = [UIColor clearColor];
+    pattern2BrushButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+370.0, aFrame8.size.width, aFrame8.size.height);
+    [pattern2BrushButton setTitle:@"Pattern2" forState:UIControlStateNormal];
+    [pattern2BrushButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [pattern2BrushButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [pattern2BrushButton setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
+    [pattern2BrushButton addTarget:self action:@selector(pattern2BrushTypeClicked) forControlEvents:UIControlEventTouchUpInside];
+    [brushSubmenuView addSubview:pattern2BrushButton];
     
 #pragma mark - dummy end
     
@@ -960,6 +996,29 @@
     sleeveTypeSelectionValueSeperator.image = [UIImage imageNamed:@"ayrac_acik.png"];
     [fabricSubmenuView addSubview:sleeveTypeSelectionValueSeperator];
     
+}
+- (void) basicBrushTypeClicked
+{
+    basicBrushButton.selected = YES;
+    pattern1BrushButton.selected = NO;
+    pattern2BrushButton.selected = NO;
+    modelCanvas.brushType = BRUSH_TYPE_BASIC_COLOR;
+}
+- (void) pattern1BrushTypeClicked
+{
+    basicBrushButton.selected = NO;
+    pattern1BrushButton.selected = YES;
+    pattern2BrushButton.selected = NO;
+    modelCanvas.brushType = BRUSH_TYPE_PATTERN_COLOR;
+    modelCanvas.patternImageName = @"pattern1_erkek.png";
+}
+- (void) pattern2BrushTypeClicked
+{
+    basicBrushButton.selected = NO;
+    pattern1BrushButton.selected = NO;
+    pattern2BrushButton.selected = YES;
+    modelCanvas.brushType = BRUSH_TYPE_PATTERN_COLOR;
+    modelCanvas.patternImageName = @"pattern2_erkek.png";
 }
 - (void) deleteLastBrush
 {

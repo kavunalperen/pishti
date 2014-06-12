@@ -22,6 +22,7 @@
 - (UIImage*)image:(UIImage*)image byScalingAndCroppingForSize:(CGSize)targetSize;
 - (UIImage *)normalizedImage:(UIImage*)image;
 - (UIImage *)fixOrientation:(UIImage*)image;
+- (UIImage *)maskedImageNamed:(NSString *)name color:(UIColor *)color;
 
 - (NSString*) nilAndNullCheckWithString:(NSString*)aString;
 - (NSNumber*) nilAndNullCheckWithNumber:(NSNumber*)aNumber;
