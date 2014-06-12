@@ -23,6 +23,8 @@
     CGPoint lastPoint;
     
     UIImage* image;
+    
+    UIBezierPath* modelPath;
 }
 - (id)initWithFrame:(CGRect)frame
 {
@@ -48,7 +50,22 @@
     }
     return self;
 }
-
+- (void) deleteLastOne
+{
+    if (brushIndex > 0) {
+        brushIndex--;
+        [self.brushes removeObjectForKey:[NSString stringWithFormat:@"%d",brushIndex]];
+        [self setNeedsDisplay];
+    }
+}
+- (void) deleteAll
+{
+    if (brushIndex > 0) {
+        brushIndex = 0;
+        self.brushes = [NSMutableDictionary new];
+        [self setNeedsDisplay];
+    }
+}
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesBegan:touches withEvent:event];
@@ -61,20 +78,24 @@
     
     CGPoint location = [touch locationInView:self];
     
-    NSDictionary* touchDictionary = @{@"x":[NSNumber numberWithFloat:location.x],
-                                      @"y":[NSNumber numberWithFloat:location.y]};
+    if (CGPathContainsPoint(modelPath.CGPath, NULL, location, NO)) {
     
-    NSMutableArray* touchesArray = @[touchDictionary].mutableCopy;
-    
-    NSDictionary* aBrush = @{@"points":touchesArray,
-                             @"color":self.brushColor,
-                             @"width":[NSNumber numberWithFloat:self.brushWidth]};
-    
-    [self.brushes setObject:aBrush forKey:[NSString stringWithFormat:@"%d",brushIndex]];
-    
-    isBrushing = YES;
-    
-    [self setNeedsDisplay];
+        NSDictionary* touchDictionary = @{@"x":[NSNumber numberWithFloat:location.x],
+                                          @"y":[NSNumber numberWithFloat:location.y]};
+        
+        NSMutableArray* touchesArray = @[touchDictionary].mutableCopy;
+        
+        NSDictionary* aBrush = @{@"points":touchesArray,
+                                 @"color":self.brushColor,
+                                 @"width":[NSNumber numberWithFloat:self.brushWidth],
+                                 @"opacity":[NSNumber numberWithFloat:self.brushOpacity]};
+        
+        [self.brushes setObject:aBrush forKey:[NSString stringWithFormat:@"%d",brushIndex]];
+        
+        isBrushing = YES;
+        
+        [self setNeedsDisplay];
+    }
     
 }
 - (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -94,11 +115,15 @@
             UITouch* touch = [touches anyObject];
             
             CGPoint location = [touch locationInView:self];
-            
-            NSDictionary* touchDictionary = @{@"x":[NSNumber numberWithFloat:location.x],
-                                              @"y":[NSNumber numberWithFloat:location.y]};
-            
-            [touchesArray addObject:touchDictionary];
+            if (CGPathContainsPoint(modelPath.CGPath, NULL, location, NO)) {
+                NSDictionary* touchDictionary = @{@"x":[NSNumber numberWithFloat:location.x],
+                                                  @"y":[NSNumber numberWithFloat:location.y]};
+                
+                [touchesArray addObject:touchDictionary];
+            } else {
+                isBrushing = NO;
+                brushIndex++;
+            }
         }
     }
     
@@ -121,11 +146,12 @@
             UITouch* touch = [touches anyObject];
             
             CGPoint location = [touch locationInView:self];
-            
-            NSDictionary* touchDictionary = @{@"x":[NSNumber numberWithFloat:location.x],
-                                              @"y":[NSNumber numberWithFloat:location.y]};
-            
-            [touchesArray addObject:touchDictionary];
+            if (CGPathContainsPoint(modelPath.CGPath, NULL, location, NO)) {
+                NSDictionary* touchDictionary = @{@"x":[NSNumber numberWithFloat:location.x],
+                                                  @"y":[NSNumber numberWithFloat:location.y]};
+                
+                [touchesArray addObject:touchDictionary];
+            }
         }
         
         isBrushing = NO;
@@ -174,6 +200,8 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
     [path addCurveToPoint:CGPointMake(148.0, 130.0) controlPoint1:CGPointMake(279.0, 77.0) controlPoint2:CGPointMake(215.0, 106.0)];
     [path closePath];
     
+//    path setA
+    
     // left arm
     UIBezierPath* path2 = [[UIBezierPath alloc] init];
     [path2 setLineWidth:1.0];
@@ -193,6 +221,11 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
     [path3 addCurveToPoint:CGPointMake(571.0, 332.0) controlPoint1:CGPointMake(594.0, 322.0) controlPoint2:CGPointMake(584.0, 332.0)];
     [path3 addCurveToPoint:CGPointMake(600.0, 130.0) controlPoint1:CGPointMake(571.0, 267.0) controlPoint2:CGPointMake(588.0, 158.0)];
     [path3 closePath];
+    
+    modelPath = [[UIBezierPath alloc] init];
+    [modelPath appendPath:path];
+    [modelPath appendPath:path2];
+    [modelPath appendPath:path3];
     
     UIBezierPath* shadowPath = [[UIBezierPath alloc] init];
     [shadowPath appendPath:path];
@@ -271,7 +304,12 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
             [brushPath addLineToPoint:CGPointMake(x, y)];
 
         }
-        [[aBrush objectForKey:@"color"] setStroke];
+        UIColor* originalColor = [aBrush objectForKey:@"color"];
+        CGFloat red, blue,green;
+        [originalColor getRed:&red green:&green blue:&blue alpha:nil];
+        UIColor* brushColor = [UIColor colorWithRed:red green:green blue:blue alpha:[[aBrush objectForKey:@"opacity"] floatValue]];
+        [brushColor setStroke];
+        
         [brushPath stroke];
     }
     

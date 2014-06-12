@@ -16,8 +16,12 @@
 
 @property UIColor* brushColor;
 @property CGFloat brushWidth;
+@property CGFloat brushOpacity;
 @property BOOL isBrushActive;
 
 @property NSMutableDictionary* brushes;
+
+- (void) deleteLastOne;
+- (void) deleteAll;
 
 @end

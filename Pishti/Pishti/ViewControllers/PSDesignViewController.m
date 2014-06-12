@@ -500,6 +500,7 @@
     modelCanvas.fillColor = [colors objectAtIndex:5];
     modelCanvas.brushColor = [colors objectAtIndex:0];
     modelCanvas.brushWidth = 4.0;
+    modelCanvas.brushOpacity = 1.0;
     modelCanvas.isBrushActive = NO;
     [self.view addSubview:modelCanvas];
     
@@ -854,6 +855,51 @@
     [brushSubmenuView addSubview:fabricColorSelectionValueSeperator2];
     [brushSubmenuView addSubview:fabricColorSelectionValueSeperator3];
     
+    CGRect aFrame5 = [self fabricColorSelectionTitleFrame];
+    
+    UILabel* brushOpacitySelectionTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(aFrame5.origin.x, aFrame5.origin.y+100.0, aFrame5.size.width, aFrame5.size.height)];
+    brushOpacitySelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    brushOpacitySelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    brushOpacitySelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    brushOpacitySelectionTitleLabel.text = @"Brush Opacity Seçimi";
+    [brushSubmenuView addSubview:brushOpacitySelectionTitleLabel];
+    
+    CGRect aFrame6 = [self fabricColorSelectionTitleSeperatorFrame];
+    UIImageView* brushOpacitySelectionTitleSeperator = [[UIImageView alloc] initWithFrame:CGRectMake(aFrame6.origin.x, aFrame6.origin.y+100.0, aFrame6.size.width, aFrame6.size.height)];
+    brushOpacitySelectionTitleSeperator.backgroundColor = [UIColor clearColor];
+    brushOpacitySelectionTitleSeperator.image = [UIImage imageNamed:@"ayrac_koyu.png"];
+    [brushSubmenuView addSubview:brushOpacitySelectionTitleSeperator];
+    
+    CGRect aFrame7 = [self fabricColorSelectionValueFrame];
+    UISlider* slider = [[UISlider alloc] initWithFrame:CGRectMake(aFrame7.origin.x, aFrame7.origin.y+120.0, aFrame7.size.width, aFrame7.size.height)];
+    [slider addTarget:self action:@selector(sliderChanged:) forControlEvents:UIControlEventValueChanged];
+    slider.minimumValue = 0.0;
+    slider.maximumValue = 100.0;
+    slider.value = 100.0;
+    slider.continuous = YES;
+    [brushSubmenuView addSubview:slider];
+    
+    CGRect aFrame8 = [self fabricColorSelectionValueFrame];
+    UIButton* deleteLastOneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    deleteLastOneButton.backgroundColor = [UIColor clearColor];
+    deleteLastOneButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+200.0, aFrame8.size.width, aFrame8.size.height);
+    [deleteLastOneButton setTitle:@"Delete Last One" forState:UIControlStateNormal];
+    [deleteLastOneButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [deleteLastOneButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [deleteLastOneButton addTarget:self action:@selector(deleteLastBrush) forControlEvents:UIControlEventTouchUpInside];
+    [brushSubmenuView addSubview:deleteLastOneButton];
+    
+    UIButton* deleteAllButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    deleteAllButton.backgroundColor = [UIColor clearColor];
+    deleteAllButton.frame = CGRectMake(aFrame8.origin.x, aFrame8.origin.y+300.0, aFrame8.size.width, aFrame8.size.height);
+    [deleteAllButton setTitle:@"Delete All" forState:UIControlStateNormal];
+    [deleteAllButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [deleteAllButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [deleteAllButton addTarget:self action:@selector(deleteAllBrushes) forControlEvents:UIControlEventTouchUpInside];
+    [brushSubmenuView addSubview:deleteAllButton];
+    
+#pragma mark - dummy end
+    
     // collar type selection
     UILabel* collarTypeSelectionTitleLabel = [[UILabel alloc] initWithFrame:[self collarTypeSelectionTitleFrame]];
     collarTypeSelectionTitleLabel.backgroundColor = [UIColor clearColor];
@@ -914,6 +960,19 @@
     sleeveTypeSelectionValueSeperator.image = [UIImage imageNamed:@"ayrac_acik.png"];
     [fabricSubmenuView addSubview:sleeveTypeSelectionValueSeperator];
     
+}
+- (void) deleteLastBrush
+{
+    [modelCanvas deleteLastOne];
+}
+- (void) deleteAllBrushes
+{
+    [modelCanvas deleteAll];
+}
+- (void) sliderChanged:(UISlider*)slider
+{
+    CGFloat sliderValue = slider.value;
+    modelCanvas.brushOpacity = sliderValue/100.0;
 }
 - (void) openFabricMenu
 {
