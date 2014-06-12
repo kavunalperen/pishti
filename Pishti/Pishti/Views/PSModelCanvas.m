@@ -23,7 +23,7 @@
     BOOL mouseSwiped;
     CGPoint lastPoint;
     
-    UIImage* image;
+//    UIImage* image;
     
     UIBezierPath* modelPath;
 }
@@ -137,8 +137,8 @@
         
         CGFloat red, blue, green;
         [self.brushColor getRed:&red green:&green blue:&blue alpha:nil];
-        UIColor* brushColor = [UIColor colorWithRed:red green:green blue:blue alpha:self.brushOpacity];;
-        
+        UIColor* brushColor = [UIColor colorWithRed:red green:green blue:blue alpha:self.brushOpacity];
+
         if (self.brushType == BRUSH_TYPE_PATTERN_COLOR) {
             
             UIImage* patternImage = [[Util sharedInstance] maskedImageNamed:self.patternImageName color:self.brushColor];
@@ -197,8 +197,8 @@
             
             if (self.brushType == BRUSH_TYPE_PATTERN_COLOR) {
                 
-                UIImage* patternImage = [[Util sharedInstance] maskedImageNamed:self.patternImageName color:brushColor];
-
+                UIImage* patternImage = [[Util sharedInstance] maskedImageNamed:self.patternImageName color:self.brushColor];
+                patternImage = [[Util sharedInstance] image:patternImage byApplyingAlpha:self.brushOpacity];
                 brushColor = [UIColor colorWithPatternImage:patternImage];
             }
             
