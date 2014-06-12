@@ -23,6 +23,7 @@
 - (UIImage *)normalizedImage:(UIImage*)image;
 - (UIImage *)fixOrientation:(UIImage*)image;
 - (UIImage *)maskedImageNamed:(NSString *)name color:(UIColor *)color;
+- (UIImage *)image: (UIImage*)image byApplyingAlpha:(CGFloat) alpha;
 
 - (NSString*) nilAndNullCheckWithString:(NSString*)aString;
 - (NSNumber*) nilAndNullCheckWithNumber:(NSNumber*)aNumber;
