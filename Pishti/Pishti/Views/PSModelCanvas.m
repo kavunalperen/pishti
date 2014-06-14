@@ -116,33 +116,38 @@
     UITouch* touch = [touches anyObject];
     CGPoint p = [touch locationInView:self];
     
-    NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
-                            @"y":[NSNumber numberWithFloat:p.y]};
+    if (CGPathContainsPoint(modelPath.CGPath, NULL, p, NO)) {
     
-    if (self.brushType == BRUSH_TYPE_BASIC_COLOR) {
+        NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
+                                @"y":[NSNumber numberWithFloat:p.y]};
         
-        NSDictionary* aBrush = @{@"points":@[point].mutableCopy,
-                                 @"type":[NSNumber numberWithInteger:self.brushType],
-                                 @"width":[NSNumber numberWithFloat:self.brushWidth],
-                                 @"color":self.brushColor,
-                                 @"opacity":[NSNumber numberWithFloat:self.brushOpacity]};
+        if (self.brushType == BRUSH_TYPE_BASIC_COLOR) {
+            
+            NSDictionary* aBrush = @{@"points":@[point].mutableCopy,
+                                     @"type":[NSNumber numberWithInteger:self.brushType],
+                                     @"width":[NSNumber numberWithFloat:self.brushWidth],
+                                     @"color":self.brushColor,
+                                     @"opacity":[NSNumber numberWithFloat:self.brushOpacity]};
+            
+            [self.brushes addObject:aBrush];
+            
+        } else {
+            UIImage* image = [[Util sharedInstance] prepareImageForBrushing:[UIImage imageNamed:self.patternImageName] andBrushWidth:self.brushWidth];
+            image = [[Util sharedInstance] maskedImage:image color:self.brushColor];
+            image = [[Util sharedInstance] image:image byApplyingAlpha:self.brushOpacity];
+            
+            
+            NSDictionary* aBrush = @{@"points":@[point].mutableCopy,
+                                     @"type":[NSNumber numberWithInteger:self.brushType],
+                                     @"width":[NSNumber numberWithFloat:self.brushWidth],
+                                     @"pattern":image};
+            
+            [self.brushes addObject:aBrush];
+        }
         
-        [self.brushes addObject:aBrush];
-        
-    } else {
-        UIImage* image = [[Util sharedInstance] prepareImageForBrushing:[UIImage imageNamed:self.patternImageName] andBrushWidth:self.brushWidth];
-//        UIImage* image = [UIImage imageNamed:self.patternImageName];
-        image = [[Util sharedInstance] maskedImage:image color:self.brushColor];
-        image = [[Util sharedInstance] image:image byApplyingAlpha:self.brushOpacity];
-        
-        
-        NSDictionary* aBrush = @{@"points":@[point].mutableCopy,
-                                 @"type":[NSNumber numberWithInteger:self.brushType],
-                                 @"width":[NSNumber numberWithFloat:self.brushWidth],
-                                 @"pattern":image};
-        
-        [self.brushes addObject:aBrush];
+        isBrushing = YES;
     }
+    [self setNeedsDisplay];
 }
 - (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -156,11 +161,53 @@
     UITouch* touch = [touches anyObject];
     CGPoint p = [touch locationInView:self];
     
-    NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
-                            @"y":[NSNumber numberWithFloat:p.y]};
-    
-    NSMutableArray* points = [[self.brushes objectAtIndex:brushIndex] objectForKey:@"points"];
-    [points addObject:point];
+    if (isBrushing) {
+        
+        if (CGPathContainsPoint(modelPath.CGPath, NULL, p, NO)) {
+        
+            NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
+                                    @"y":[NSNumber numberWithFloat:p.y]};
+            
+            NSMutableArray* points = [[self.brushes objectAtIndex:brushIndex] objectForKey:@"points"];
+            [points addObject:point];
+        } else {
+            isBrushing = NO;
+            brushIndex++;
+        }
+        
+    } else {
+        if (CGPathContainsPoint(modelPath.CGPath, NULL, p, NO)) {
+            
+            NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
+                                    @"y":[NSNumber numberWithFloat:p.y]};
+            
+            if (self.brushType == BRUSH_TYPE_BASIC_COLOR) {
+                
+                NSDictionary* aBrush = @{@"points":@[point].mutableCopy,
+                                         @"type":[NSNumber numberWithInteger:self.brushType],
+                                         @"width":[NSNumber numberWithFloat:self.brushWidth],
+                                         @"color":self.brushColor,
+                                         @"opacity":[NSNumber numberWithFloat:self.brushOpacity]};
+                
+                [self.brushes addObject:aBrush];
+                
+            } else {
+                UIImage* image = [[Util sharedInstance] prepareImageForBrushing:[UIImage imageNamed:self.patternImageName] andBrushWidth:self.brushWidth];
+                image = [[Util sharedInstance] maskedImage:image color:self.brushColor];
+                image = [[Util sharedInstance] image:image byApplyingAlpha:self.brushOpacity];
+                
+                
+                NSDictionary* aBrush = @{@"points":@[point].mutableCopy,
+                                         @"type":[NSNumber numberWithInteger:self.brushType],
+                                         @"width":[NSNumber numberWithFloat:self.brushWidth],
+                                         @"pattern":image};
+                
+                [self.brushes addObject:aBrush];
+            }
+            
+            isBrushing = YES;
+        }
+    }
     
     [self setNeedsDisplay];
 }
@@ -176,13 +223,18 @@
     UITouch* touch = [touches anyObject];
     CGPoint p = [touch locationInView:self];
     
-    NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
-                           @"y":[NSNumber numberWithFloat:p.y]};
-    
-    NSMutableArray* points = [[self.brushes objectAtIndex:brushIndex] objectForKey:@"points"];
-    [points addObject:point];
-    
-    brushIndex++;
+    if (isBrushing) {
+        if (CGPathContainsPoint(modelPath.CGPath, NULL, p, NO)) {
+            NSDictionary* point = @{@"x":[NSNumber numberWithFloat:p.x],
+                                    @"y":[NSNumber numberWithFloat:p.y]};
+            
+            NSMutableArray* points = [[self.brushes objectAtIndex:brushIndex] objectForKey:@"points"];
+            [points addObject:point];
+        }
+        
+        isBrushing = NO;
+        brushIndex++;
+    }
     
     [self setNeedsDisplay];
 }
