@@ -19,9 +19,13 @@
 - (NSString*) stringFromDate:(NSDate*)date;
 - (UIImage*) stretchableImageWithOriginalImage:(UIImage*)originalImage
                                  andEdgeInsets:(UIEdgeInsets)edgeInset;
+
+- (UIImage*) rotateImage:(UIImage*) src andOrientation:(UIImageOrientation) orientation;
+- (UIImage*)prepareImageForBrushing:(UIImage*)image andBrushWidth:(CGFloat)brushWidth;
 - (UIImage*)image:(UIImage*)image byScalingAndCroppingForSize:(CGSize)targetSize;
 - (UIImage *)normalizedImage:(UIImage*)image;
 - (UIImage *)fixOrientation:(UIImage*)image;
+- (UIImage *)maskedImage:(UIImage *)image color:(UIColor *)color;
 - (UIImage *)maskedImageNamed:(NSString *)name color:(UIColor *)color;
 - (UIImage *)image: (UIImage*)image byApplyingAlpha:(CGFloat) alpha;
 

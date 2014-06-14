@@ -77,6 +77,19 @@ static NSArray* groupParticipantColors = nil;
     
     return newImage;
 }
+- (UIImage *)maskedImage:(UIImage *)image color:(UIColor *)color
+{
+    CGRect rect = CGRectMake(0, 0, image.size.width, image.size.height);
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, image.scale);
+    CGContextRef c = UIGraphicsGetCurrentContext();
+    [image drawInRect:rect];
+    CGContextSetFillColorWithColor(c, [color CGColor]);
+    CGContextSetBlendMode(c, kCGBlendModeSourceAtop);
+    CGContextFillRect(c, rect);
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return result;
+}
 - (UIImage *)maskedImageNamed:(NSString *)name color:(UIColor *)color
 {
     UIImage *image = [UIImage imageNamed:name];
@@ -208,7 +221,42 @@ static NSArray* groupParticipantColors = nil;
         return nil;
     }
 }
-
+static inline double radians (double degrees) {return degrees * M_PI/180;}
+- (UIImage*) rotateImage:(UIImage*) src andOrientation:(UIImageOrientation) orientation
+{
+    CGFloat rotationAngle = arc4random() % 20;
+    UIGraphicsBeginImageContext(src.size);
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    if (orientation == UIImageOrientationRight) {
+        CGContextRotateCTM (context, radians(rotationAngle));
+    } else if (orientation == UIImageOrientationLeft) {
+        CGContextRotateCTM (context, radians(-rotationAngle));
+    } else if (orientation == UIImageOrientationDown) {
+        // NOTHING
+    } else if (orientation == UIImageOrientationUp) {
+        CGContextRotateCTM (context, radians(rotationAngle));
+    }
+    
+    [src drawAtPoint:CGPointZero];
+    
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return image;
+}
+- (UIImage*)prepareImageForBrushing:(UIImage*)image andBrushWidth:(CGFloat)brushWidth
+{
+    CGSize size = image.size;
+    
+    CGFloat maxEdge = MAX(size.width, size.height);
+    if (maxEdge > brushWidth*5) {
+        float K = brushWidth*5/maxEdge;
+        return [self image:image byScalingAndCroppingForSize:CGSizeMake(floorf(size.width*K), floorf(size.height*K))];
+    } else {
+        return image;
+    }
+}
 - (UIImage*)image:(UIImage*)image byScalingAndCroppingForSize:(CGSize)targetSize
 {
     if (image != nil) {
@@ -262,7 +310,6 @@ static NSArray* groupParticipantColors = nil;
         
         if(newImage == nil)
         {
-            //        NSLog(@"could not scale image");
             return nil;
         }
         

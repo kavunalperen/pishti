@@ -1010,7 +1010,7 @@
     pattern1BrushButton.selected = YES;
     pattern2BrushButton.selected = NO;
     modelCanvas.brushType = BRUSH_TYPE_PATTERN_COLOR;
-    modelCanvas.patternImageName = @"pattern1_erkek.png";
+    modelCanvas.patternImageName = @"brush4_erkek.png";
 }
 - (void) pattern2BrushTypeClicked
 {
@@ -1018,7 +1018,7 @@
     pattern1BrushButton.selected = NO;
     pattern2BrushButton.selected = YES;
     modelCanvas.brushType = BRUSH_TYPE_PATTERN_COLOR;
-    modelCanvas.patternImageName = @"pattern2_erkek.png";
+    modelCanvas.patternImageName = @"brush2_erkek.png";
 }
 - (void) deleteLastBrush
 {

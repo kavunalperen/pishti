@@ -77,6 +77,8 @@
 		0543C7E118F4691F0049D846 /* PSMenuViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0543C7E018F4691F0049D846 /* PSMenuViewController.m */; };
 		0543C7E918F46FCF0049D846 /* Util.m in Sources */ = {isa = PBXBuildFile; fileRef = 0543C7E818F46FCF0049D846 /* Util.m */; };
 		0543C7EB18F4712D0049D846 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0543C7EA18F4712D0049D846 /* QuartzCore.framework */; };
+		0559F48B194C954A00BB759B /* brush3_erkek.png in Resources */ = {isa = PBXBuildFile; fileRef = 0559F48A194C954A00BB759B /* brush3_erkek.png */; };
+		0559F48D194C95DA00BB759B /* brush4_erkek.png in Resources */ = {isa = PBXBuildFile; fileRef = 0559F48C194C95DA00BB759B /* brush4_erkek.png */; };
 		057E984E192B3E760000A355 /* golge@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 057E984D192B3E760000A355 /* golge@2x.png */; };
 		05C197BB1927C416000ABA01 /* PSMainNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 05C197BA1927C416000ABA01 /* PSMainNavigationController.m */; };
 		05C197BE1927D243000ABA01 /* PSSubmenuTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 05C197BD1927D243000ABA01 /* PSSubmenuTableViewCell.m */; };
@@ -410,6 +412,8 @@
 		0543C7E718F46FCF0049D846 /* Util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Util.h; sourceTree = "<group>"; };
 		0543C7E818F46FCF0049D846 /* Util.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Util.m; sourceTree = "<group>"; };
 		0543C7EA18F4712D0049D846 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		0559F48A194C954A00BB759B /* brush3_erkek.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = brush3_erkek.png; sourceTree = "<group>"; };
+		0559F48C194C95DA00BB759B /* brush4_erkek.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = brush4_erkek.png; sourceTree = "<group>"; };
 		057E984D192B3E760000A355 /* golge@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "golge@2x.png"; sourceTree = "<group>"; };
 		05C197B91927C416000ABA01 /* PSMainNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMainNavigationController.h; sourceTree = "<group>"; };
 		05C197BA1927C416000ABA01 /* PSMainNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMainNavigationController.m; sourceTree = "<group>"; };
@@ -489,6 +493,8 @@
 				0519F9B2194A0EC600B5AB26 /* brush1_erkek.png */,
 				0519F9B3194A0EC600B5AB26 /* brush2_disi.png */,
 				0519F9B4194A0EC600B5AB26 /* brush2_erkek.png */,
+				0559F48A194C954A00BB759B /* brush3_erkek.png */,
+				0559F48C194C95DA00BB759B /* brush4_erkek.png */,
 				0519F9B5194A0EC600B5AB26 /* pattern1_disi.png */,
 				0519F9B6194A0EC600B5AB26 /* pattern1_erkek.png */,
 				0519F9B7194A0EC600B5AB26 /* pattern2_disi.png */,
@@ -1165,6 +1171,8 @@
 				0501551B1926CB5C009FEE6D /* help2.png in Resources */,
 				05426561192695C00009A02E /* brush_btn_highlighted@2x.png in Resources */,
 				054265971926A6B90009A02E /* BebasNeue.ttf in Resources */,
+				0559F48B194C954A00BB759B /* brush3_erkek.png in Resources */,
+				0559F48D194C95DA00BB759B /* brush4_erkek.png in Resources */,
 				0542657A192695C00009A02E /* view_left_normal@2x.png in Resources */,
 				05426564192695C00009A02E /* fabric_btn_normal@2x.png in Resources */,
 				05426563192695C00009A02E /* fabric_btn_highlighted@2x.png in Resources */,
