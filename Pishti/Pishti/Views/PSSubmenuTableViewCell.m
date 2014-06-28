@@ -28,6 +28,8 @@
             [self stylizeForSizeCell];
         } else if ([reuseIdentifier isEqualToString:FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER]) {
             [self stylizeForBrushWidthCell];
+        } else if ([reuseIdentifier isEqualToString:FABRIC_SUBMENU_LABEL_FONT_CELL_IDENTIFIER]) {
+            [self stylizeForLabelFontCell];
         }
     }
     return self;
@@ -70,6 +72,13 @@
     self.colorView = [[UIView alloc] initWithFrame:CGRectMake(10.0, 0.0, 110.0, 0.0)];
     self.colorView.backgroundColor = [UIColor clearColor];
     [self addSubview:self.colorView];
+}
+- (void) stylizeForLabelFontCell
+{
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 0.0, 120.0, 25.0)];
+    self.mainLabel.backgroundColor = [UIColor clearColor];
+    self.mainLabel.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [self addSubview:self.mainLabel];
 }
 - (void) setColorForColorView:(UIColor*)color
 {

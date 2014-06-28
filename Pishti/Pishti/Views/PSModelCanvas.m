@@ -267,7 +267,7 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
             
             NSMutableArray* points = [aBrush objectForKey:@"points"];
             for (int i = 0; i < points.count; i += 3) {
-                int remaining = points.count-i-1;
+                int remaining = (points.count-i)-1;
                 if (remaining == 0) {
                     
                 } else if (remaining == 1) {
@@ -283,8 +283,9 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
                              controlPoint1:CGPointMake([points[i+1][@"x"] floatValue], [points[i+1][@"y"] floatValue])
                              controlPoint2:CGPointMake([points[i+2][@"x"] floatValue], [points[i+2][@"y"] floatValue])];
                 } else if (remaining >= 4) {
-                    CGPoint mid = CGPointMake(([points[i+2][@"x"] floatValue]+[points[i+4][@"x"] floatValue])*0.5,
-                                              ([points[i+2][@"y"] floatValue]+[points[i+4][@"y"] floatValue])*0.5);
+//                if (remaining >= 4) {
+                    CGPoint mid = CGPointMake(([points[i+2][@"x"] floatValue]+[points[i+4][@"x"] floatValue])/2.0,
+                                              ([points[i+2][@"y"] floatValue]+[points[i+4][@"y"] floatValue])/2.0);
                     points[i+3] = @{@"x":[NSNumber numberWithFloat:mid.x],
                                     @"y":[NSNumber numberWithFloat:mid.y]};
                     
@@ -292,6 +293,9 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
                     [aPath addCurveToPoint:CGPointMake([points[i+3][@"x"] floatValue], [points[i+3][@"y"] floatValue])
                              controlPoint1:CGPointMake([points[i+1][@"x"] floatValue], [points[i+1][@"y"] floatValue])
                              controlPoint2:CGPointMake([points[i+2][@"x"] floatValue], [points[i+2][@"y"] floatValue])];
+                    
+//                    points[i] = points[i+3];
+//                    points[i+1] = points[i+4];
                 }
             }
             UIColor* color = [aBrush objectForKey:@"color"];

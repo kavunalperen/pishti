@@ -62,8 +62,11 @@
     UIImageView* backgroundView;
     UIImageView* logoView;
     UIView* otherButtonHolder;
+    
     UIImageView* fabricSubmenuView;
     UIImageView* brushSubmenuView;
+    UIImageView* imageSubmenuView;
+    UIImageView* textSubmenuView;
     
     UIButton* profileButton;
     UIImageView* otherButtonsLine1;
@@ -83,9 +86,38 @@
     UITapGestureRecognizer* brushWidthTableOpeningGesture;
     UITapGestureRecognizer* brushWidthTableClosingGesture;
     
+    UILabel* labelFontSelectionValueLabel;
+    UITapGestureRecognizer* labelFontTableOpeningGesture;
+    UITapGestureRecognizer* labelFontTableClosingGesture;
+    
+    UILabel* labelColorSelectionValueLabel;
+    UITapGestureRecognizer* labelColorTableOpeningGesture;
+    UITapGestureRecognizer* labelColorTableClosingGesture;
+    
     NSArray* colors;
     NSArray* colorNames;
     NSArray* brushWidths;
+    NSArray* labelFontNames;
+    
+    UIButton* isLabelBoldButton;
+    UIButton* isLabelItalicButton;
+    UIButton* isLabelHorizontalButton;
+    UIButton* alignmentButton;
+    
+    BOOL isLabelBold;
+    BOOL isLabelItalic;
+    BOOL isLabelHorizontal;
+    float labelOpacity;
+    
+    NSInteger labelAlignment;
+    NSMutableArray* allLabels;
+    NSInteger labelIndex;
+    
+    NSString* selectedFontName;
+    UIColor* selectedLabelColor;
+    
+    UISlider* brushOpacitySlider;
+    UISlider* labelOpacitySlider;
     
     UIImageView* halfBackgroundLeftView;
     UIImageView* halfBackgroundRightView;
@@ -93,7 +125,9 @@
     PSModelCanvas* modelCanvas;
     
     UIButton* fabricButton;
+    UIButton* textButton;
     UIButton* brushButton;
+    UIButton* imageButton;
     
     UIButton* basicBrushButton;
     UIButton* pattern1BrushButton;
@@ -314,6 +348,14 @@
 {
     return CGRectMake(SCREEN_SIZE.height-FABRIC_SUBMENU_WIDTH-80.0, 113.0, FABRIC_SUBMENU_WIDTH, FABRIC_SUBMENU_HEIGHT);
 }
+- (CGRect) imageSubmenuFrame
+{
+    return CGRectMake(SCREEN_SIZE.height-FABRIC_SUBMENU_WIDTH-80.0, 113.0, FABRIC_SUBMENU_WIDTH, FABRIC_SUBMENU_HEIGHT);
+}
+- (CGRect) textSubmenuFrame
+{
+    return CGRectMake(SCREEN_SIZE.height-FABRIC_SUBMENU_WIDTH-80.0, 113.0, FABRIC_SUBMENU_WIDTH, FABRIC_SUBMENU_HEIGHT);
+}
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -392,6 +434,21 @@
                    @"MOR",
                    @"FÜME"];
     
+    labelFontNames = @[@"Helvetica",
+                       @"Arial"];
+    
+    allLabels = @[].mutableCopy;
+    labelIndex = 0;
+    
+    selectedFontName = [labelFontNames objectAtIndex:0];
+    selectedLabelColor = [colors objectAtIndex:0];
+    
+    isLabelBold = NO;
+    isLabelItalic = NO;
+    isLabelHorizontal = YES;
+    labelAlignment = 0;
+    labelOpacity = 1.0;
+    
     brushWidths = @[[NSNumber numberWithFloat:4.0],
                     [NSNumber numberWithFloat:6.0],
                     [NSNumber numberWithFloat:8.0],
@@ -451,6 +508,8 @@
 {
     if (tableView == self.brushWidthTableView) {
         return brushWidths.count;
+    } else if (tableView == self.labelFontTableView){
+        return labelFontNames.count;
     } else {
         return colors.count;
     }
@@ -462,6 +521,20 @@
         
         [cell setColorForColorView:modelCanvas.brushColor];
         [cell setWidthForBrushView:[[brushWidths objectAtIndex:indexPath.row] floatValue]];
+        
+        return cell;
+    } else if (tableView == self.labelFontTableView) {
+        PSSubmenuTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_SUBMENU_LABEL_FONT_CELL_IDENTIFIER];
+        
+        UIFont* font;
+        if (indexPath.row == 0) {
+            font = [UIFont fontWithName:@"Helvetica" size:20.0];
+        } else {
+            font = [UIFont fontWithName:@"ArialMT" size:20.0];
+        }
+        
+        cell.mainLabel.font = font;
+        cell.mainLabel.text = [labelFontNames objectAtIndex:indexPath.row];
         
         return cell;
     } else {
@@ -490,7 +563,19 @@
         brushWidthSelectionValueLabel.backgroundColor = selectedColor;
         modelCanvas.brushColor = selectedColor;
         [modelCanvas setNeedsDisplay];
-    } else {
+    } else if (tableView == self.labelFontTableView) {
+        
+        selectedFontName = [labelFontNames objectAtIndex:indexPath.row];
+        labelFontSelectionValueLabel.text = selectedFontName;
+        
+        
+    } else if (tableView == self.labelColorTableView) {
+        UIColor* selectedColor = [colors objectAtIndex:indexPath.row];
+        
+        selectedLabelColor = selectedColor;
+        labelColorSelectionValueLabel.backgroundColor = selectedColor;
+        
+    } else if (tableView == self.brushWidthTableView) {
         CGFloat selectedWidth = [[brushWidths objectAtIndex:indexPath.row] floatValue];
         brushWidthSelectionValueLabel.text = [NSString stringWithFormat:@"  %d point",(int)[[brushWidths objectAtIndex:indexPath.row] floatValue]];
         modelCanvas.brushWidth = selectedWidth;
@@ -515,6 +600,149 @@
     shadow.image = [UIImage imageNamed:@"golge.png"];
     [self.view addSubview:shadow];
 }
+- (void) boldnessChanged
+{
+    isLabelBold = !isLabelBold;
+    
+    if (isLabelBold) {
+        [isLabelBoldButton setTitle:@"Bold Label" forState:UIControlStateNormal];
+    } else {
+        [isLabelBoldButton setTitle:@"Not Bold" forState:UIControlStateNormal];
+    }
+}
+- (void) italicnessChanged
+{
+    isLabelItalic = !isLabelItalic;
+    
+    if (isLabelItalic) {
+        [isLabelItalicButton setTitle:@"Italic Label" forState:UIControlStateNormal];
+    } else {
+        [isLabelItalicButton setTitle:@"Not Italic" forState:UIControlStateNormal];
+    }
+}
+- (void) alignmentChanged
+{
+    labelAlignment = (labelAlignment+1)%3;
+    
+    if (labelAlignment == 0) {
+        [alignmentButton setTitle:@"Left Align" forState:UIControlStateNormal];
+    } else if (labelAlignment == 1) {
+        [alignmentButton setTitle:@"Right Align" forState:UIControlStateNormal];
+    } else if (labelAlignment == 2) {
+        [alignmentButton setTitle:@"Center Align" forState:UIControlStateNormal];
+    }
+}
+- (void) horizontalnessChanged
+{
+    isLabelHorizontal = !isLabelHorizontal;
+    
+    if (isLabelHorizontal) {
+        [isLabelHorizontalButton setTitle:@"Horizontal" forState:UIControlStateNormal];
+    } else {
+        [isLabelHorizontalButton setTitle:@"Vertical" forState:UIControlStateNormal];
+    }
+}
+- (void) deleteLastLabel
+{
+    if (labelIndex > 0) {
+        [[allLabels objectAtIndex:labelIndex-1] removeFromSuperview];
+        [allLabels removeObjectAtIndex:labelIndex-1];
+        labelIndex--;
+    }
+}
+- (void) deleteAllLabels
+{
+    if (labelIndex > 0) {
+        for (UITextView* textView in allLabels) {
+            [textView removeFromSuperview];
+        }
+        allLabels = @[].mutableCopy;
+        labelIndex = 0;
+    }
+}
+- (void) addNewLabel
+{
+    
+    NSTextAlignment textAlignment;
+    if (labelAlignment == 0) {
+        textAlignment = NSTextAlignmentLeft;
+    } else if (labelAlignment == 1) {
+        textAlignment = NSTextAlignmentRight;
+    } else if (labelAlignment == 2) {
+        textAlignment = NSTextAlignmentCenter;
+    }
+    
+    NSString* baseFontName = selectedFontName;
+    NSString* fontName = baseFontName;
+    
+    if (isLabelBold || isLabelItalic) {
+        fontName = [NSString stringWithFormat:@"%@-",fontName];
+    }
+    
+    if (isLabelBold) {
+        fontName = [NSString stringWithFormat:@"%@Bold",fontName];
+    }
+    if (isLabelItalic) {
+        if ([baseFontName isEqualToString:@"Helvetica"]) {
+            fontName = [NSString stringWithFormat:@"%@Oblique",fontName];
+        } else {
+            fontName = [NSString stringWithFormat:@"%@Italic",fontName];
+        }
+    }
+    
+    if ([baseFontName isEqualToString:@"Arial"]) {
+        fontName = [NSString stringWithFormat:@"%@MT",fontName];
+    }
+    
+    NSString* shortVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString* text = [NSString stringWithFormat:@"Pişti Version %@",shortVersion];
+    
+    UIFont* font = [UIFont fontWithName:fontName size:20.0];
+    
+    NSMutableString* newString = [NSMutableString string];
+    CGSize labelSize;
+    if (!isLabelHorizontal) {
+        textAlignment = NSTextAlignmentCenter;
+        for (int i = 0; i < text.length; i++) {
+            [newString appendString:[text substringWithRange:NSMakeRange(i, 1)]];
+            if (i != text.length-1) {
+                [newString appendString:@"\n"];
+            }
+        }
+    } else {
+        newString = [text mutableCopy];
+    }
+    
+    labelSize = [[Util sharedInstance] text:newString sizeWithFont:font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+    labelSize = CGSizeMake(ceilf(labelSize.width), ceilf(labelSize.height));
+    
+    CGSize lineHeight = [[Util sharedInstance] text:@"Ş" sizeWithFont:font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+    lineHeight = CGSizeMake(ceilf(lineHeight.width), ceilf(lineHeight.height));
+    
+    CGRect frame = modelCanvas.frame;
+    
+    UITextView* newLabel = [[UITextView alloc] initWithFrame:CGRectMake((frame.size.width-labelSize.width)*0.5,
+                                                                        (frame.size.height-labelSize.height)*0.5,
+                                                                        labelSize.width,
+                                                                        labelSize.height)];
+    
+    newLabel.backgroundColor = [UIColor clearColor];
+    newLabel.font = font;
+    newLabel.text = newString;
+    newLabel.textColor = selectedLabelColor;
+    newLabel.textAlignment = textAlignment;
+    newLabel.textContainer.lineFragmentPadding = 0;
+    newLabel.textContainerInset = UIEdgeInsetsZero;
+    newLabel.scrollEnabled = NO;
+    newLabel.selectable = NO;
+    newLabel.editable = NO;
+    newLabel.alpha = labelOpacity;
+    [modelCanvas addSubview:newLabel];
+    
+    [allLabels addObject:newLabel];
+    labelIndex++;
+    
+}
 - (void) performInitialSetups
 {
     backgroundView = [[UIImageView alloc] initWithFrame:[self backgroundFrame]];
@@ -532,10 +760,30 @@
     brushSubmenuView.image = [UIImage imageNamed:@"fabric_submenubg.png"];
     [self.view addSubview:brushSubmenuView];
     
+    imageSubmenuView = [[UIImageView alloc] initWithFrame:[self imageSubmenuFrame]];
+    imageSubmenuView.backgroundColor = [UIColor clearColor];
+    imageSubmenuView.image = [UIImage imageNamed:@"fabric_submenubg.png"];
+    [self.view addSubview:imageSubmenuView];
+    
+    textSubmenuView = [[UIImageView alloc] initWithFrame:[self textSubmenuFrame]];
+    textSubmenuView.backgroundColor = [UIColor clearColor];
+    textSubmenuView.image = [UIImage imageNamed:@"fabric_submenubg.png"];
+    [self.view addSubview:textSubmenuView];
+    
     CGRect brushSubmenuFrame = brushSubmenuView.frame;
     brushSubmenuFrame.origin.x += brushSubmenuFrame.size.width;
     brushSubmenuView.frame = brushSubmenuFrame;
     brushSubmenuView.alpha = 0;
+    
+    CGRect imageSubmenuFrame = imageSubmenuView.frame;
+    imageSubmenuFrame.origin.x += imageSubmenuFrame.size.width;
+    imageSubmenuView.frame = imageSubmenuFrame;
+    imageSubmenuView.alpha = 0;
+    
+    CGRect textSubmenuFrame = textSubmenuView.frame;
+    textSubmenuFrame.origin.x += textSubmenuFrame.size.width;
+    textSubmenuView.frame = textSubmenuFrame;
+    textSubmenuView.alpha = 0;
     
     UIImageView* mainMenuView = [[UIImageView alloc] initWithFrame:[self mainMenuFrame]];
     mainMenuView.backgroundColor = [UIColor clearColor];
@@ -551,19 +799,36 @@
     // version label, dummy, will be removed later
     CGRect frame = [self collarTypeSelectionTitleFrame];
     
+    NSString* shortVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    NSString* versionText = [NSString stringWithFormat:@"Pişti Version %@",shortVersion];
+    
     UILabel* versionLabel = [[UILabel alloc] initWithFrame:CGRectMake(frame.origin.x, fabricSubmenuView.frame.size.height-30.0, 130.0, 20.0)];
     versionLabel.backgroundColor = [UIColor clearColor];
     versionLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     versionLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    versionLabel.text = @"Pişti Version 0.2.2";
+    versionLabel.text = versionText;
     [fabricSubmenuView addSubview:versionLabel];
     
     UILabel* versionLabel2 = [[UILabel alloc] initWithFrame:CGRectMake(frame.origin.x, fabricSubmenuView.frame.size.height-30.0, 130.0, 20.0)];
     versionLabel2.backgroundColor = [UIColor clearColor];
     versionLabel2.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     versionLabel2.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    versionLabel2.text = @"Pişti Version 0.2.2";
+    versionLabel2.text = versionText;
     [brushSubmenuView addSubview:versionLabel2];
+    
+    UILabel* versionLabel3 = [[UILabel alloc] initWithFrame:CGRectMake(frame.origin.x, fabricSubmenuView.frame.size.height-30.0, 130.0, 20.0)];
+    versionLabel3.backgroundColor = [UIColor clearColor];
+    versionLabel3.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    versionLabel3.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    versionLabel3.text = versionText;
+    [textSubmenuView addSubview:versionLabel2];
+    
+    UILabel* versionLabel4 = [[UILabel alloc] initWithFrame:CGRectMake(frame.origin.x, fabricSubmenuView.frame.size.height-30.0, 130.0, 20.0)];
+    versionLabel4.backgroundColor = [UIColor clearColor];
+    versionLabel4.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    versionLabel4.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    versionLabel4.text = versionText;
+    [imageSubmenuView addSubview:versionLabel4];
     
     
     // main buttons
@@ -577,11 +842,13 @@
     [fabricButton addTarget:self action:@selector(openFabricMenu) forControlEvents:UIControlEventTouchUpInside];
     [mainMenuView addSubview:fabricButton];
     
-    UIButton* textButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    textButton = [UIButton buttonWithType:UIButtonTypeCustom];
     textButton.backgroundColor = [UIColor clearColor];
     textButton.frame = [self textButtonFrame];
     [textButton setImage:[UIImage imageNamed:@"text_btn_normal.png"] forState:UIControlStateNormal];
     [textButton setImage:[UIImage imageNamed:@"text_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    [textButton setImage:[UIImage imageNamed:@"text_btn_highlighted.png"] forState:UIControlStateSelected];
+    [textButton addTarget:self action:@selector(openTextMenu) forControlEvents:UIControlEventTouchUpInside];
     [mainMenuView addSubview:textButton];
     
     brushButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -593,11 +860,13 @@
     [brushButton addTarget:self action:@selector(openBrushMenu) forControlEvents:UIControlEventTouchUpInside];
     [mainMenuView addSubview:brushButton];
     
-    UIButton* imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    imageButton = [UIButton buttonWithType:UIButtonTypeCustom];
     imageButton.backgroundColor = [UIColor clearColor];
     imageButton.frame = [self imageButtonFrame];
     [imageButton setImage:[UIImage imageNamed:@"image_btn_normal.png"] forState:UIControlStateNormal];
     [imageButton setImage:[UIImage imageNamed:@"image_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    [imageButton setImage:[UIImage imageNamed:@"image_btn_highlighted.png"] forState:UIControlStateSelected];
+    [imageButton addTarget:self action:@selector(openImageMenu) forControlEvents:UIControlEventTouchUpInside];
     [mainMenuView addSubview:imageButton];
     
     UIButton* orderButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -802,6 +1071,182 @@
     fabricColorSelectionValueSeperator3.backgroundColor = [UIColor clearColor];
     fabricColorSelectionValueSeperator3.image = [UIImage imageNamed:@"renk_maske.png"];
     
+#pragma mark - Label related, will be deleted later
+    
+    CGRect bFrame = [self fabricColorSelectionTitleFrame];
+    bFrame.origin.y -= 100.0;
+    
+    UILabel* labelFontSelectionTitleLabel = [[UILabel alloc] initWithFrame:bFrame];
+    labelFontSelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    labelFontSelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    labelFontSelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    labelFontSelectionTitleLabel.text = @"Label Font Seçimi";
+    [textSubmenuView addSubview:labelFontSelectionTitleLabel];
+    
+    CGRect bFrame2 = [self fabricColorSelectionTitleSeperatorFrame];
+    bFrame2.origin.y -= 100.0;
+    
+    UIImageView* labelFontSelectionTitleSeperator = [[UIImageView alloc] initWithFrame:bFrame2];
+    labelFontSelectionTitleSeperator.backgroundColor = [UIColor clearColor];
+    labelFontSelectionTitleSeperator.image = [UIImage imageNamed:@"ayrac_koyu.png"];
+    [textSubmenuView addSubview:labelFontSelectionTitleSeperator];
+    
+    CGRect bFrame3 = [self fabricColorSelectionValueFrame];
+    bFrame3.origin.y -= 100.0;
+    
+    labelFontSelectionValueLabel = [[UILabel alloc] initWithFrame:bFrame3];
+    labelFontSelectionValueLabel.backgroundColor = [UIColor clearColor];
+    labelFontSelectionValueLabel.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    labelFontSelectionValueLabel.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    labelFontSelectionValueLabel.text = [labelFontNames objectAtIndex:0];
+    [textSubmenuView addSubview:labelFontSelectionValueLabel];
+    
+    CGRect bFrame4 = [self fabricColorSelectionValueFrame];
+    bFrame4.origin.y -= 60.0;
+    
+    isLabelBoldButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    isLabelBoldButton.backgroundColor = [UIColor clearColor];
+    isLabelBoldButton.frame = bFrame4;
+    [isLabelBoldButton setTitle:@"Not Bold" forState:UIControlStateNormal];
+    [isLabelBoldButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [isLabelBoldButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [isLabelBoldButton addTarget:self action:@selector(boldnessChanged) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:isLabelBoldButton];
+    
+    CGRect bFrame5 = [self fabricColorSelectionValueFrame];
+    bFrame5.origin.y -= 30.0;
+    
+    isLabelItalicButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    isLabelItalicButton.backgroundColor = [UIColor clearColor];
+    isLabelItalicButton.frame = bFrame5;
+    [isLabelItalicButton setTitle:@"Not Italic" forState:UIControlStateNormal];
+    [isLabelItalicButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [isLabelItalicButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [isLabelItalicButton addTarget:self action:@selector(italicnessChanged) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:isLabelItalicButton];
+    
+    CGRect bFrame6 = [self fabricColorSelectionValueFrame];
+    
+    alignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    alignmentButton.backgroundColor = [UIColor clearColor];
+    alignmentButton.frame = bFrame6;
+    [alignmentButton setTitle:@"Left Align" forState:UIControlStateNormal];
+    [alignmentButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [alignmentButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [alignmentButton addTarget:self action:@selector(alignmentChanged) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:alignmentButton];
+    
+    CGRect bFrame7 = [self fabricColorSelectionValueFrame];
+    bFrame7.origin.y += 30.0;
+    
+    isLabelHorizontalButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    isLabelHorizontalButton.backgroundColor = [UIColor clearColor];
+    isLabelHorizontalButton.frame = bFrame7;
+    [isLabelHorizontalButton setTitle:@"Horizontal" forState:UIControlStateNormal];
+    [isLabelHorizontalButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [isLabelHorizontalButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [isLabelHorizontalButton addTarget:self action:@selector(horizontalnessChanged) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:isLabelHorizontalButton];
+    
+    CGRect bFrame8 = [self fabricColorSelectionTitleFrame];
+    bFrame8.origin.y += 80;
+    
+    UILabel* labelColorSelectionTitleLabel = [[UILabel alloc] initWithFrame:bFrame8];
+    labelColorSelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    labelColorSelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    labelColorSelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    labelColorSelectionTitleLabel.text = @"Label Renk Seçimi";
+    [textSubmenuView addSubview:labelColorSelectionTitleLabel];
+    
+    CGRect bFrame9 = [self fabricColorSelectionTitleSeperatorFrame];
+    bFrame9.origin.y += 80.0;
+    
+    UIImageView* labelColorSelectionTitleSeperator = [[UIImageView alloc] initWithFrame:bFrame9];
+    labelColorSelectionTitleSeperator.backgroundColor = [UIColor clearColor];
+    labelColorSelectionTitleSeperator.image = [UIImage imageNamed:@"ayrac_koyu.png"];
+    [textSubmenuView addSubview:labelColorSelectionTitleSeperator];
+    
+    CGRect bFrame10 = [self fabricColorSelectionValueFrame];
+    bFrame10.origin.y += 80.0;
+    
+    labelColorSelectionValueLabel = [[UILabel alloc] initWithFrame:bFrame10];
+    labelColorSelectionValueLabel.backgroundColor = [colors objectAtIndex:0];
+    labelColorSelectionValueLabel.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    labelColorSelectionValueLabel.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [textSubmenuView addSubview:labelColorSelectionValueLabel];
+    
+    CGRect bFrame11 = [self fabricColorSelectionValueSeperatorFrame];
+    bFrame11.origin.y += 80.0;
+    
+    UIImageView* labelColorSelectionValueSeperator = [[UIImageView alloc] initWithFrame:bFrame11];
+    labelColorSelectionValueSeperator.backgroundColor = [UIColor clearColor];
+    labelColorSelectionValueSeperator.image = [UIImage imageNamed:@"renk_maske.png"];
+    [textSubmenuView addSubview:labelColorSelectionValueSeperator];
+    
+    CGRect bFrame12 = [self fabricColorSelectionTitleFrame];
+    bFrame12.origin.y += 140.0;
+    
+    UILabel* labelOpacitySelectionTitleLabel = [[UILabel alloc] initWithFrame:bFrame12];
+    labelOpacitySelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    labelOpacitySelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    labelOpacitySelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    labelOpacitySelectionTitleLabel.text = @"Label Opacity Seçimi";
+    [textSubmenuView addSubview:labelOpacitySelectionTitleLabel];
+    
+    CGRect bFrame13 = [self fabricColorSelectionTitleSeperatorFrame];
+    bFrame13.origin.y += 140.0;
+    
+    UIImageView* labelOpacitySelectionTitleSeperator = [[UIImageView alloc] initWithFrame:bFrame13];
+    labelOpacitySelectionTitleSeperator.backgroundColor = [UIColor clearColor];
+    labelOpacitySelectionTitleSeperator.image = [UIImage imageNamed:@"ayrac_koyu.png"];
+    [textSubmenuView addSubview:labelOpacitySelectionTitleSeperator];
+    
+    CGRect bFrame14 = [self fabricColorSelectionValueFrame];
+    bFrame14.origin.y += 160.0;
+    
+    labelOpacitySlider = [[UISlider alloc] initWithFrame:bFrame14];
+    [labelOpacitySlider addTarget:self action:@selector(sliderChanged:) forControlEvents:UIControlEventValueChanged];
+    labelOpacitySlider.minimumValue = 0.0;
+    labelOpacitySlider.maximumValue = 100.0;
+    labelOpacitySlider.value = 100.0;
+    labelOpacitySlider.continuous = YES;
+    [textSubmenuView addSubview:labelOpacitySlider];
+    
+    CGRect bFrame15 = [self fabricColorSelectionValueFrame];
+    bFrame15.origin.y += 200.0;
+    
+    UIButton* addLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    addLabelButton.backgroundColor = [UIColor clearColor];
+    addLabelButton.frame = bFrame15;
+    [addLabelButton setTitle:@"Add Label" forState:UIControlStateNormal];
+    [addLabelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [addLabelButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [addLabelButton addTarget:self action:@selector(addNewLabel) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:addLabelButton];
+    
+    CGRect bFrame16 = [self fabricColorSelectionValueFrame];
+    bFrame16.origin.y += 260.0;
+    
+    UIButton* deleteLastLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    deleteLastLabelButton.backgroundColor = [UIColor clearColor];
+    deleteLastLabelButton.frame = bFrame16;
+    [deleteLastLabelButton setTitle:@"Delete Last" forState:UIControlStateNormal];
+    [deleteLastLabelButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [deleteLastLabelButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [deleteLastLabelButton addTarget:self action:@selector(deleteLastLabel) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:deleteLastLabelButton];
+    
+    CGRect bFrame17 = [self fabricColorSelectionValueFrame];
+    bFrame17.origin.y += 320.0;
+    
+    UIButton* deleteAllLabelsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    deleteAllLabelsButton.backgroundColor = [UIColor clearColor];
+    deleteAllLabelsButton.frame = bFrame17;
+    [deleteAllLabelsButton setTitle:@"Delete All" forState:UIControlStateNormal];
+    [deleteAllLabelsButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [deleteAllLabelsButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [deleteAllLabelsButton addTarget:self action:@selector(deleteAllLabels) forControlEvents:UIControlEventTouchUpInside];
+    [textSubmenuView addSubview:deleteAllLabelsButton];
     
 #pragma mark - Brush related, will be deleted later
     
@@ -876,13 +1321,13 @@
     [brushSubmenuView addSubview:brushOpacitySelectionTitleSeperator];
     
     CGRect aFrame7 = [self fabricColorSelectionValueFrame];
-    UISlider* slider = [[UISlider alloc] initWithFrame:CGRectMake(aFrame7.origin.x, aFrame7.origin.y+120.0, aFrame7.size.width, aFrame7.size.height)];
-    [slider addTarget:self action:@selector(sliderChanged:) forControlEvents:UIControlEventValueChanged];
-    slider.minimumValue = 0.0;
-    slider.maximumValue = 100.0;
-    slider.value = 100.0;
-    slider.continuous = YES;
-    [brushSubmenuView addSubview:slider];
+    brushOpacitySlider = [[UISlider alloc] initWithFrame:CGRectMake(aFrame7.origin.x, aFrame7.origin.y+120.0, aFrame7.size.width, aFrame7.size.height)];
+    [brushOpacitySlider addTarget:self action:@selector(sliderChanged:) forControlEvents:UIControlEventValueChanged];
+    brushOpacitySlider.minimumValue = 0.0;
+    brushOpacitySlider.maximumValue = 100.0;
+    brushOpacitySlider.value = 100.0;
+    brushOpacitySlider.continuous = YES;
+    [brushSubmenuView addSubview:brushOpacitySlider];
     
     CGRect aFrame8 = [self fabricColorSelectionValueFrame];
     UIButton* deleteLastOneButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -1030,8 +1475,12 @@
 }
 - (void) sliderChanged:(UISlider*)slider
 {
-    CGFloat sliderValue = slider.value;
-    modelCanvas.brushOpacity = sliderValue/100.0;
+    CGFloat sliderValuePercent = slider.value/100.0;
+    if (slider == brushOpacitySlider) {
+        modelCanvas.brushOpacity = sliderValuePercent;
+    } else {
+        labelOpacity = sliderValuePercent;
+    }
 }
 - (void) openFabricMenu
 {
@@ -1039,25 +1488,48 @@
         return;
     } else {
         modelCanvas.isBrushActive = NO;
+        
+        UIImageView* oldImageView;
+        if (brushButton.selected) {
+            oldImageView = brushSubmenuView;
+        } else if (textButton.selected) {
+            oldImageView = textSubmenuView;
+        } else if (imageButton.selected) {
+            oldImageView = imageSubmenuView;
+        }
+        
         fabricButton.selected = YES;
         brushButton.selected = NO;
+        textButton.selected = NO;
+        imageButton.selected = NO;
         
-        brushSubmenuView.userInteractionEnabled = NO;
+        oldImageView.userInteractionEnabled = NO;
         
-        brushColorSelectionValueLabel.userInteractionEnabled = NO;
-        [brushColorSelectionValueLabel removeGestureRecognizer:brushColorTableOpeningGesture];
-        brushColorTableOpeningGesture = nil;
-        
-        brushWidthSelectionValueLabel.userInteractionEnabled = NO;
-        [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
-        brushWidthTableOpeningGesture = nil;
+        if (oldImageView == brushSubmenuView) {
+            brushColorSelectionValueLabel.userInteractionEnabled = NO;
+            [brushColorSelectionValueLabel removeGestureRecognizer:brushColorTableOpeningGesture];
+            brushColorTableOpeningGesture = nil;
+            
+            brushWidthSelectionValueLabel.userInteractionEnabled = NO;
+            [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
+            brushWidthTableOpeningGesture = nil;
+        } else if (oldImageView == textSubmenuView) {
+            
+            labelColorSelectionValueLabel.userInteractionEnabled = NO;
+            [labelColorSelectionValueLabel removeGestureRecognizer:labelColorTableOpeningGesture];
+            labelColorTableOpeningGesture = nil;
+            
+            labelFontSelectionValueLabel.userInteractionEnabled = NO;
+            [labelFontSelectionValueLabel removeGestureRecognizer:labelFontTableOpeningGesture];
+            labelFontTableOpeningGesture = nil;
+        }
         
         [UIView animateWithDuration:0.5 animations:^{
-            CGRect brushSubmenuFrame = brushSubmenuView.frame;
-            brushSubmenuFrame.origin.x += brushSubmenuFrame.size.width;
-            brushSubmenuView.frame = brushSubmenuFrame;
+            CGRect oldSubmenuFrame = oldImageView.frame;
+            oldSubmenuFrame.origin.x += oldSubmenuFrame.size.width;
+            oldImageView.frame = oldSubmenuFrame;
         } completion:^(BOOL finished) {
-            brushSubmenuView.alpha = 0.0;
+            oldImageView.alpha = 0.0;
             fabricSubmenuView.alpha = 1.0;
             
             [UIView animateWithDuration:0.5 animations:^{
@@ -1081,20 +1553,44 @@
         return;
     } else {
         modelCanvas.isBrushActive = YES;
-        brushButton.selected = YES;
-        fabricButton.selected = NO;
         
-        fabricSubmenuView.userInteractionEnabled = NO;
-        fabricColorSelectionValueLabel.userInteractionEnabled = NO;
-        [fabricColorSelectionValueLabel removeGestureRecognizer:colorTableOpeningGesture];
-        colorTableOpeningGesture = nil;
+        UIImageView* oldImageView;
+        if (fabricButton.selected) {
+            oldImageView = fabricSubmenuView;
+        } else if (textButton.selected) {
+            oldImageView = textSubmenuView;
+        } else if (imageButton.selected) {
+            oldImageView = imageSubmenuView;
+        }
+        
+        fabricButton.selected = NO;
+        brushButton.selected = YES;
+        textButton.selected = NO;
+        imageButton.selected = NO;
+        
+        oldImageView.userInteractionEnabled = NO;
+        
+        if (oldImageView == fabricSubmenuView) {
+            fabricColorSelectionValueLabel.userInteractionEnabled = NO;
+            [fabricColorSelectionValueLabel removeGestureRecognizer:colorTableOpeningGesture];
+            colorTableOpeningGesture = nil;
+        } else if (oldImageView == textSubmenuView) {
+            labelColorSelectionValueLabel.userInteractionEnabled = NO;
+            [labelColorSelectionValueLabel removeGestureRecognizer:labelColorTableOpeningGesture];
+            labelColorTableOpeningGesture = nil;
+            
+            labelFontSelectionValueLabel.userInteractionEnabled = NO;
+            [labelFontSelectionValueLabel removeGestureRecognizer:labelFontTableOpeningGesture];
+            labelFontTableOpeningGesture = nil;
+        }
+        
         
         [UIView animateWithDuration:0.5 animations:^{
-            CGRect fabricSubmenuFrame = fabricSubmenuView.frame;
-            fabricSubmenuFrame.origin.x += fabricSubmenuFrame.size.width;
-            fabricSubmenuView.frame = fabricSubmenuFrame;
+            CGRect oldSubmenuFrame = oldImageView.frame;
+            oldSubmenuFrame.origin.x += oldSubmenuFrame.size.width;
+            oldImageView.frame = oldSubmenuFrame;
         } completion:^(BOOL finished) {
-            fabricSubmenuView.alpha = 0.0;
+            oldImageView.alpha = 0.0;
             brushSubmenuView.alpha = 1.0;
             
             [UIView animateWithDuration:0.5 animations:^{
@@ -1113,6 +1609,135 @@
                 brushWidthTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushWidthMenu)];
                 brushWidthTableOpeningGesture.delegate = self;
                 [brushWidthSelectionValueLabel addGestureRecognizer:brushWidthTableOpeningGesture];
+            }];
+        }];
+    }
+}
+- (void) openTextMenu
+{
+    if (textButton.selected) {
+        return;
+    } else {
+        modelCanvas.isBrushActive = NO;
+        
+        UIImageView* oldImageView;
+        if (fabricButton.selected) {
+            oldImageView = fabricSubmenuView;
+        } else if (imageButton.selected) {
+            oldImageView = imageSubmenuView;
+        } else if (brushButton.selected) {
+            oldImageView = brushSubmenuView;
+        }
+        
+        fabricButton.selected = NO;
+        brushButton.selected = NO;
+        textButton.selected = YES;
+        imageButton.selected = NO;
+        
+        oldImageView.userInteractionEnabled = NO;
+        
+        if (oldImageView == fabricSubmenuView) {
+            fabricColorSelectionValueLabel.userInteractionEnabled = NO;
+            [fabricColorSelectionValueLabel removeGestureRecognizer:colorTableOpeningGesture];
+            colorTableOpeningGesture = nil;
+        } else if (oldImageView == brushSubmenuView) {
+            brushColorSelectionValueLabel.userInteractionEnabled = NO;
+            [brushColorSelectionValueLabel removeGestureRecognizer:brushColorTableOpeningGesture];
+            brushColorTableOpeningGesture = nil;
+            
+            brushWidthSelectionValueLabel.userInteractionEnabled = NO;
+            [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
+            brushWidthTableOpeningGesture = nil;
+        }
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            CGRect oldSubmenuFrame = oldImageView.frame;
+            oldSubmenuFrame.origin.x += oldSubmenuFrame.size.width;
+            oldImageView.frame = oldSubmenuFrame;
+        } completion:^(BOOL finished) {
+            oldImageView.alpha = 0.0;
+            textSubmenuView.alpha = 1.0;
+            
+            [UIView animateWithDuration:0.5 animations:^{
+                CGRect textSubmenuFrame = textSubmenuView.frame;
+                textSubmenuFrame.origin.x -= textSubmenuFrame.size.width;
+                textSubmenuView.frame = textSubmenuFrame;
+            } completion:^(BOOL finished) {
+                textSubmenuView.userInteractionEnabled = YES;
+                
+                labelColorSelectionValueLabel.userInteractionEnabled = YES;
+                labelColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLabelColorMenu)];
+                labelColorTableOpeningGesture.delegate = self;
+                [labelColorSelectionValueLabel addGestureRecognizer:labelColorTableOpeningGesture];
+                
+                labelFontSelectionValueLabel.userInteractionEnabled = YES;
+                labelFontTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLabelFontMenu)];
+                labelFontTableOpeningGesture.delegate = self;
+                [labelFontSelectionValueLabel addGestureRecognizer:labelFontTableOpeningGesture];
+            }];
+        }];
+    }
+}
+- (void) openImageMenu
+{
+    if (imageButton.selected) {
+        return;
+    } else {
+        modelCanvas.isBrushActive = YES;
+        
+        UIImageView* oldImageView;
+        if (fabricButton.selected) {
+            oldImageView = fabricSubmenuView;
+        } else if (textButton.selected) {
+            oldImageView = textSubmenuView;
+        } else if (brushButton.selected) {
+            oldImageView = brushSubmenuView;
+        }
+        
+        fabricButton.selected = NO;
+        brushButton.selected = NO;
+        textButton.selected = NO;
+        imageButton.selected = YES;
+        
+        oldImageView.userInteractionEnabled = NO;
+        
+        if (oldImageView == fabricSubmenuView) {
+            fabricColorSelectionValueLabel.userInteractionEnabled = NO;
+            [fabricColorSelectionValueLabel removeGestureRecognizer:colorTableOpeningGesture];
+            colorTableOpeningGesture = nil;
+        } else if (oldImageView == brushSubmenuView) {
+            brushColorSelectionValueLabel.userInteractionEnabled = NO;
+            [brushColorSelectionValueLabel removeGestureRecognizer:brushColorTableOpeningGesture];
+            brushColorTableOpeningGesture = nil;
+            
+            brushWidthSelectionValueLabel.userInteractionEnabled = NO;
+            [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
+            brushWidthTableOpeningGesture = nil;
+        } else if (oldImageView == textSubmenuView) {
+            labelColorSelectionValueLabel.userInteractionEnabled = NO;
+            [labelColorSelectionValueLabel removeGestureRecognizer:labelColorTableOpeningGesture];
+            labelColorTableOpeningGesture = nil;
+            
+            labelFontSelectionValueLabel.userInteractionEnabled = NO;
+            [labelFontSelectionValueLabel removeGestureRecognizer:labelFontTableOpeningGesture];
+            labelFontTableOpeningGesture = nil;
+        }
+        
+        [UIView animateWithDuration:0.5 animations:^{
+            CGRect oldSubmenuFrame = oldImageView.frame;
+            oldSubmenuFrame.origin.x += oldSubmenuFrame.size.width;
+            oldImageView.frame = oldSubmenuFrame;
+        } completion:^(BOOL finished) {
+            oldImageView.alpha = 0.0;
+            imageSubmenuView.alpha = 1.0;
+            
+            [UIView animateWithDuration:0.5 animations:^{
+                CGRect imageSubmenuFrame = imageSubmenuView.frame;
+                imageSubmenuFrame.origin.x -= imageSubmenuFrame.size.width;
+                imageSubmenuView.frame = imageSubmenuFrame;
+            } completion:^(BOOL finished) {
+                imageSubmenuView.userInteractionEnabled = YES;
+                
             }];
         }];
     }
@@ -1145,6 +1770,26 @@
         CGPoint point = [touch locationInView:self.view];
         CGPoint locationInView = [self.brushWidthTableView convertPoint:point fromView:self.view];
         if (CGRectContainsPoint(self.brushWidthTableView.bounds, locationInView)) {
+            return NO;
+        } else {
+            return YES;
+        }
+    } else if (gestureRecognizer == labelColorTableOpeningGesture) {
+        return YES;
+    } else if (gestureRecognizer == labelColorTableClosingGesture) {
+        CGPoint point = [touch locationInView:self.view];
+        CGPoint locationInView = [self.labelColorTableView convertPoint:point fromView:self.view];
+        if (CGRectContainsPoint(self.labelColorTableView.bounds, locationInView)) {
+            return NO;
+        } else {
+            return YES;
+        }
+    } else if (gestureRecognizer == labelFontTableOpeningGesture) {
+        return YES;
+    } else if (gestureRecognizer == labelFontTableClosingGesture) {
+        CGPoint point = [touch locationInView:self.view];
+        CGPoint locationInView = [self.labelFontTableView convertPoint:point fromView:self.view];
+        if (CGRectContainsPoint(self.labelFontTableView.bounds, locationInView)) {
             return NO;
         } else {
             return YES;
@@ -1224,6 +1869,78 @@
     
     [self.brushSubmenuTableView reloadData];
 }
+- (void) openLabelColorMenu
+{
+    [labelColorSelectionValueLabel removeGestureRecognizer:labelColorTableOpeningGesture];
+    labelColorTableOpeningGesture = nil;
+    
+    labelColorTableClosingGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(closeLabelColorMenu)];
+    labelColorTableClosingGesture.delegate = self;
+    [self.view addGestureRecognizer:labelColorTableClosingGesture];
+    
+    CGRect frame = [self fabricColorSelectionValueFrame];
+    frame.origin.y += 80.0;
+    
+    self.labelColorTableView = [[UITableView alloc] initWithFrame:CGRectMake(frame.origin.x-10.0, frame.origin.y+frame.size.height, frame.size.width+20.0, 149.0)];
+    self.labelColorTableView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    self.labelColorTableView.layer.cornerRadius = 3.0;
+    self.labelColorTableView.layer.shouldRasterize = YES;
+    self.labelColorTableView.layer.rasterizationScale = SCREEN_SCALE;
+    self.labelColorTableView.clipsToBounds = YES;
+    [textSubmenuView addSubview:self.labelColorTableView];
+    
+    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.labelColorTableView.frame.size.width, 10.0)];
+    headerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.labelColorTableView setTableHeaderView:headerView];
+    
+    UIView* footerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.labelColorTableView.frame.size.width, 10.0)];
+    footerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.labelColorTableView setTableFooterView:footerView];
+    
+    self.labelColorTableView.dataSource = self;
+    self.labelColorTableView.delegate = self;
+    
+    [self.labelColorTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    [self.labelColorTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
+    
+    [self.labelColorTableView reloadData];
+}
+- (void) openLabelFontMenu
+{
+    [labelFontSelectionValueLabel removeGestureRecognizer:labelFontTableOpeningGesture];
+    labelFontTableOpeningGesture = nil;
+    
+    labelFontTableClosingGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(closeLabelFontMenu)];
+    labelFontTableClosingGesture.delegate = self;
+    [self.view addGestureRecognizer:labelFontTableClosingGesture];
+    
+    CGRect frame = [self fabricColorSelectionValueFrame];
+    frame.origin.y -= 100.0;
+    
+    self.labelFontTableView = [[UITableView alloc] initWithFrame:CGRectMake(frame.origin.x-10.0, frame.origin.y+frame.size.height, frame.size.width+20.0, 149.0)];
+    self.labelFontTableView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    self.labelFontTableView.layer.cornerRadius = 3.0;
+    self.labelFontTableView.layer.shouldRasterize = YES;
+    self.labelFontTableView.layer.rasterizationScale = SCREEN_SCALE;
+    self.labelFontTableView.clipsToBounds = YES;
+    [textSubmenuView addSubview:self.labelFontTableView];
+    
+    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.labelFontTableView.frame.size.width, 10.0)];
+    headerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.labelFontTableView setTableHeaderView:headerView];
+    
+    UIView* footerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.labelFontTableView.frame.size.width, 10.0)];
+    footerView.backgroundColor = [UIColor colorWithRed:4.0/255.0 green:61.0/255.0 blue:93.0/255.0 alpha:1.0];
+    [self.labelFontTableView setTableFooterView:footerView];
+    
+    self.labelFontTableView.dataSource = self;
+    self.labelFontTableView.delegate = self;
+    
+    [self.labelFontTableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
+    [self.labelFontTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_LABEL_FONT_CELL_IDENTIFIER];
+    
+    [self.labelFontTableView reloadData];
+}
 - (void) openBrushWidthMenu
 {
     [brushWidthSelectionValueLabel removeGestureRecognizer:brushWidthTableOpeningGesture];
@@ -1282,6 +1999,30 @@
     brushColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushColorMenu)];
     brushColorTableOpeningGesture.delegate = self;
     [brushColorSelectionValueLabel addGestureRecognizer:brushColorTableOpeningGesture];
+}
+- (void) closeLabelColorMenu
+{
+    [self.labelColorTableView removeFromSuperview];
+    self.labelColorTableView = nil;
+    
+    [self.view removeGestureRecognizer:labelColorTableClosingGesture];
+    labelColorTableClosingGesture = nil;
+    
+    labelColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLabelColorMenu)];
+    labelColorTableOpeningGesture.delegate = self;
+    [labelColorSelectionValueLabel addGestureRecognizer:labelColorTableOpeningGesture];
+}
+- (void) closeLabelFontMenu
+{
+    [self.labelFontTableView removeFromSuperview];
+    self.labelFontTableView = nil;
+    
+    [self.view removeGestureRecognizer:labelFontTableClosingGesture];
+    labelFontTableClosingGesture = nil;
+    
+    labelFontTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLabelFontMenu)];
+    labelFontTableOpeningGesture.delegate = self;
+    [labelFontSelectionValueLabel addGestureRecognizer:labelFontTableOpeningGesture];
 }
 - (void) closeBrushWidthMenu
 {

@@ -18,5 +18,7 @@
 @property UITableView* fabricSubmenuTableView;
 @property UITableView* brushSubmenuTableView;
 @property UITableView* brushWidthTableView;
+@property UITableView* labelColorTableView;
+@property UITableView* labelFontTableView;
 
 @end

@@ -11,7 +11,8 @@
 
 #define FABRIC_SUBMENU_SIZE_CELL_IDENTIFIER @"FabricSubmenuSizeCellIdentifier"
 #define FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER @"FabricSubmenuColorCellIdentifier"
-#define FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER @"FabricSubmenuBrushWidthCellIdentifiers"
+#define FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER @"FabricSubmenuBrushWidthCellIdentifier"
+#define FABRIC_SUBMENU_LABEL_FONT_CELL_IDENTIFIER @"FabricSubmenuLabelFontCellIdentifier"
 
 @interface PSSubmenuTableViewCell : UITableViewCell
 
