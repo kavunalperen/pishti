@@ -108,6 +108,9 @@
     BOOL isLabelItalic;
     BOOL isLabelHorizontal;
     float labelOpacity;
+    float imageOpacity;
+    
+    float currentZIndex;
     
     NSInteger labelAlignment;
     NSMutableArray* allLabels;
@@ -118,6 +121,12 @@
     
     UISlider* brushOpacitySlider;
     UISlider* labelOpacitySlider;
+    UISlider* imageOpacitySlider;
+    
+    UIImagePickerController* imagePickerController;
+    
+    NSInteger imageIndex;
+    NSMutableArray* allImages;
     
     UIImageView* halfBackgroundLeftView;
     UIImageView* halfBackgroundRightView;
@@ -132,6 +141,15 @@
     UIButton* basicBrushButton;
     UIButton* pattern1BrushButton;
     UIButton* pattern2BrushButton;
+    
+    UIView* selectedItem;
+    UIView* currentEditView;
+    UIView* currentDeleteView;
+    UIView* currentSelectionView;
+    
+    NSDate* lastTapDate;
+    
+    BOOL shouldHandleTouch;
 }
 // view related main frames
 - (CGRect) backgroundFrame
@@ -440,6 +458,9 @@
     allLabels = @[].mutableCopy;
     labelIndex = 0;
     
+    allImages = @[].mutableCopy;
+    imageIndex = 0;
+    
     selectedFontName = [labelFontNames objectAtIndex:0];
     selectedLabelColor = [colors objectAtIndex:0];
     
@@ -448,6 +469,11 @@
     isLabelHorizontal = YES;
     labelAlignment = 0;
     labelOpacity = 1.0;
+    imageOpacity = 1.0;
+    
+    currentZIndex = 0.0;
+    
+    shouldHandleTouch = YES;
     
     brushWidths = @[[NSNumber numberWithFloat:4.0],
                     [NSNumber numberWithFloat:6.0],
@@ -568,12 +594,38 @@
         selectedFontName = [labelFontNames objectAtIndex:indexPath.row];
         labelFontSelectionValueLabel.text = selectedFontName;
         
+        if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+            ((PSTextView*)selectedItem).fontName = selectedFontName;
+            UIFont* oldFont = ((PSTextView*)selectedItem).font;
+            UIFont* newFont = [UIFont fontWithName:[self convertFontName] size:oldFont.pointSize];
+            
+            CGPoint oldCenter = ((PSTextView*)selectedItem).center;
+            
+            CGSize labelSize = [[Util sharedInstance] text:((PSTextView*)selectedItem).text
+                                              sizeWithFont:newFont
+                                         constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+            
+            CGRect frame = modelCanvas.frame;
+            CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
+                                         (frame.size.height-labelSize.height)*0.5,
+                                         labelSize.width,
+                                         labelSize.height);
+            
+            ((PSTextView*)selectedItem).frame = newFrame;
+            ((PSTextView*)selectedItem).center = oldCenter;
+            ((PSTextView*)selectedItem).font = newFont;
+            [self rearrangeSelectionRelatedViewsFrame];
+        }
         
     } else if (tableView == self.labelColorTableView) {
         UIColor* selectedColor = [colors objectAtIndex:indexPath.row];
         
         selectedLabelColor = selectedColor;
         labelColorSelectionValueLabel.backgroundColor = selectedColor;
+        if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+            ((PSTextView*)selectedItem).color = selectedLabelColor;
+            ((PSTextView*)selectedItem).textColor = selectedLabelColor;
+        }
         
     } else if (tableView == self.brushWidthTableView) {
         CGFloat selectedWidth = [[brushWidths objectAtIndex:indexPath.row] floatValue];
@@ -604,7 +656,33 @@
 {
     isLabelBold = !isLabelBold;
     
-    if (isLabelBold) {
+    [self makeBoldness:isLabelBold];
+    
+    if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+        UIFont* oldFont = ((PSTextView*)selectedItem).font;
+        UIFont* newFont = [UIFont fontWithName:[self convertFontName] size:oldFont.pointSize];
+        
+        CGPoint oldCenter = ((PSTextView*)selectedItem).center;
+        
+        ((PSTextView*)selectedItem).font = newFont;
+        CGSize labelSize = [[Util sharedInstance] text:((PSTextView*)selectedItem).text
+                                          sizeWithFont:newFont
+                                     constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+        
+        CGRect frame = modelCanvas.frame;
+        CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
+                                     (frame.size.height-labelSize.height)*0.5,
+                                     labelSize.width,
+                                     labelSize.height);
+        
+        ((PSTextView*)selectedItem).frame = newFrame;
+        ((PSTextView*)selectedItem).center = oldCenter;
+        [self rearrangeSelectionRelatedViewsFrame];
+    }
+}
+- (void) makeBoldness:(BOOL)boldness
+{
+    if (boldness) {
         [isLabelBoldButton setTitle:@"Bold Label" forState:UIControlStateNormal];
     } else {
         [isLabelBoldButton setTitle:@"Not Bold" forState:UIControlStateNormal];
@@ -614,7 +692,33 @@
 {
     isLabelItalic = !isLabelItalic;
     
-    if (isLabelItalic) {
+    [self makeItalicness:isLabelItalic];
+    
+    if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+        UIFont* oldFont = ((PSTextView*)selectedItem).font;
+        UIFont* newFont = [UIFont fontWithName:[self convertFontName] size:oldFont.pointSize];
+        
+        CGPoint oldCenter = ((PSTextView*)selectedItem).center;
+        
+        ((PSTextView*)selectedItem).font = newFont;
+        CGSize labelSize = [[Util sharedInstance] text:((PSTextView*)selectedItem).text
+                                          sizeWithFont:newFont
+                                     constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+        
+        CGRect frame = modelCanvas.frame;
+        CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
+                                     (frame.size.height-labelSize.height)*0.5,
+                                     labelSize.width,
+                                     labelSize.height);
+        
+        ((PSTextView*)selectedItem).frame = newFrame;
+        ((PSTextView*)selectedItem).center = oldCenter;
+        [self rearrangeSelectionRelatedViewsFrame];
+    }
+}
+- (void) makeItalicness:(BOOL)italicness
+{
+    if (italicness) {
         [isLabelItalicButton setTitle:@"Italic Label" forState:UIControlStateNormal];
     } else {
         [isLabelItalicButton setTitle:@"Not Italic" forState:UIControlStateNormal];
@@ -624,11 +728,24 @@
 {
     labelAlignment = (labelAlignment+1)%3;
     
-    if (labelAlignment == 0) {
+    [self makeAlignment:labelAlignment];
+    
+    if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+        if (((PSTextView*)selectedItem).isHorizontal) {
+            ((PSTextView*)selectedItem).textAlignment = [self convertAlignment:labelAlignment];
+            [self rearrangeSelectionRelatedViewsFrame];
+        }
+        ((PSTextView*)selectedItem).alignment = labelAlignment;
+    }
+    
+}
+- (void) makeAlignment:(NSInteger)alignment
+{
+    if (alignment == 0) {
         [alignmentButton setTitle:@"Left Align" forState:UIControlStateNormal];
-    } else if (labelAlignment == 1) {
+    } else if (alignment == 1) {
         [alignmentButton setTitle:@"Right Align" forState:UIControlStateNormal];
-    } else if (labelAlignment == 2) {
+    } else if (alignment == 2) {
         [alignmentButton setTitle:@"Center Align" forState:UIControlStateNormal];
     }
 }
@@ -636,7 +753,48 @@
 {
     isLabelHorizontal = !isLabelHorizontal;
     
-    if (isLabelHorizontal) {
+    [self makeHorizontalness:isLabelHorizontal];
+    
+    if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+        
+        NSString* baseText = ((PSTextView*)selectedItem).baseText;
+        NSString* newString = [self prepareString:baseText.mutableCopy];
+        
+        CGPoint oldCenter = ((PSTextView*)selectedItem).center;
+        
+        CGSize labelSize = [[Util sharedInstance] text:newString
+                                          sizeWithFont:((PSTextView*)selectedItem).font
+                                     constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+        
+        CGRect frame = modelCanvas.frame;
+        CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
+                                     (frame.size.height-labelSize.height)*0.5,
+                                     labelSize.width,
+                                     labelSize.height);
+        
+        ((PSTextView*)selectedItem).frame = newFrame;
+        ((PSTextView*)selectedItem).center = oldCenter;
+        ((PSTextView*)selectedItem).text = newString;
+        ((PSTextView*)selectedItem).isHorizontal = isLabelHorizontal;
+        if (isLabelHorizontal) {
+            ((PSTextView*)selectedItem).tag = HORIZONTAL_TEXTVIEW_TAG;
+        } else {
+            ((PSTextView*)selectedItem).tag = VERTICAL_TEXTVIEW_TAG;
+        }
+        
+        if (!isLabelHorizontal) {
+            ((PSTextView*)selectedItem).textAlignment = NSTextAlignmentCenter;
+            labelAlignment = 2;
+            ((PSTextView*)selectedItem).alignment = labelAlignment;
+        }
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+    }
+}
+- (void) makeHorizontalness:(BOOL)horizontalness
+{
+    if (horizontalness) {
         [isLabelHorizontalButton setTitle:@"Horizontal" forState:UIControlStateNormal];
     } else {
         [isLabelHorizontalButton setTitle:@"Vertical" forState:UIControlStateNormal];
@@ -645,8 +803,17 @@
 - (void) deleteLastLabel
 {
     if (labelIndex > 0) {
-        [[allLabels objectAtIndex:labelIndex-1] removeFromSuperview];
-        [allLabels removeObjectAtIndex:labelIndex-1];
+        [self deleteALabel:labelIndex-1];
+    }
+}
+- (void) deleteALabel:(NSInteger)deletedLabelIndex
+{
+    if (deletedLabelIndex < allLabels.count) {
+        if ([allLabels objectAtIndex:deletedLabelIndex] == selectedItem) {
+            [self removeSelectionRelatedItems];
+        }
+        [[allLabels objectAtIndex:deletedLabelIndex] removeFromSuperview];
+        [allLabels removeObjectAtIndex:deletedLabelIndex];
         labelIndex--;
     }
 }
@@ -655,23 +822,30 @@
     if (labelIndex > 0) {
         for (UITextView* textView in allLabels) {
             [textView removeFromSuperview];
+            if (textView == selectedItem) {
+                [self removeSelectionRelatedItems];
+            }
         }
         allLabels = @[].mutableCopy;
         labelIndex = 0;
     }
-}
-- (void) addNewLabel
-{
     
+}
+- (NSTextAlignment) convertAlignment:(NSInteger)alignment
+{
     NSTextAlignment textAlignment;
-    if (labelAlignment == 0) {
+    if (alignment == 0) {
         textAlignment = NSTextAlignmentLeft;
-    } else if (labelAlignment == 1) {
+    } else if (alignment == 1) {
         textAlignment = NSTextAlignmentRight;
-    } else if (labelAlignment == 2) {
+    } else if (alignment == 2) {
         textAlignment = NSTextAlignmentCenter;
     }
     
+    return textAlignment;
+}
+- (NSString*) convertFontName
+{
     NSString* baseFontName = selectedFontName;
     NSString* fontName = baseFontName;
     
@@ -694,54 +868,543 @@
         fontName = [NSString stringWithFormat:@"%@MT",fontName];
     }
     
+    return fontName;
+}
+- (NSMutableString*) prepareString:(NSMutableString*)string
+{
+    NSMutableString* newString = [NSMutableString new];
+    if (!isLabelHorizontal) {
+        labelAlignment = 2;
+        [self makeAlignment:labelAlignment];
+        for (int i = 0; i < string.length; i++) {
+            [newString appendString:[string substringWithRange:NSMakeRange(i, 1)]];
+            if (i != string.length-1) {
+                if (![[string substringWithRange:NSMakeRange(i, 1)] isEqualToString:@"\n"]) {
+                    [newString appendString:@"\n"];
+                }
+            }
+        }
+    } else {
+        newString = [string mutableCopy];
+    }
+    
+    return newString;
+}
+- (NSMutableString*) generateBaseString:(NSMutableString*)string
+{
+    NSMutableString* newString = [NSMutableString new];
+    if (!isLabelHorizontal) {
+        for (int i = 0; i < string.length; i += 2) {
+            if (i != string.length-1) {
+                [newString replaceCharactersInRange:NSMakeRange(i, 1) withString:@""];
+            }
+        }
+    } else {
+        newString = [string mutableCopy];
+    }
+    
+    return newString;
+}
+- (void) addNewLabel
+{
+    NSString* fontName = [self convertFontName];
+    
     NSString* shortVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     NSString* text = [NSString stringWithFormat:@"Pişti Version %@",shortVersion];
     
     UIFont* font = [UIFont fontWithName:fontName size:20.0];
     
-    NSMutableString* newString = [NSMutableString string];
-    CGSize labelSize;
-    if (!isLabelHorizontal) {
-        textAlignment = NSTextAlignmentCenter;
-        for (int i = 0; i < text.length; i++) {
-            [newString appendString:[text substringWithRange:NSMakeRange(i, 1)]];
-            if (i != text.length-1) {
-                [newString appendString:@"\n"];
-            }
-        }
-    } else {
-        newString = [text mutableCopy];
-    }
+    NSMutableString* newString = [self prepareString:text.mutableCopy];
     
-    labelSize = [[Util sharedInstance] text:newString sizeWithFont:font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
-    labelSize = CGSizeMake(ceilf(labelSize.width), ceilf(labelSize.height));
+    NSTextAlignment textAlignment = [self convertAlignment:labelAlignment];
     
-    CGSize lineHeight = [[Util sharedInstance] text:@"Ş" sizeWithFont:font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
-    lineHeight = CGSizeMake(ceilf(lineHeight.width), ceilf(lineHeight.height));
+    CGSize labelSize = [[Util sharedInstance] text:newString sizeWithFont:font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
     
     CGRect frame = modelCanvas.frame;
     
-    UITextView* newLabel = [[UITextView alloc] initWithFrame:CGRectMake((frame.size.width-labelSize.width)*0.5,
+    PSTextView* newLabel = [[PSTextView alloc] initWithFrame:CGRectMake((frame.size.width-labelSize.width)*0.5,
                                                                         (frame.size.height-labelSize.height)*0.5,
                                                                         labelSize.width,
                                                                         labelSize.height)];
+    newLabel.baseText = text;
+    newLabel.isBold = isLabelBold;
+    newLabel.isItalic = isLabelItalic;
+    newLabel.isHorizontal = isLabelHorizontal;
+    newLabel.fontName = selectedFontName;
+    newLabel.color = selectedLabelColor;
+    newLabel.opacity = labelOpacity;
+    newLabel.alignment = textAlignment;
     
-    newLabel.backgroundColor = [UIColor clearColor];
     newLabel.font = font;
     newLabel.text = newString;
     newLabel.textColor = selectedLabelColor;
+    newLabel.tintColor = selectedLabelColor;
     newLabel.textAlignment = textAlignment;
-    newLabel.textContainer.lineFragmentPadding = 0;
-    newLabel.textContainerInset = UIEdgeInsetsZero;
-    newLabel.scrollEnabled = NO;
-    newLabel.selectable = NO;
-    newLabel.editable = NO;
     newLabel.alpha = labelOpacity;
+    newLabel.delegate = self;
+    newLabel.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
     [modelCanvas addSubview:newLabel];
+    
+    if (isLabelHorizontal) {
+        newLabel.tag = HORIZONTAL_TEXTVIEW_TAG;
+    } else {
+        newLabel.tag = VERTICAL_TEXTVIEW_TAG;
+    }
     
     [allLabels addObject:newLabel];
     labelIndex++;
     
+}
+- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesBegan:touches withEvent:event];
+    
+    if (shouldHandleTouch) {
+    
+        if (modelCanvas.isBrushActive) {
+            return;
+        } else {
+            UIView* newlySelectedItem = nil;
+            
+            for (UITextView* textView in allLabels) {
+                
+                UITouch* touch = [touches anyObject];
+                CGPoint p = [touch locationInView:textView];
+                
+                if (CGRectContainsPoint(textView.bounds, p)) {
+                    if (newlySelectedItem) {
+                        if (textView.layer.zPosition > newlySelectedItem.layer.zPosition) {
+                            newlySelectedItem = textView;
+                        }
+                    } else {
+                        newlySelectedItem = textView;
+                    }
+                }
+            }
+            
+            for (UIImageView* imageView in allImages) {
+                
+                UITouch* touch = [touches anyObject];
+                CGPoint p = [touch locationInView:imageView];
+                
+                if (CGRectContainsPoint(imageView.bounds, p)) {
+                    if (newlySelectedItem) {
+                        if (imageView.layer.zPosition > newlySelectedItem.layer.zPosition) {
+                            newlySelectedItem = imageView;
+                        }
+                    } else {
+                        newlySelectedItem = imageView;
+                    }
+                }
+            }
+            
+            if (newlySelectedItem) {
+                if (newlySelectedItem == selectedItem) {
+                    if ([newlySelectedItem isKindOfClass:[UITextView class]]) {
+                        NSDate* date = [NSDate date];
+                        if (lastTapDate != nil) {
+                            NSTimeInterval interval = [date timeIntervalSinceDate:lastTapDate];
+                            if (interval < 0.3) {
+                                // go to edit mode
+                                ((UITextView*)selectedItem).editable = YES;
+                                [((UITextView*)selectedItem) becomeFirstResponder];
+                            } else {
+                                lastTapDate = date;
+                            }
+                        } else {
+                            lastTapDate = [NSDate date];
+                        }
+                    }
+                } else {
+                    if (selectedItem) {
+                        [self removeSelectionRelatedItems];
+                        [self addSelectionRelatedViewToItem:newlySelectedItem];
+                    } else {
+                        [self removeSelectionRelatedItems];
+                        [self addSelectionRelatedViewToItem:newlySelectedItem];
+                    }
+                    
+                }
+                
+            } else {
+                if (selectedItem) {
+                    UITouch* touch = [touches anyObject];
+                    CGPoint p = [touch locationInView:currentEditView];
+                    
+                    CGPoint p2 = [touch locationInView:currentDeleteView];
+                    
+                    if (CGRectContainsPoint(currentEditView.bounds, p)) {
+                        // edit view tapped
+                        ((UITextView*)selectedItem).editable = YES;
+                        [((UITextView*)selectedItem) becomeFirstResponder];
+                    } else if (CGRectContainsPoint(currentDeleteView.bounds, p2)) {
+                        if ([selectedItem isKindOfClass:[UITextView class]]) {
+                            PSTextView* textView = (PSTextView*)selectedItem;
+                            [self deleteALabel:[allLabels indexOfObject:textView]];
+                        } else if ([selectedItem isKindOfClass:[UIImageView class]]) {
+                            PSImageView* imageView = (PSImageView*)selectedItem;
+                            [self deleteAnImage:[allImages indexOfObject:imageView]];
+                        }
+                    } else {
+                        [self removeSelectionRelatedItems];
+                    }
+                } else {
+                    [self removeSelectionRelatedItems];
+                }
+            }
+        }
+    }
+}
+- (void) removeSelectionRelatedItems
+{
+    if (selectedItem.isFirstResponder) {
+        [selectedItem resignFirstResponder];
+        ((UITextView*)selectedItem).editable = NO;
+    }
+    
+    if ([selectedItem isKindOfClass:[UITextView class]]) {
+        if (((UITextView*)selectedItem).text == nil ||
+            ((UITextView*)selectedItem).text.length == 0) {
+            [selectedItem removeFromSuperview];
+            [allLabels removeObject:selectedItem];
+            labelIndex--;
+        }
+    }
+    
+    [currentEditView removeFromSuperview];
+    currentEditView = nil;
+    
+    [currentDeleteView removeFromSuperview];
+    currentDeleteView = nil;
+    
+    selectedItem = nil;
+    
+    [currentSelectionView removeFromSuperview];
+    currentSelectionView = nil;
+    
+}
+- (void) rearrangeSelectionRelatedViewsFrame
+{
+    CGRect frame = selectedItem.frame;
+    frame.origin.x -= 3.0;
+    frame.origin.y -= 3.0;
+    frame.size.width += 6.0;
+    frame.size.height += 6.0;
+    
+    currentSelectionView.frame = frame;
+    
+    currentEditView.frame = CGRectMake(frame.origin.x-40.0,
+                                       frame.origin.y-40.0,
+                                       40.0,
+                                       40.0);
+    
+    currentDeleteView.frame = CGRectMake(frame.origin.x+frame.size.width,
+                                         frame.origin.y-40.0,
+                                         40.0,
+                                         40.0);
+}
+- (void) addSelectionRelatedViewToItem:(UIView*)item
+{
+    
+    selectedItem = item;
+    
+    CGRect frame = item.frame;
+    frame.origin.x -= 3.0;
+    frame.origin.y -= 3.0;
+    frame.size.width += 6.0;
+    frame.size.height += 6.0;
+    
+    currentSelectionView = [[UIView alloc] initWithFrame:frame];
+    currentSelectionView.backgroundColor = [UIColor clearColor];
+    currentSelectionView.layer.borderColor = [UIColor greenColor].CGColor;
+    currentSelectionView.layer.borderWidth = 2.0;
+    currentSelectionView.tag = SELECTION_VIEW_TAG;
+    [modelCanvas addSubview:currentSelectionView];
+    
+    currentDeleteView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x+frame.size.width,
+                                                                 frame.origin.y-40.0,
+                                                                 40.0,
+                                                                 40.0)];
+    
+    currentDeleteView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_delete_normal.png"]];
+    [currentDeleteView addSubview:imageView2];
+    currentDeleteView.tag = DELETE_VIEW_TAG;
+    [modelCanvas addSubview:currentDeleteView];
+    
+    if ([item isKindOfClass:[UITextView class]]) {
+        currentEditView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x-40.0,
+                                                                    frame.origin.y-40.0,
+                                                                    40.0,
+                                                                    40.0)];
+        currentEditView.backgroundColor = [UIColor clearColor];
+        UIImageView* imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_edit_normal.png"]];
+        [currentEditView addSubview:imageView];
+        currentEditView.tag = EDIT_VIEW_TAG;
+        [modelCanvas addSubview:currentEditView];
+        
+    }
+    
+    if ([selectedItem isKindOfClass:[UITextView class]]) {
+
+        PSTextView* textView = (PSTextView*)selectedItem;
+        
+        isLabelBold = textView.isBold;
+        isLabelItalic = textView.isItalic;
+        isLabelHorizontal = textView.isHorizontal;
+        labelAlignment = textView.alignment;
+        
+        [self makeBoldness:textView.isBold];
+        [self makeItalicness:textView.isItalic];
+        [self makeHorizontalness:textView.isHorizontal];
+        [self makeAlignment:textView.alignment];
+        
+        [labelFontSelectionValueLabel setText:textView.fontName];
+        selectedFontName = textView.fontName;
+        
+        [labelColorSelectionValueLabel setBackgroundColor:textView.color];
+        selectedLabelColor = textView.color;
+            
+        labelOpacitySlider.value = textView.opacity*100;
+        labelOpacity = textView.opacity;
+    } else if ([selectedItem isKindOfClass:[UIImageView class]]) {
+        PSImageView* imageView = (PSImageView*)selectedItem;
+        
+        imageOpacitySlider.value = imageView.opacity*100;
+        imageOpacity = imageView.opacity;
+    }
+}
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesMoved:touches withEvent:event];
+}
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+}
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesCancelled:touches withEvent:event];
+}
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
+{
+    PSTextView* selectedTextView = (PSTextView*)selectedItem;
+    
+    NSString* baseText = selectedTextView.baseText;
+    
+    NSInteger difference = textView.text.length-baseText.length;
+    
+    NSRange newRange = NSMakeRange(range.location-difference, range.length);
+    
+    NSString* newBaseText = [baseText stringByReplacingCharactersInRange:newRange withString:text];
+    
+    selectedTextView.baseText = newBaseText;
+    
+    NSString* newText = [self prepareString:newBaseText.mutableCopy];
+    
+    textView.text = newText;
+    
+    CGPoint oldCenter = textView.center;
+    
+    CGSize labelSize = [[Util sharedInstance] text:newText sizeWithFont:textView.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+    
+    CGRect frame = textView.frame;
+    frame.size = labelSize;
+    textView.frame = frame;
+    textView.center = oldCenter;
+    [self rearrangeSelectionRelatedViewsFrame];
+
+    
+    return NO;
+    
+    
+//    if (textView.tag == HORIZONTAL_TEXTVIEW_TAG) {
+//        if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+//            NSString* currentText = [textView.text stringByReplacingCharactersInRange:range withString:text];
+//            NSString* newText = [self generateBaseString:currentText.mutableCopy];
+//            ((PSTextView*)selectedItem).baseText = newText;
+//        }
+//        return YES;
+//    } else {
+//        if ([text isEqualToString:@""] || [text isEqualToString:@"\n"]) {
+//            NSString* newText = [textView.text stringByReplacingCharactersInRange:range withString:text];
+//            textView.text = newText;
+//        
+//        } else {
+//            NSString* newText = [textView.text stringByReplacingCharactersInRange:range withString:text];
+//            if (range.length > 0) {
+//                if (textView.tag == VERTICAL_TEXTVIEW_TAG) {
+//                    if (newText.length > 1) {
+//                        NSString* lastCharacter = [newText substringWithRange:NSMakeRange(newText.length-1, 1)];
+//                        NSMutableString* newString = [NSMutableString stringWithString:[newText substringWithRange:NSMakeRange(0, newText.length-1)]];
+//                        [newString appendString:@"\n"];
+//                        [newString appendString:lastCharacter];
+//                        textView.text = newString;
+//                    } else {
+//                        textView.text = newText;
+//                    }
+//                }
+//            }
+//        }
+//        
+//        NSString* newText = textView.text;
+//        
+//        CGPoint oldCenter = textView.center;
+//        
+//        CGSize labelSize = [[Util sharedInstance] text:newText sizeWithFont:textView.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+//        
+//        CGRect frame = textView.frame;
+//        frame.size = labelSize;
+//        textView.frame = frame;
+//        textView.center = oldCenter;
+//        [self rearrangeSelectionRelatedViewsFrame];
+//
+//        if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+//            NSString* currentText = textView.text;
+//            NSString* newText = [self generateBaseString:currentText.mutableCopy];
+//            ((PSTextView*)selectedItem).baseText = newText;
+//        }
+//        
+//        return NO;
+//    }
+    
+    return NO;
+}
+- (void)textViewDidChange:(UITextView *)textView
+{
+    NSString* text = textView.text;
+    
+    if (text == nil) {
+        return;
+    } else {
+        if (textView.tag == HORIZONTAL_TEXTVIEW_TAG) {
+            CGPoint oldCenter = textView.center;
+            
+            CGSize labelSize = [[Util sharedInstance] text:text sizeWithFont:textView.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+            
+            CGRect frame = textView.frame;
+            frame.size = labelSize;
+            textView.frame = frame;
+            textView.center = oldCenter;
+        }
+    }
+    [self rearrangeSelectionRelatedViewsFrame];
+}
+- (void) addImage
+{
+    UIActionSheet* sheet = [[UIActionSheet alloc] initWithTitle:nil
+                                                       delegate:self
+                                              cancelButtonTitle:@"Cancel"
+                                         destructiveButtonTitle:nil
+                                              otherButtonTitles:@"Add From Library",
+                                                                @"Take Photo", nil];
+    [sheet showInView:self.view];
+}
+- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if(buttonIndex != actionSheet.cancelButtonIndex)
+    {
+        if(imagePickerController == nil)
+        {
+            imagePickerController = [[UIImagePickerController alloc] init];
+            imagePickerController.delegate = self;
+            imagePickerController.navigationBar.translucent = NO;
+            imagePickerController.modalPresentationStyle = UIModalPresentationFullScreen;
+        }
+        
+        if (buttonIndex == actionSheet.firstOtherButtonIndex) {
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+//            [self presentViewController:imagePickerController animated:YES completion:^{}];
+        } else {
+            imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
+            //            imagePickerController.showsCameraControls = NO;
+//            [self presentViewController:imagePickerController animated:YES completion:^{}];
+        }
+        
+        [[UIApplication sharedApplication] setStatusBarHidden:YES];
+//        [self.navigationController setNavigationBarHidden:YES];
+        [self addChildViewController:imagePickerController];
+        [self.view addSubview:imagePickerController.view];
+        imagePickerController.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        imagePickerController.view.frame = self.view.bounds;
+        [imagePickerController didMoveToParentViewController:self];
+    }
+}
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    
+//    [picker dismissViewControllerAnimated:YES completion:^{
+        [self imageSelected:[info objectForKey:UIImagePickerControllerOriginalImage]];
+//    }];
+    [picker.view removeFromSuperview];
+    [picker removeFromParentViewController];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+//    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+}
+- (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+//    [picker dismissViewControllerAnimated:YES completion:nil];
+    [picker.view removeFromSuperview];
+    [picker removeFromParentViewController];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+//    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+}
+- (void) imageSelected:(UIImage*)image
+{
+    
+    if (image != nil) {
+        
+        UIImage* newImage = [[Util sharedInstance] prepareImageForDesign:image];
+        
+        CGRect frame = modelCanvas.frame;
+        CGSize imageSize = newImage.size;
+        
+        PSImageView* imageView = [[PSImageView alloc] initWithFrame:CGRectMake((frame.size.width-imageSize.width)*0.5,
+                                                                               (frame.size.height-imageSize.height)*0.5,
+                                                                               imageSize.width,
+                                                                               imageSize.height)];
+        imageView.backgroundColor = [UIColor clearColor];
+        imageView.image = newImage;
+        imageView.alpha = imageOpacity;
+        imageView.opacity = imageOpacity;
+        imageView.layer.zPosition = currentZIndex;
+        currentZIndex += 1.0;
+        [modelCanvas addSubview:imageView];
+        
+        [allImages addObject:imageView];
+        imageIndex++;
+    }
+}
+- (void) deleteLastImage
+{
+    if (imageIndex > 0) {
+        [self deleteAnImage:imageIndex-1];
+    }
+}
+- (void) deleteAnImage:(NSInteger)deletedImageIndex
+{
+    if (deletedImageIndex < allImages.count) {
+        if ([allImages objectAtIndex:deletedImageIndex] == selectedItem) {
+            [self removeSelectionRelatedItems];
+        }
+        [[allImages objectAtIndex:deletedImageIndex] removeFromSuperview];
+        [allImages removeObjectAtIndex:deletedImageIndex];
+        imageIndex--;
+    }
+}
+- (void) deleteAllImages
+{
+    if (imageIndex > 0) {
+        for (UIImageView* imageView in allImages) {
+            [imageView removeFromSuperview];
+            if (imageView == selectedItem) {
+                [self removeSelectionRelatedItems];
+            }
+        }
+        allImages = @[].mutableCopy;
+        imageIndex = 0;
+    }
 }
 - (void) performInitialSetups
 {
@@ -1070,6 +1733,64 @@
     UIImageView* fabricColorSelectionValueSeperator3 = [[UIImageView alloc] initWithFrame:CGRectMake(aFrame4.origin.x, aFrame4.origin.y-100.0, aFrame4.size.width, aFrame4.size.height)];
     fabricColorSelectionValueSeperator3.backgroundColor = [UIColor clearColor];
     fabricColorSelectionValueSeperator3.image = [UIImage imageNamed:@"renk_maske.png"];
+
+#pragma mark - Image related, will be deleted later
+    
+    CGRect cFrame = [self fabricColorSelectionValueFrame];
+    
+    UIButton* addImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    addImageButton.backgroundColor = [UIColor clearColor];
+    addImageButton.frame = cFrame;
+    [addImageButton setTitle:@"Add Image" forState:UIControlStateNormal];
+    [addImageButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [addImageButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [addImageButton addTarget:self action:@selector(addImage) forControlEvents:UIControlEventTouchUpInside];
+    [imageSubmenuView addSubview:addImageButton];
+    
+    CGRect cFrame2 = [self fabricColorSelectionValueFrame];
+    cFrame2.origin.y += 60.0;
+    
+    UIButton* deleteLastImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    deleteLastImageButton.backgroundColor = [UIColor clearColor];
+    deleteLastImageButton.frame = cFrame2;
+    [deleteLastImageButton setTitle:@"Delete Last" forState:UIControlStateNormal];
+    [deleteLastImageButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [deleteLastImageButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [deleteLastImageButton addTarget:self action:@selector(deleteLastImage) forControlEvents:UIControlEventTouchUpInside];
+    [imageSubmenuView addSubview:deleteLastImageButton];
+    
+    CGRect cFrame3 = [self fabricColorSelectionValueFrame];
+    cFrame3.origin.y += 120.0;
+    
+    UIButton* deleteAllImagesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    deleteAllImagesButton.backgroundColor = [UIColor clearColor];
+    deleteAllImagesButton.frame = cFrame3;
+    [deleteAllImagesButton setTitle:@"Delete All" forState:UIControlStateNormal];
+    [deleteAllImagesButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [deleteAllImagesButton setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
+    [deleteAllImagesButton addTarget:self action:@selector(deleteAllImages) forControlEvents:UIControlEventTouchUpInside];
+    [imageSubmenuView addSubview:deleteAllImagesButton];
+    
+    CGRect cFrame4 = [self fabricColorSelectionValueFrame];
+    cFrame4.origin.y += 200.0;
+    
+    UILabel* imageOpacitySelectionTitleLabel = [[UILabel alloc] initWithFrame:cFrame4];
+    imageOpacitySelectionTitleLabel.backgroundColor = [UIColor clearColor];
+    imageOpacitySelectionTitleLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    imageOpacitySelectionTitleLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    imageOpacitySelectionTitleLabel.text = @"Label Opacity Seçimi";
+    [imageSubmenuView addSubview:imageOpacitySelectionTitleLabel];
+    
+    CGRect cFrame5 = [self fabricColorSelectionValueFrame];
+    cFrame5.origin.y += 240.0;
+    
+    imageOpacitySlider = [[UISlider alloc] initWithFrame:cFrame5];
+    [imageOpacitySlider addTarget:self action:@selector(sliderChanged:) forControlEvents:UIControlEventValueChanged];
+    imageOpacitySlider.minimumValue = 0.0;
+    imageOpacitySlider.maximumValue = 100.0;
+    imageOpacitySlider.value = 100.0;
+    imageOpacitySlider.continuous = YES;
+    [imageSubmenuView addSubview:imageOpacitySlider];
     
 #pragma mark - Label related, will be deleted later
     
@@ -1478,8 +2199,18 @@
     CGFloat sliderValuePercent = slider.value/100.0;
     if (slider == brushOpacitySlider) {
         modelCanvas.brushOpacity = sliderValuePercent;
-    } else {
+    } else if (slider == labelOpacitySlider){
         labelOpacity = sliderValuePercent;
+        if (selectedItem && [selectedItem isKindOfClass:[UITextView class]]) {
+            ((PSTextView*)selectedItem).opacity = labelOpacity;
+            ((PSTextView*)selectedItem).alpha = labelOpacity;
+        }
+    } else {
+        imageOpacity = sliderValuePercent;
+        if (selectedItem && [selectedItem isKindOfClass:[UIImageView class]]) {
+            ((PSImageView*)selectedItem).opacity = imageOpacity;
+            ((PSImageView*)selectedItem).alpha = imageOpacity;
+        }
     }
 }
 - (void) openFabricMenu
@@ -1683,7 +2414,7 @@
     if (imageButton.selected) {
         return;
     } else {
-        modelCanvas.isBrushActive = YES;
+        modelCanvas.isBrushActive = NO;
         
         UIImageView* oldImageView;
         if (fabricButton.selected) {
@@ -1745,6 +2476,7 @@
 -(BOOL) gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
     if (gestureRecognizer == colorTableOpeningGesture) {
+        shouldHandleTouch = NO;
         return YES;
     } else if (gestureRecognizer == colorTableClosingGesture){
         CGPoint point = [touch locationInView:self.view];
@@ -1752,9 +2484,11 @@
         if (CGRectContainsPoint(self.fabricSubmenuTableView.bounds, locationInView)) {
             return NO;
         } else {
+            shouldHandleTouch = NO;
             return YES;
         }
     } else if (gestureRecognizer == brushColorTableOpeningGesture) {
+        shouldHandleTouch = NO;
         return YES;
     } else if (gestureRecognizer == brushColorTableClosingGesture) {
         CGPoint point = [touch locationInView:self.view];
@@ -1762,9 +2496,11 @@
         if (CGRectContainsPoint(self.brushSubmenuTableView.bounds, locationInView)) {
             return NO;
         } else {
+            shouldHandleTouch = NO;
             return YES;
         }
     } else if (gestureRecognizer == brushWidthTableOpeningGesture) {
+        shouldHandleTouch = NO;
         return YES;
     } else if (gestureRecognizer == brushWidthTableClosingGesture) {
         CGPoint point = [touch locationInView:self.view];
@@ -1772,9 +2508,11 @@
         if (CGRectContainsPoint(self.brushWidthTableView.bounds, locationInView)) {
             return NO;
         } else {
+            shouldHandleTouch = NO;
             return YES;
         }
     } else if (gestureRecognizer == labelColorTableOpeningGesture) {
+        shouldHandleTouch = NO;
         return YES;
     } else if (gestureRecognizer == labelColorTableClosingGesture) {
         CGPoint point = [touch locationInView:self.view];
@@ -1782,9 +2520,11 @@
         if (CGRectContainsPoint(self.labelColorTableView.bounds, locationInView)) {
             return NO;
         } else {
+            shouldHandleTouch = NO;
             return YES;
         }
     } else if (gestureRecognizer == labelFontTableOpeningGesture) {
+        shouldHandleTouch = NO;
         return YES;
     } else if (gestureRecognizer == labelFontTableClosingGesture) {
         CGPoint point = [touch locationInView:self.view];
@@ -1792,9 +2532,11 @@
         if (CGRectContainsPoint(self.labelFontTableView.bounds, locationInView)) {
             return NO;
         } else {
+            shouldHandleTouch = NO;
             return YES;
         }
     } else {
+        shouldHandleTouch = NO;
         return YES;
     }
 }
@@ -1833,6 +2575,8 @@
     [self.fabricSubmenuTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
     
     [self.fabricSubmenuTableView reloadData];
+    
+    shouldHandleTouch = YES;
 }
 - (void) openBrushColorMenu
 {
@@ -1868,6 +2612,8 @@
     [self.brushSubmenuTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
     
     [self.brushSubmenuTableView reloadData];
+    
+    shouldHandleTouch = YES;
 }
 - (void) openLabelColorMenu
 {
@@ -1904,6 +2650,8 @@
     [self.labelColorTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_COLOR_CELL_IDENTIFIER];
     
     [self.labelColorTableView reloadData];
+    
+    shouldHandleTouch = YES;
 }
 - (void) openLabelFontMenu
 {
@@ -1940,6 +2688,8 @@
     [self.labelFontTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_LABEL_FONT_CELL_IDENTIFIER];
     
     [self.labelFontTableView reloadData];
+    
+    shouldHandleTouch = YES;
 }
 - (void) openBrushWidthMenu
 {
@@ -1975,6 +2725,8 @@
     [self.brushWidthTableView registerClass:[PSSubmenuTableViewCell class] forCellReuseIdentifier:FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER];
     
     [self.brushWidthTableView reloadData];
+    
+    shouldHandleTouch = YES;
 }
 - (void) closeColorMenu
 {
@@ -1987,6 +2739,8 @@
     colorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openColorMenu)];
     colorTableOpeningGesture.delegate = self;
     [fabricColorSelectionValueLabel addGestureRecognizer:colorTableOpeningGesture];
+    
+    shouldHandleTouch = YES;
 }
 - (void) closeBrushColorMenu
 {
@@ -1999,6 +2753,8 @@
     brushColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushColorMenu)];
     brushColorTableOpeningGesture.delegate = self;
     [brushColorSelectionValueLabel addGestureRecognizer:brushColorTableOpeningGesture];
+    
+    shouldHandleTouch = YES;
 }
 - (void) closeLabelColorMenu
 {
@@ -2011,6 +2767,8 @@
     labelColorTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLabelColorMenu)];
     labelColorTableOpeningGesture.delegate = self;
     [labelColorSelectionValueLabel addGestureRecognizer:labelColorTableOpeningGesture];
+    
+    shouldHandleTouch = YES;
 }
 - (void) closeLabelFontMenu
 {
@@ -2023,6 +2781,8 @@
     labelFontTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openLabelFontMenu)];
     labelFontTableOpeningGesture.delegate = self;
     [labelFontSelectionValueLabel addGestureRecognizer:labelFontTableOpeningGesture];
+    
+    shouldHandleTouch = YES;
 }
 - (void) closeBrushWidthMenu
 {
@@ -2035,6 +2795,8 @@
     brushWidthTableOpeningGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openBrushWidthMenu)];
     brushWidthTableOpeningGesture.delegate = self;
     [brushWidthSelectionValueLabel addGestureRecognizer:brushWidthTableOpeningGesture];
+    
+    shouldHandleTouch = YES;
 }
 - (void) goBackForNow
 {
@@ -2060,5 +2822,8 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
+- (void) dealloc
+{
+    NSLog(@"dealloced");
+}
 @end

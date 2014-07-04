@@ -25,6 +25,12 @@
     
     [self.window makeKeyAndVisible];
     
+    UITextField *lagFreeField = [[UITextField alloc] init];
+    [self.window addSubview:lagFreeField];
+    [lagFreeField becomeFirstResponder];
+    [lagFreeField resignFirstResponder];
+    [lagFreeField removeFromSuperview];
+    
 //    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Akzidenz-Grotesk BQ"]);
 //    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Bebas Neue"]);
     

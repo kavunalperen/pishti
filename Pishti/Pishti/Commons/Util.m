@@ -126,8 +126,12 @@ static NSArray* groupParticipantColors = nil;
                                           nil];
 
     
+    if ([[text substringWithRange:NSMakeRange(text.length-1, 1)] isEqualToString:@"\n"]) {
+        text = [NSString stringWithFormat:@"%@\n",text];
+    }
+    
     CGRect frame = [text boundingRectWithSize:size
-                                      options:(NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading)
+                                      options:(NSStringDrawingUsesLineFragmentOrigin)
                                    attributes:attributesDictionary
                                       context:nil];
     
@@ -252,6 +256,18 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
     CGFloat maxEdge = MAX(size.width, size.height);
     if (maxEdge > brushWidth*5) {
         float K = brushWidth*5/maxEdge;
+        return [self image:image byScalingAndCroppingForSize:CGSizeMake(floorf(size.width*K), floorf(size.height*K))];
+    } else {
+        return image;
+    }
+}
+- (UIImage*) prepareImageForDesign:(UIImage*)image
+{
+    CGSize size = image.size;
+    CGFloat maxEdge = MAX(size.width, size.height);
+    
+    if (maxEdge > 240.0) {
+        float K = 240.0/maxEdge;
         return [self image:image byScalingAndCroppingForSize:CGSizeMake(floorf(size.width*K), floorf(size.height*K))];
     } else {
         return image;

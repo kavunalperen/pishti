@@ -12,8 +12,16 @@
 #import "Util.h"
 #import "PSModelCanvas.h"
 #import "PSSubmenuTableViewCell.h"
+#import "PSTextView.h"
+#import "PSImageView.h"
 
-@interface PSDesignViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate>
+#define HORIZONTAL_TEXTVIEW_TAG 1234
+#define VERTICAL_TEXTVIEW_TAG 1235
+#define SELECTION_VIEW_TAG 2442
+#define EDIT_VIEW_TAG 2443
+#define DELETE_VIEW_TAG 2444
+
+@interface PSDesignViewController : UIViewController <UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate, UIActionSheetDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate, UITextViewDelegate>
 
 @property UITableView* fabricSubmenuTableView;
 @property UITableView* brushSubmenuTableView;

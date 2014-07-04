@@ -104,6 +104,18 @@
         [self setNeedsDisplay];
     }
 }
+- (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
+{
+    if (!CGRectContainsPoint(self.bounds, point)) {
+        return NO;
+    } else {
+        if (!self.isBrushActive) {
+            return NO;
+        } else {
+            return YES;
+        }
+    }
+}
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesBegan:touches withEvent:event];
@@ -267,7 +279,7 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
             
             NSMutableArray* points = [aBrush objectForKey:@"points"];
             for (int i = 0; i < points.count; i += 3) {
-                int remaining = (points.count-i)-1;
+                int remaining = (int)((points.count-i)-1);
                 if (remaining == 0) {
                     
                 } else if (remaining == 1) {
@@ -302,6 +314,10 @@ CGPoint midPoint(CGPoint p1,CGPoint p2)
             color = [color colorWithAlphaComponent:[[aBrush objectForKey:@"opacity"] floatValue]];
             [color setStroke];
             [aPath stroke];
+//            CGContextRef context = UIGraphicsGetCurrentContext();
+////            CGContextSetStrokeColorWithColor(context, [[UIColor whiteColor] CGColor]);
+//            CGContextSetShadowWithColor(context, CGSizeMake(0.0, 0.0), 15.0, [color CGColor]);
+//            CGContextDrawPath(context, kCGPathFill);
         } else {
             UIImage* brushTexture = [aBrush objectForKey:@"pattern"];
             
