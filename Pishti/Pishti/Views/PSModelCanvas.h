@@ -15,8 +15,9 @@ typedef enum BRUSH_TYPE
 
 #import <UIKit/UIKit.h>
 #import "PSCommons.h"
+#import "PSTextView.h"
 
-@interface PSModelCanvas : UIView
+@interface PSModelCanvas : UIView <UITextViewDelegate>
 
 @property UIColor* strokeColor;
 @property UIColor* fillColor;
@@ -29,6 +30,10 @@ typedef enum BRUSH_TYPE
 @property BOOL isBrushActive;
 
 @property NSMutableArray* brushes;
+@property NSMutableArray* allLabels;
+@property NSMutableArray* allImages;
+
+@property PSTextView* selectedTextView;
 
 - (void) deleteLastOne;
 - (void) deleteAll;

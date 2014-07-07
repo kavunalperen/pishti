@@ -19,14 +19,21 @@
         self.textContainer.lineFragmentPadding = 0;
         self.textContainerInset = UIEdgeInsetsZero;
         self.scrollEnabled = NO;
-        self.selectable = YES;
+        self.selectable = NO;
         self.editable = NO;
         self.autocorrectionType = UITextAutocorrectionTypeNo;
         self.autocapitalizationType = UITextAutocapitalizationTypeNone;
     }
     return self;
 }
-
+- (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
+{
+    if (!CGRectContainsPoint(self.bounds, point)) {
+        return NO;
+    } else {
+        return YES;
+    }
+}
 /*
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.

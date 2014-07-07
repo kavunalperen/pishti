@@ -29,6 +29,8 @@
         self.layer.shadowOpacity = 0.31;
         
         self.brushes = [NSMutableArray new];
+        self.allLabels = [NSMutableArray new];
+        self.allImages = [NSMutableArray new];
         
         isBrushing = NO;
         brushIndex = 0;
@@ -106,16 +108,22 @@
 }
 - (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
-    if (!CGRectContainsPoint(self.bounds, point)) {
-        return NO;
-    } else {
-        if (!self.isBrushActive) {
-            return NO;
-        } else {
-            return YES;
+    BOOL isInside = NO;
+    if (CGRectContainsPoint(self.bounds, point)) {
+        for (UITextView* textView in self.allLabels) {
+            CGPoint p = [textView convertPoint:point fromView:self];
+            if (CGRectContainsPoint(textView.bounds, p) && textView == self.selectedTextView) {
+                isInside = YES;
+            }
+        }
+        if (self.isBrushActive) {
+            isInside = YES;
         }
     }
+
+    return isInside;
 }
+
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesBegan:touches withEvent:event];

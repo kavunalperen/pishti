@@ -126,8 +126,10 @@ static NSArray* groupParticipantColors = nil;
                                           nil];
 
     
-    if ([[text substringWithRange:NSMakeRange(text.length-1, 1)] isEqualToString:@"\n"]) {
-        text = [NSString stringWithFormat:@"%@\n",text];
+    if (text.length > 1) {
+        if ([[text substringWithRange:NSMakeRange(text.length-1, 1)] isEqualToString:@"\n"]) {
+            text = [NSString stringWithFormat:@"%@\n",text];
+        }
     }
     
     CGRect frame = [text boundingRectWithSize:size

@@ -113,7 +113,7 @@
     float currentZIndex;
     
     NSInteger labelAlignment;
-    NSMutableArray* allLabels;
+//    NSMutableArray* allLabels;
     NSInteger labelIndex;
     
     NSString* selectedFontName;
@@ -126,7 +126,7 @@
     UIImagePickerController* imagePickerController;
     
     NSInteger imageIndex;
-    NSMutableArray* allImages;
+//    NSMutableArray* allImages;
     
     UIImageView* halfBackgroundLeftView;
     UIImageView* halfBackgroundRightView;
@@ -145,11 +145,19 @@
     UIView* selectedItem;
     UIView* currentEditView;
     UIView* currentDeleteView;
+    UIView* currentMoveView;
+    UIView* currentRotateView;
     UIView* currentSelectionView;
     
     NSDate* lastTapDate;
     
     BOOL shouldHandleTouch;
+    
+    BOOL isMoving;
+    BOOL isRotating;
+    
+    CGPoint moveStartingPoint;
+    CGPoint rotateStartingPoint;
 }
 // view related main frames
 - (CGRect) backgroundFrame
@@ -455,10 +463,10 @@
     labelFontNames = @[@"Helvetica",
                        @"Arial"];
     
-    allLabels = @[].mutableCopy;
+//    allLabels = @[].mutableCopy;
     labelIndex = 0;
     
-    allImages = @[].mutableCopy;
+//    allImages = @[].mutableCopy;
     imageIndex = 0;
     
     selectedFontName = [labelFontNames objectAtIndex:0];
@@ -475,6 +483,9 @@
     
     shouldHandleTouch = YES;
     
+    isMoving = NO;
+    isRotating = NO;
+    
     brushWidths = @[[NSNumber numberWithFloat:4.0],
                     [NSNumber numberWithFloat:6.0],
                     [NSNumber numberWithFloat:8.0],
@@ -486,7 +497,7 @@
     
     [self performInitialSetups];
     [self addModelCanvas];
-    
+
     // background views
     halfBackgroundLeftView = [[UIImageView alloc] initWithFrame:[self menuBackgroundLeftFrame]];
     halfBackgroundLeftView.backgroundColor = [UIColor clearColor];
@@ -604,6 +615,7 @@
             CGSize labelSize = [[Util sharedInstance] text:((PSTextView*)selectedItem).text
                                               sizeWithFont:newFont
                                          constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+            labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
             
             CGRect frame = modelCanvas.frame;
             CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
@@ -668,6 +680,7 @@
         CGSize labelSize = [[Util sharedInstance] text:((PSTextView*)selectedItem).text
                                           sizeWithFont:newFont
                                      constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+        labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
         
         CGRect frame = modelCanvas.frame;
         CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
@@ -704,6 +717,7 @@
         CGSize labelSize = [[Util sharedInstance] text:((PSTextView*)selectedItem).text
                                           sizeWithFont:newFont
                                      constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+        labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
         
         CGRect frame = modelCanvas.frame;
         CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
@@ -765,6 +779,7 @@
         CGSize labelSize = [[Util sharedInstance] text:newString
                                           sizeWithFont:((PSTextView*)selectedItem).font
                                      constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+        labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
         
         CGRect frame = modelCanvas.frame;
         CGRect newFrame = CGRectMake((frame.size.width-labelSize.width)*0.5,
@@ -808,25 +823,25 @@
 }
 - (void) deleteALabel:(NSInteger)deletedLabelIndex
 {
-    if (deletedLabelIndex < allLabels.count) {
-        if ([allLabels objectAtIndex:deletedLabelIndex] == selectedItem) {
+    if (deletedLabelIndex < modelCanvas.allLabels.count) {
+        if ([modelCanvas.allLabels objectAtIndex:deletedLabelIndex] == selectedItem) {
             [self removeSelectionRelatedItems];
         }
-        [[allLabels objectAtIndex:deletedLabelIndex] removeFromSuperview];
-        [allLabels removeObjectAtIndex:deletedLabelIndex];
+        [[modelCanvas.allLabels objectAtIndex:deletedLabelIndex] removeFromSuperview];
+        [modelCanvas.allLabels removeObjectAtIndex:deletedLabelIndex];
         labelIndex--;
     }
 }
 - (void) deleteAllLabels
 {
     if (labelIndex > 0) {
-        for (UITextView* textView in allLabels) {
+        for (UITextView* textView in modelCanvas.allLabels) {
             [textView removeFromSuperview];
             if (textView == selectedItem) {
                 [self removeSelectionRelatedItems];
             }
         }
-        allLabels = @[].mutableCopy;
+        modelCanvas.allLabels = @[].mutableCopy;
         labelIndex = 0;
     }
     
@@ -919,7 +934,7 @@
     NSTextAlignment textAlignment = [self convertAlignment:labelAlignment];
     
     CGSize labelSize = [[Util sharedInstance] text:newString sizeWithFont:font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
-    
+    labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
     CGRect frame = modelCanvas.frame;
     
     PSTextView* newLabel = [[PSTextView alloc] initWithFrame:CGRectMake((frame.size.width-labelSize.width)*0.5,
@@ -952,22 +967,21 @@
         newLabel.tag = VERTICAL_TEXTVIEW_TAG;
     }
     
-    [allLabels addObject:newLabel];
+    [modelCanvas.allLabels addObject:newLabel];
     labelIndex++;
     
 }
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [super touchesBegan:touches withEvent:event];
     
     if (shouldHandleTouch) {
-    
+        
         if (modelCanvas.isBrushActive) {
             return;
         } else {
             UIView* newlySelectedItem = nil;
             
-            for (UITextView* textView in allLabels) {
+            for (UITextView* textView in modelCanvas.allLabels) {
                 
                 UITouch* touch = [touches anyObject];
                 CGPoint p = [touch locationInView:textView];
@@ -983,7 +997,7 @@
                 }
             }
             
-            for (UIImageView* imageView in allImages) {
+            for (UIImageView* imageView in modelCanvas.allImages) {
                 
                 UITouch* touch = [touches anyObject];
                 CGPoint p = [touch locationInView:imageView];
@@ -1008,6 +1022,7 @@
                             if (interval < 0.3) {
                                 // go to edit mode
                                 ((UITextView*)selectedItem).editable = YES;
+                                ((UITextView*)selectedItem).selectable = YES;
                                 [((UITextView*)selectedItem) becomeFirstResponder];
                             } else {
                                 lastTapDate = date;
@@ -1034,19 +1049,33 @@
                     
                     CGPoint p2 = [touch locationInView:currentDeleteView];
                     
+                    CGPoint p3 = [touch locationInView:currentMoveView];
+                    
+                    CGPoint p4 = [touch locationInView:currentRotateView];
+                    
                     if (CGRectContainsPoint(currentEditView.bounds, p)) {
                         // edit view tapped
                         ((UITextView*)selectedItem).editable = YES;
+                        ((UITextView*)selectedItem).selectable = YES;
                         [((UITextView*)selectedItem) becomeFirstResponder];
                     } else if (CGRectContainsPoint(currentDeleteView.bounds, p2)) {
                         if ([selectedItem isKindOfClass:[UITextView class]]) {
                             PSTextView* textView = (PSTextView*)selectedItem;
-                            [self deleteALabel:[allLabels indexOfObject:textView]];
+                            [self deleteALabel:[modelCanvas.allLabels indexOfObject:textView]];
                         } else if ([selectedItem isKindOfClass:[UIImageView class]]) {
                             PSImageView* imageView = (PSImageView*)selectedItem;
-                            [self deleteAnImage:[allImages indexOfObject:imageView]];
+                            [self deleteAnImage:[modelCanvas.allImages indexOfObject:imageView]];
                         }
-                    } else {
+                    } else if (CGRectContainsPoint(currentMoveView.bounds, p3)) {
+                        // move
+                        isMoving = YES;
+                        moveStartingPoint = [touch locationInView:modelCanvas];
+                    } else if (CGRectContainsPoint(currentRotateView.bounds, p4)) {
+                        // rotate
+                        isRotating = YES;
+                        rotateStartingPoint = [touch locationInView:modelCanvas];
+                    }
+                    else {
                         [self removeSelectionRelatedItems];
                     }
                 } else {
@@ -1055,19 +1084,102 @@
             }
         }
     }
+    
+    [super touchesBegan:touches withEvent:event];
+}
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    if (isMoving) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint moveVector = CGPointMake(currentPoint.x-moveStartingPoint.x,
+                                         currentPoint.y-moveStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        center.x += moveVector.x;
+        center.y += moveVector.y;
+        
+        selectedItem.center = center;
+        moveStartingPoint = currentPoint;
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+    } else if (isRotating) {
+//        UITouch* touch = [touches anyObject];
+//        CGPoint currentPoint = [touch locationInView:modelCanvas];
+//        
+//        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint];
+//
+//        CGAffineTransform transform = CGAffineTransformRotate(selectedItem.transform, angle);
+//        selectedItem.transform = transform;
+//        rotateStartingPoint = currentPoint;
+//        [self rearrangeSelectionRelatedViewsFrame];
+    }
+}
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+    
+    if (isMoving) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint moveVector = CGPointMake(currentPoint.x-moveStartingPoint.x,
+                                         currentPoint.y-moveStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        center.x += moveVector.x;
+        center.y += moveVector.y;
+        
+        selectedItem.center = center;
+        moveStartingPoint = currentPoint;
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+        isMoving = NO;
+    } else if (isRotating) {
+//        UITouch* touch = [touches anyObject];
+//        CGPoint currentPoint = [touch locationInView:modelCanvas];
+//        
+//        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint];
+//        
+//        CGAffineTransform transform = CGAffineTransformRotate(selectedItem.transform, angle);
+//        selectedItem.transform = transform;
+//        rotateStartingPoint = currentPoint;
+//        [self rearrangeSelectionRelatedViewsFrame];
+//        
+//        isRotating = NO;
+    }
+}
+- (float) getAngleFromStartingPoint:(CGPoint)startingPoint toEndPoint:(CGPoint)endPoint
+{
+    
+    int x = startingPoint.x;
+    int y = startingPoint.y;
+    float dx = endPoint.x - x;
+    float dy = endPoint.y - y;
+    CGFloat degrees = atan2(dy,dx);        // in radians
+    CGFloat radians = DEGREES_TO_RADIANS(degrees);
+    return radians;
+}
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self touchesEnded:touches withEvent:event];
 }
 - (void) removeSelectionRelatedItems
 {
     if (selectedItem.isFirstResponder) {
         [selectedItem resignFirstResponder];
         ((UITextView*)selectedItem).editable = NO;
+        ((UITextView*)selectedItem).selectable = NO;
     }
     
     if ([selectedItem isKindOfClass:[UITextView class]]) {
         if (((UITextView*)selectedItem).text == nil ||
             ((UITextView*)selectedItem).text.length == 0) {
             [selectedItem removeFromSuperview];
-            [allLabels removeObject:selectedItem];
+            [modelCanvas.allLabels removeObject:selectedItem];
             labelIndex--;
         }
     }
@@ -1083,14 +1195,22 @@
     [currentSelectionView removeFromSuperview];
     currentSelectionView = nil;
     
+    [currentMoveView removeFromSuperview];
+    currentMoveView = nil;
+    
+    [currentRotateView removeFromSuperview];
+    currentRotateView = nil;
+    
+    modelCanvas.selectedTextView = nil;
+    
 }
 - (void) rearrangeSelectionRelatedViewsFrame
 {
     CGRect frame = selectedItem.frame;
-    frame.origin.x -= 3.0;
-    frame.origin.y -= 3.0;
-    frame.size.width += 6.0;
-    frame.size.height += 6.0;
+    frame.origin.x -= 4.0;
+    frame.origin.y -= 4.0;
+    frame.size.width += 8.0;
+    frame.size.height += 8.0;
     
     currentSelectionView.frame = frame;
     
@@ -1103,23 +1223,36 @@
                                          frame.origin.y-40.0,
                                          40.0,
                                          40.0);
+    
+    currentMoveView.frame = CGRectMake(frame.origin.x-40.0,
+                                       frame.origin.y+frame.size.height,
+                                       40.0,
+                                       40.0);
+    
+    currentRotateView.frame = CGRectMake(frame.origin.x+frame.size.width,
+                                         frame.origin.y+frame.size.height,
+                                         40.0,
+                                         40.0);
 }
 - (void) addSelectionRelatedViewToItem:(UIView*)item
 {
-    
+    if ([item isKindOfClass:[UITextView class]]) {
+        lastTapDate = [NSDate date];
+    }
     selectedItem = item;
     
     CGRect frame = item.frame;
-    frame.origin.x -= 3.0;
-    frame.origin.y -= 3.0;
-    frame.size.width += 6.0;
-    frame.size.height += 6.0;
+    frame.origin.x -= 4.0;
+    frame.origin.y -= 4.0;
+    frame.size.width += 8.0;
+    frame.size.height += 8.0;
     
     currentSelectionView = [[UIView alloc] initWithFrame:frame];
     currentSelectionView.backgroundColor = [UIColor clearColor];
     currentSelectionView.layer.borderColor = [UIColor greenColor].CGColor;
     currentSelectionView.layer.borderWidth = 2.0;
     currentSelectionView.tag = SELECTION_VIEW_TAG;
+    currentSelectionView.layer.zPosition = currentZIndex;
     [modelCanvas addSubview:currentSelectionView];
     
     currentDeleteView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x+frame.size.width,
@@ -1131,7 +1264,32 @@
     UIImageView* imageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_delete_normal.png"]];
     [currentDeleteView addSubview:imageView2];
     currentDeleteView.tag = DELETE_VIEW_TAG;
+    currentDeleteView.layer.zPosition = currentZIndex;
     [modelCanvas addSubview:currentDeleteView];
+    
+    currentMoveView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x-40.0,
+                                                               frame.origin.y+frame.size.height,
+                                                               40.0,
+                                                               40.0)];
+    
+    currentMoveView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView3 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_move_normal.png"]];
+    [currentMoveView addSubview:imageView3];
+    currentMoveView.tag = MOVE_VIEW_TAG;
+    currentMoveView.layer.zPosition = currentZIndex;
+    [modelCanvas addSubview:currentMoveView];
+    
+    currentRotateView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x+frame.size.width,
+                                                                 frame.origin.y+frame.size.height,
+                                                                 40.0,
+                                                                 40.0)];
+    
+    currentRotateView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView4 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_rotate_normal.png"]];
+    [currentRotateView addSubview:imageView4];
+    currentRotateView.tag = ROTATE_VIEW_TAG;
+    currentRotateView.layer.zPosition = currentZIndex;
+    [modelCanvas addSubview:currentRotateView];
     
     if ([item isKindOfClass:[UITextView class]]) {
         currentEditView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x-40.0,
@@ -1142,13 +1300,18 @@
         UIImageView* imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_edit_normal.png"]];
         [currentEditView addSubview:imageView];
         currentEditView.tag = EDIT_VIEW_TAG;
+        currentEditView.layer.zPosition = currentZIndex;
         [modelCanvas addSubview:currentEditView];
         
     }
     
+    currentZIndex += 1.0;
+    
     if ([selectedItem isKindOfClass:[UITextView class]]) {
 
         PSTextView* textView = (PSTextView*)selectedItem;
+        
+        modelCanvas.selectedTextView = textView;
         
         isLabelBold = textView.isBold;
         isLabelItalic = textView.isItalic;
@@ -1175,18 +1338,6 @@
         imageOpacity = imageView.opacity;
     }
 }
-- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesMoved:touches withEvent:event];
-}
-- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesEnded:touches withEvent:event];
-}
-- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    [super touchesCancelled:touches withEvent:event];
-}
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
     PSTextView* selectedTextView = (PSTextView*)selectedItem;
@@ -1208,6 +1359,7 @@
     CGPoint oldCenter = textView.center;
     
     CGSize labelSize = [[Util sharedInstance] text:newText sizeWithFont:textView.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+    labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
     
     CGRect frame = textView.frame;
     frame.size = labelSize;
@@ -1282,6 +1434,7 @@
             CGPoint oldCenter = textView.center;
             
             CGSize labelSize = [[Util sharedInstance] text:text sizeWithFont:textView.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+            labelSize = CGSizeMake(labelSize.width+2.0, labelSize.height+2.0);
             
             CGRect frame = textView.frame;
             frame.size = labelSize;
@@ -1372,7 +1525,7 @@
         currentZIndex += 1.0;
         [modelCanvas addSubview:imageView];
         
-        [allImages addObject:imageView];
+        [modelCanvas.allImages addObject:imageView];
         imageIndex++;
     }
 }
@@ -1384,25 +1537,25 @@
 }
 - (void) deleteAnImage:(NSInteger)deletedImageIndex
 {
-    if (deletedImageIndex < allImages.count) {
-        if ([allImages objectAtIndex:deletedImageIndex] == selectedItem) {
+    if (deletedImageIndex < modelCanvas.allImages.count) {
+        if ([modelCanvas.allImages objectAtIndex:deletedImageIndex] == selectedItem) {
             [self removeSelectionRelatedItems];
         }
-        [[allImages objectAtIndex:deletedImageIndex] removeFromSuperview];
-        [allImages removeObjectAtIndex:deletedImageIndex];
+        [[modelCanvas.allImages objectAtIndex:deletedImageIndex] removeFromSuperview];
+        [modelCanvas.allImages removeObjectAtIndex:deletedImageIndex];
         imageIndex--;
     }
 }
 - (void) deleteAllImages
 {
     if (imageIndex > 0) {
-        for (UIImageView* imageView in allImages) {
+        for (UIImageView* imageView in modelCanvas.allImages) {
             [imageView removeFromSuperview];
             if (imageView == selectedItem) {
                 [self removeSelectionRelatedItems];
             }
         }
-        allImages = @[].mutableCopy;
+        modelCanvas.allImages = @[].mutableCopy;
         imageIndex = 0;
     }
 }
