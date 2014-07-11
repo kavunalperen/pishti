@@ -26,14 +26,20 @@
     }
     return self;
 }
-- (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    if (!CGRectContainsPoint(self.bounds, point)) {
-        return NO;
-    } else {
-        return YES;
-    }
+    [super touchesBegan:touches withEvent:event];
+    
+    
 }
+//- (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
+//{
+//    if (!CGRectContainsPoint(self.bounds, point)) {
+//        return NO;
+//    } else {
+//        return YES;
+//    }
+//}
 /*
 // Only override drawRect: if you perform custom drawing.
 // An empty implementation adversely affects performance during animation.

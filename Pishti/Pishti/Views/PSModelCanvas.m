@@ -127,7 +127,6 @@
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     [super touchesBegan:touches withEvent:event];
-    NSLog(@"touches began");
     
     if (!self.isBrushActive) {
         return;

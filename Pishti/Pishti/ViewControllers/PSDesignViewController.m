@@ -155,9 +155,12 @@
     
     BOOL isMoving;
     BOOL isRotating;
+    BOOL isScaling;
     
+    CGPoint scaleStartingPoint;
     CGPoint moveStartingPoint;
     CGPoint rotateStartingPoint;
+    CGPoint rotateCenterPoint;
 }
 // view related main frames
 - (CGRect) backgroundFrame
@@ -509,6 +512,26 @@
     halfBackgroundRightView.image = [UIImage imageNamed:@"splash_right.png"];
     [self.view addSubview:halfBackgroundRightView];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+    
+}
+- (void)keyboardWillShow:(NSNotification *)notif
+{
+    ((PSTextView*)selectedItem).selectable = YES;
+    ((PSTextView*)selectedItem).editable = YES;
+}
+- (void)keyboardWillHide:(NSNotification *)notif
+{
+    ((PSTextView*)selectedItem).selectable = NO;
+    ((PSTextView*)selectedItem).editable = NO;
 }
 - (void) viewWillAppear:(BOOL)animated
 {
@@ -690,6 +713,7 @@
         
         ((PSTextView*)selectedItem).frame = newFrame;
         ((PSTextView*)selectedItem).center = oldCenter;
+        ((PSTextView*)selectedItem).isBold = isLabelBold;
         [self rearrangeSelectionRelatedViewsFrame];
     }
 }
@@ -727,6 +751,7 @@
         
         ((PSTextView*)selectedItem).frame = newFrame;
         ((PSTextView*)selectedItem).center = oldCenter;
+        ((PSTextView*)selectedItem).isItalic = isLabelItalic;
         [self rearrangeSelectionRelatedViewsFrame];
     }
 }
@@ -970,6 +995,9 @@
     [modelCanvas.allLabels addObject:newLabel];
     labelIndex++;
     
+//    selectedItem = newLabel;
+//    [self addSelectionRelatedViewToItem:selectedItem];
+    
 }
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -979,6 +1007,49 @@
         if (modelCanvas.isBrushActive) {
             return;
         } else {
+            
+            if (selectedItem) {
+                UITouch* touch = [touches anyObject];
+                CGPoint p = [touch locationInView:currentEditView];
+                
+                CGPoint p2 = [touch locationInView:currentDeleteView];
+                
+                CGPoint p3 = [touch locationInView:currentMoveView];
+                
+                CGPoint p4 = [touch locationInView:currentRotateView];
+                
+                if (CGRectContainsPoint(currentEditView.bounds, p)) {
+                    // edit view tapped
+                    ((UITextView*)selectedItem).editable = YES;
+                    ((UITextView*)selectedItem).selectable = YES;
+                    [((UITextView*)selectedItem) becomeFirstResponder];
+                    
+                    return;
+                } else if (CGRectContainsPoint(currentDeleteView.bounds, p2)) {
+//                    if ([selectedItem isKindOfClass:[UITextView class]]) {
+//                        PSTextView* textView = (PSTextView*)selectedItem;
+//                        [self deleteALabel:[modelCanvas.allLabels indexOfObject:textView]];
+//                    } else if ([selectedItem isKindOfClass:[UIImageView class]]) {
+//                        PSImageView* imageView = (PSImageView*)selectedItem;
+//                        [self deleteAnImage:[modelCanvas.allImages indexOfObject:imageView]];
+//                    }
+                    isScaling = YES;
+                    scaleStartingPoint = [touch locationInView:modelCanvas];
+                    return;
+                } else if (CGRectContainsPoint(currentMoveView.bounds, p3)) {
+                    // move
+                    isMoving = YES;
+                    moveStartingPoint = [touch locationInView:modelCanvas];
+                    return;
+                } else if (CGRectContainsPoint(currentRotateView.bounds, p4)) {
+                    // rotate
+                    isRotating = YES;
+                    rotateStartingPoint = [touch locationInView:modelCanvas];
+                    rotateCenterPoint = selectedItem.center;
+                    return;
+                }
+            }
+            
             UIView* newlySelectedItem = nil;
             
             for (UITextView* textView in modelCanvas.allLabels) {
@@ -1032,53 +1103,13 @@
                         }
                     }
                 } else {
-                    if (selectedItem) {
-                        [self removeSelectionRelatedItems];
-                        [self addSelectionRelatedViewToItem:newlySelectedItem];
-                    } else {
-                        [self removeSelectionRelatedItems];
-                        [self addSelectionRelatedViewToItem:newlySelectedItem];
-                    }
+                    [self removeSelectionRelatedItems];
+                    [self addSelectionRelatedViewToItem:newlySelectedItem];
                     
                 }
                 
             } else {
                 if (selectedItem) {
-                    UITouch* touch = [touches anyObject];
-                    CGPoint p = [touch locationInView:currentEditView];
-                    
-                    CGPoint p2 = [touch locationInView:currentDeleteView];
-                    
-                    CGPoint p3 = [touch locationInView:currentMoveView];
-                    
-                    CGPoint p4 = [touch locationInView:currentRotateView];
-                    
-                    if (CGRectContainsPoint(currentEditView.bounds, p)) {
-                        // edit view tapped
-                        ((UITextView*)selectedItem).editable = YES;
-                        ((UITextView*)selectedItem).selectable = YES;
-                        [((UITextView*)selectedItem) becomeFirstResponder];
-                    } else if (CGRectContainsPoint(currentDeleteView.bounds, p2)) {
-                        if ([selectedItem isKindOfClass:[UITextView class]]) {
-                            PSTextView* textView = (PSTextView*)selectedItem;
-                            [self deleteALabel:[modelCanvas.allLabels indexOfObject:textView]];
-                        } else if ([selectedItem isKindOfClass:[UIImageView class]]) {
-                            PSImageView* imageView = (PSImageView*)selectedItem;
-                            [self deleteAnImage:[modelCanvas.allImages indexOfObject:imageView]];
-                        }
-                    } else if (CGRectContainsPoint(currentMoveView.bounds, p3)) {
-                        // move
-                        isMoving = YES;
-                        moveStartingPoint = [touch locationInView:modelCanvas];
-                    } else if (CGRectContainsPoint(currentRotateView.bounds, p4)) {
-                        // rotate
-                        isRotating = YES;
-                        rotateStartingPoint = [touch locationInView:modelCanvas];
-                    }
-                    else {
-                        [self removeSelectionRelatedItems];
-                    }
-                } else {
                     [self removeSelectionRelatedItems];
                 }
             }
@@ -1106,15 +1137,36 @@
         [self rearrangeSelectionRelatedViewsFrame];
         
     } else if (isRotating) {
-//        UITouch* touch = [touches anyObject];
-//        CGPoint currentPoint = [touch locationInView:modelCanvas];
-//        
-//        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint];
-//
-//        CGAffineTransform transform = CGAffineTransformRotate(selectedItem.transform, angle);
-//        selectedItem.transform = transform;
-//        rotateStartingPoint = currentPoint;
-//        [self rearrangeSelectionRelatedViewsFrame];
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint andCenterPoint:selectedItem.center];
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformRotate(transform, angle);
+        selectedItem.transform = transform;
+        rotateStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+    } else if (isScaling) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint scaleVector = CGPointMake(currentPoint.x-scaleStartingPoint.x,
+                                          currentPoint.y-scaleStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        CGFloat sx = 1+(scaleVector.x/selectedItem.frame.size.width);
+        CGFloat sy = 1+(-scaleVector.y/selectedItem.frame.size.height);
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformScale(transform, sx, sy);
+        selectedItem.transform = transform;
+        selectedItem.center = center;
+        scaleStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
     }
 }
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -1139,29 +1191,123 @@
         
         isMoving = NO;
     } else if (isRotating) {
-//        UITouch* touch = [touches anyObject];
-//        CGPoint currentPoint = [touch locationInView:modelCanvas];
-//        
-//        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint];
-//        
-//        CGAffineTransform transform = CGAffineTransformRotate(selectedItem.transform, angle);
-//        selectedItem.transform = transform;
-//        rotateStartingPoint = currentPoint;
-//        [self rearrangeSelectionRelatedViewsFrame];
-//        
-//        isRotating = NO;
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint andCenterPoint:selectedItem.center];
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformRotate(transform, angle);
+        selectedItem.transform = transform;
+        rotateStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+        isRotating = NO;
+    } else if (isScaling) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint scaleVector = CGPointMake(currentPoint.x-scaleStartingPoint.x,
+                                          currentPoint.y-scaleStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        CGFloat sx = 1+(scaleVector.x/selectedItem.frame.size.width);
+        CGFloat sy = 1+(-scaleVector.y/selectedItem.frame.size.height);
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformScale(transform, sx, sy);
+        selectedItem.transform = transform;
+        selectedItem.center = center;
+        scaleStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+        isScaling = NO;
     }
 }
-- (float) getAngleFromStartingPoint:(CGPoint)startingPoint toEndPoint:(CGPoint)endPoint
+- (CGFloat) computeAngleOfTheLine:(CGPoint)firstPoint andSecondPoint:(CGPoint)secondPoint
 {
+    CGFloat x1 = firstPoint.x;
+    CGFloat x2 = secondPoint.x;
+    CGFloat y1 = firstPoint.y;
+    CGFloat y2 = secondPoint.y;
     
-    int x = startingPoint.x;
-    int y = startingPoint.y;
-    float dx = endPoint.x - x;
-    float dy = endPoint.y - y;
-    CGFloat degrees = atan2(dy,dx);        // in radians
-    CGFloat radians = DEGREES_TO_RADIANS(degrees);
-    return radians;
+    CGFloat angle = 0.0;
+    
+    if (y1 == y2) {
+        if (x1 > x2) {
+            return M_PI;
+        } else {
+            return 0;
+        }
+    }
+    if (x1 == x2) {
+        if (y1 > y2) {
+            return M_PI_2;
+        } else {
+            return 3*M_PI_2;
+        }
+    }
+    
+    angle = atanf((y2 - y1) / (x2 - x1));
+    if (x2 < x1) {
+        angle += M_PI;
+    } else if (y2 > y1) {
+        angle += 2 * M_PI;
+    }
+    return angle;
+}
+- (CGFloat) getAngleFromStartingPoint:(CGPoint)startingPoint toEndPoint:(CGPoint)endPoint andCenterPoint:(CGPoint)centerPoint
+{
+    CGFloat angle1 = [self computeAngleOfTheLine:centerPoint andSecondPoint:endPoint];
+    CGFloat angle2 = [self computeAngleOfTheLine:centerPoint andSecondPoint:startingPoint];
+    
+    return angle1-angle2;
+//    
+//    CGFloat p12 = [self getLengthFromStartingPoint:startingPoint toEndPoint:centerPoint];
+//    CGFloat p23 = [self getLengthFromStartingPoint:centerPoint toEndPoint:endPoint];
+//    CGFloat p13 = [self getLengthFromStartingPoint:endPoint toEndPoint:startingPoint];
+//    
+//    CGFloat p12Square = powf(p12, 2);
+//    CGFloat p23Square = powf(p23, 2);
+//    CGFloat p13Square = powf(p13, 2);
+//    
+//    CGFloat product = 2*p12*p23;
+//    
+//    CGFloat cosineOfTheAngle = (p12Square + p23Square - p13Square) / product;
+//    
+//    CGFloat radians = acosf(cosineOfTheAngle);
+    
+//    NSLog(@"p12 = %f",p12);
+//    NSLog(@"p23 = %f",p23);
+//    NSLog(@"p13 = %f",p13);
+//    NSLog(@"p12Square = %f",p12Square);
+//    NSLog(@"p23Square = %f",p23Square);
+//    NSLog(@"p13Square = %f", p13Square);
+//    NSLog(@"product = %f",product);
+//    NSLog(@"cosine of the angle = %f", cosineOfTheAngle);
+//    NSLog(@"angle = %f", radians);
+//    
+//    if (radians == NAN) {
+//        radians = 0.0;
+//    }
+//    
+//    if (endPoint.x < startingPoint.x) {
+//        return radians;
+//    } else {
+//        return -radians;
+//    }
+}
+- (CGFloat) getLengthFromStartingPoint:(CGPoint)startingPoint toEndPoint:(CGPoint)endPoint
+{
+    CGFloat x1 = startingPoint.x;
+    CGFloat y1 = startingPoint.y;
+    CGFloat x2 = endPoint.x;
+    CGFloat y2 = endPoint.y;
+    
+    return sqrtf(powf(x1-x2, 2) + powf(y1-y2, 2));
 }
 - (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -1170,9 +1316,9 @@
 - (void) removeSelectionRelatedItems
 {
     if (selectedItem.isFirstResponder) {
-        [selectedItem resignFirstResponder];
-        ((UITextView*)selectedItem).editable = NO;
-        ((UITextView*)selectedItem).selectable = NO;
+//        [selectedItem resignFirstResponder];
+//        ((UITextView*)selectedItem).editable = NO;
+//        ((UITextView*)selectedItem).selectable = NO;
     }
     
     if ([selectedItem isKindOfClass:[UITextView class]]) {
@@ -1247,13 +1393,13 @@
     frame.size.width += 8.0;
     frame.size.height += 8.0;
     
-    currentSelectionView = [[UIView alloc] initWithFrame:frame];
-    currentSelectionView.backgroundColor = [UIColor clearColor];
-    currentSelectionView.layer.borderColor = [UIColor greenColor].CGColor;
-    currentSelectionView.layer.borderWidth = 2.0;
-    currentSelectionView.tag = SELECTION_VIEW_TAG;
-    currentSelectionView.layer.zPosition = currentZIndex;
-    [modelCanvas addSubview:currentSelectionView];
+//    currentSelectionView = [[UIView alloc] initWithFrame:frame];
+//    currentSelectionView.backgroundColor = [UIColor clearColor];
+//    currentSelectionView.layer.borderColor = [UIColor greenColor].CGColor;
+//    currentSelectionView.layer.borderWidth = 2.0;
+//    currentSelectionView.tag = SELECTION_VIEW_TAG;
+//    currentSelectionView.layer.zPosition = currentZIndex;
+//    [modelCanvas addSubview:currentSelectionView];
     
     currentDeleteView = [[UIView alloc] initWithFrame:CGRectMake(frame.origin.x+frame.size.width,
                                                                  frame.origin.y-40.0,
@@ -2978,5 +3124,6 @@
 - (void) dealloc
 {
     NSLog(@"dealloced");
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 @end
