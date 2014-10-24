@@ -685,6 +685,8 @@
     UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(45.0, 0.0, 747.0, 768.0)];
     shadow.backgroundColor = [UIColor clearColor];
     shadow.image = [UIImage imageNamed:@"golge.png"];
+    shadow.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
     [self.view addSubview:shadow];
 }
 - (void) boldnessChanged
@@ -1667,7 +1669,7 @@
         imageView.image = newImage;
         imageView.alpha = imageOpacity;
         imageView.opacity = imageOpacity;
-        imageView.layer.zPosition = currentZIndex;
+//        imageView.layer.zPosition = currentZIndex;
         currentZIndex += 1.0;
         [modelCanvas addSubview:imageView];
         

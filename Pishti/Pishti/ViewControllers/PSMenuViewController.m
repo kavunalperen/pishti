@@ -8,6 +8,7 @@
 
 #import "PSMenuViewController.h"
 #import "PSDesignViewController.h"
+#import "PSDesignViewController2.h"
 
 #define HALF_BACKGROUND_WIDTH 512.0
 #define HALF_BACKGROUND_HEIGHT 768.0
@@ -83,25 +84,25 @@
     }
     return self;
 }
-- (BOOL) shouldAutorotate
-{
-    return UIInterfaceOrientationMaskLandscape;
-}
--(NSUInteger)supportedInterfaceOrientations
-{
-    return UIInterfaceOrientationMaskLandscape;
-}
-- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
-{
-    UIApplication *app = [UIApplication sharedApplication];
-    
-    if ([app statusBarOrientation] == UIInterfaceOrientationPortrait ||
-        [app statusBarOrientation] == UIInterfaceOrientationPortraitUpsideDown) {
-        return UIInterfaceOrientationLandscapeRight;
-    } else {
-        return [app statusBarOrientation];
-    }
-}
+//- (BOOL) shouldAutorotate
+//{
+//    return UIInterfaceOrientationMaskLandscape;
+//}
+//-(NSUInteger)supportedInterfaceOrientations
+//{
+//    return UIInterfaceOrientationMaskLandscape;
+//}
+//- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation
+//{
+//    UIApplication *app = [UIApplication sharedApplication];
+//    
+//    if ([app statusBarOrientation] == UIInterfaceOrientationPortrait ||
+//        [app statusBarOrientation] == UIInterfaceOrientationPortraitUpsideDown) {
+//        return UIInterfaceOrientationLandscapeRight;
+//    } else {
+//        return [app statusBarOrientation];
+//    }
+//}
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -180,7 +181,7 @@
 - (void) openDesignScreen
 {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        PSDesignViewController* designVC = [[PSDesignViewController alloc] init];
+        PSDesignViewController2* designVC = [[PSDesignViewController2 alloc] init];
         [self presentViewController:designVC animated:NO completion:^{
             ;
         }];

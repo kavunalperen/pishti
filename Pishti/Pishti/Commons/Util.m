@@ -231,6 +231,12 @@ static inline double radians (double degrees) {return degrees * M_PI/180;}
 - (UIImage*) rotateImage:(UIImage*) src andOrientation:(UIImageOrientation) orientation
 {
     CGFloat rotationAngle = arc4random() % 20;
+    
+    return [self rotateImage:src andOrientation:orientation andRotationAngle:rotationAngle];
+    
+}
+- (UIImage*) rotateImage:(UIImage *)src andOrientation:(UIImageOrientation)orientation andRotationAngle:(CGFloat)rotationAngle
+{
     UIGraphicsBeginImageContext(src.size);
     
     CGContextRef context = UIGraphicsGetCurrentContext();

@@ -21,6 +21,7 @@
                                  andEdgeInsets:(UIEdgeInsets)edgeInset;
 
 - (UIImage*) rotateImage:(UIImage*) src andOrientation:(UIImageOrientation) orientation;
+- (UIImage*) rotateImage:(UIImage *)src andOrientation:(UIImageOrientation)orientation andRotationAngle:(CGFloat)rotationAngle;
 - (UIImage*) prepareImageForBrushing:(UIImage*)image andBrushWidth:(CGFloat)brushWidth;
 - (UIImage*) prepareImageForDesign:(UIImage*)image;
 - (UIImage*)image:(UIImage*)image byScalingAndCroppingForSize:(CGSize)targetSize;
