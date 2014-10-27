@@ -579,7 +579,7 @@
     if (tableView == self.brushWidthTableView) {
         PSSubmenuTableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_SUBMENU_BRUSH_WIDTH_CELL_IDENTIFIER];
         
-        [cell setColorForColorView:modelCanvas.brushColor];
+//        [cell setColorForColorView:modelCanvas.brushColor];
         [cell setWidthForBrushView:[[brushWidths objectAtIndex:indexPath.row] floatValue]];
         
         return cell;
@@ -621,7 +621,7 @@
         
         brushColorSelectionValueLabel.backgroundColor = selectedColor;
         brushWidthSelectionValueLabel.backgroundColor = selectedColor;
-        modelCanvas.brushColor = selectedColor;
+//        modelCanvas.brushColor = selectedColor;
         [modelCanvas setNeedsDisplay];
     } else if (tableView == self.labelFontTableView) {
         
@@ -674,12 +674,12 @@
     modelCanvas = [[PSModelCanvas alloc] initWithFrame:CGRectMake(45.0, 0.0, 747.0, 768.0)];
     modelCanvas.strokeColor = [UIColor grayColor];
     modelCanvas.fillColor = [colors objectAtIndex:5];
-    modelCanvas.brushColor = [colors objectAtIndex:0];
-    modelCanvas.brushWidth = 4.0;
-    modelCanvas.brushOpacity = 1.0;
-    modelCanvas.isBrushActive = NO;
-    modelCanvas.brushType = BRUSH_TYPE_BASIC_COLOR;
-    modelCanvas.patternImageName = nil;
+//    modelCanvas.brushColor = [colors objectAtIndex:0];
+//    modelCanvas.brushWidth = 4.0;
+//    modelCanvas.brushOpacity = 1.0;
+//    modelCanvas.isBrushActive = NO;
+//    modelCanvas.brushType = BRUSH_TYPE_BASIC_COLOR;
+//    modelCanvas.patternImageName = nil;
     [self.view addSubview:modelCanvas];
     
     UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(45.0, 0.0, 747.0, 768.0)];

@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "PSDesignViewController2.h"
+#import "PSSlider.h"
 
 typedef enum PSSubmenuType
 {
@@ -16,12 +18,24 @@ typedef enum PSSubmenuType
     SUBMENU_TYPE_TEXT
 } PSSubmenuType;
 
-@interface PSSubmenuManager : NSObject
+typedef enum PSSubmenuTableType
+{
+    SUBMENU_TABLE_TYPE_FABRIC_COLOR,
+    SUBMENU_TABLE_TYPE_TEXT_FONT,
+    SUBMENU_TABLE_TYPE_TEXT_COLOR
+} PSSubmenuTableType;
+
+@interface PSSubmenuManager : NSObject <UITableViewDelegate, UITableViewDataSource>
 
 + (PSSubmenuManager*) sharedInstance;
 
-- (void) setSubmenuDelegate:(UIViewController*)viewController;
+- (void) setSubmenuDelegate:(PSDesignViewController2*)viewController;
 
 - (void) showSubmenuWithType:(PSSubmenuType)submenuType;
+
+- (CGFloat) getCurrentOpacity;
+- (void) sliderValueChanged:(PSSlider*)slider;
+
+- (void) removeAnyTable;
 
 @end

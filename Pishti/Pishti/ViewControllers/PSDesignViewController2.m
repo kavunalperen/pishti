@@ -16,6 +16,7 @@
 #import "PSDesignViewController2.h"
 #import "PSSubmenuManager.h"
 #import <QuartzCore/QuartzCore.h>
+#import "PSImageView.h"
 
 @interface PSDesignViewController2 ()
 
@@ -34,6 +35,8 @@
     UIButton* imageSubmenuButton;
     
     PSModelCanvas* modelCanvas;
+    
+    NSMutableArray* unwantedViews;
 }
 #pragma mark - Frame Getters
 
@@ -63,6 +66,9 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     [self initialSetups];
+    [self addModelCanvas];
+    
+    unwantedViews = @[].mutableCopy;
 }
 
 #pragma mark - View Setup Methods
@@ -84,20 +90,12 @@
     [self.view addGestureRecognizer:menuGesture];
     
     [[PSSubmenuManager sharedInstance] setSubmenuDelegate:self];
-    
-    [self addModelCanvas];
 }
-
 - (void) addModelCanvas
 {
     modelCanvas = [[PSModelCanvas alloc] initWithFrame:CGRectMake(10.0, 0.0, 747.0, 768.0)];
     modelCanvas.strokeColor = [UIColor grayColor];
     modelCanvas.fillColor = [UIColor colorWithRed:230.0/255.0 green:76.0/255.0 blue:101.0/255.0 alpha:1.0];
-    modelCanvas.brushWidth = 4.0;
-    modelCanvas.brushOpacity = 1.0;
-    modelCanvas.isBrushActive = NO;
-    modelCanvas.brushType = BRUSH_TYPE_BASIC_COLOR;
-    modelCanvas.patternImageName = nil;
     [self.view addSubview:modelCanvas];
     
     UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(10.0, 0.0, 747.0, 768.0)];
@@ -105,16 +103,21 @@
     shadow.image = [UIImage imageNamed:@"golge.png"];
     [self.view addSubview:shadow];
 }
-
+- (void) addViewToUnwantedViews:(UIView*)view
+{
+    [unwantedViews addObject:view];
+}
 #pragma mark - Gesture Recognizer Methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
-    CGPoint point = [touch locationInView:self.view];
-    if (CGRectContainsPoint(CGRectMake(30.0, 30.0, SCREEN_SIZE.width-60.0, SCREEN_SIZE.height-60.0-255.0), point)) {
-        return YES;
-    } else {
-        return NO;
+    for (UIView* view in unwantedViews) {
+        CGPoint point = [touch locationInView:view];
+        if (CGRectContainsPoint(view.bounds, point)) {
+            return NO;
+        }
     }
+    
+    return YES;
 }
 - (void) longPressed:(UILongPressGestureRecognizer*)longPress
 {
@@ -365,10 +368,101 @@
     NSLog(@"show text submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEXT];
 }
+
+#pragma mark - Image picker controller delegate methods
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    [self imageSelected:[info objectForKey:UIImagePickerControllerOriginalImage]];
+    
+    [picker.view removeFromSuperview];
+    [picker removeFromParentViewController];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+}
+- (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    [picker.view removeFromSuperview];
+    [picker removeFromParentViewController];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+}
+- (void) imageSelected:(UIImage*)image
+{
+    if (image != nil) {
+        
+        UIImage* newImage = [[Util sharedInstance] prepareImageForDesign:image];
+        
+        CGSize imageSize = newImage.size;
+        
+        PSImageView* imageView = [[PSImageView alloc] initWithFrame:CGRectMake(0.0,
+                                                                               0.0,
+                                                                               imageSize.width,
+                                                                               imageSize.height)];
+        imageView.center = menuCenterPoint;
+        
+        imageView.backgroundColor = [UIColor clearColor];
+        imageView.image = newImage;
+        
+        CGFloat currentOpacity = [[PSSubmenuManager sharedInstance] getCurrentOpacity];
+        
+        imageView.alpha = currentOpacity;
+        imageView.opacity = currentOpacity;
+        
+        [modelCanvas addSubview:imageView];
+        
+        [modelCanvas.allImages addObject:imageView];
+    }
+}
+#pragma mark - Deletion Operations
+- (void) deleteLastImage
+{
+    NSLog(@"delete last image from design view");
+    if (modelCanvas.allImages.count > 0) {
+        UIView* lastImage = [modelCanvas.allImages objectAtIndex:modelCanvas.allImages.count-1];
+        [lastImage removeFromSuperview];
+        [modelCanvas.allImages removeObject:lastImage];
+    }
+}
+- (void) deleteAllImages
+{
+    NSLog(@"delete all images from design view");
+    for (UIView* view in modelCanvas.allImages) {
+        [view removeFromSuperview];
+    }
+    
+    modelCanvas.allImages = @[].mutableCopy;
+}
+- (void) deleteLastLabel
+{
+    if (modelCanvas.allLabels.count > 0) {
+        UIView* lastLabel = [modelCanvas.allLabels objectAtIndex:modelCanvas.allLabels.count-1];
+        [lastLabel removeFromSuperview];
+        [modelCanvas.allImages removeObject:lastLabel];
+    }
+}
+- (void) deleteAllLabels
+{
+    for (UIView* view in modelCanvas.allLabels) {
+        [view removeFromSuperview];
+    }
+    
+    modelCanvas.allLabels = @[].mutableCopy;
+}
+#pragma mark - Fabric Operations
+- (void) fabricColorSelected:(UIColor*)color
+{
+    modelCanvas.fillColor = color;
+    [modelCanvas setNeedsDisplay];
+}
+#pragma mark - Touch Operations
+- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesBegan:touches withEvent:event];
+    [[PSSubmenuManager sharedInstance] removeAnyTable];
+}
+
+#pragma mark - Memory warning
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
 @end

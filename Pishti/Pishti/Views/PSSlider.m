@@ -8,6 +8,7 @@
 
 #import "PSSlider.h"
 #import "PSCommons.h"
+#import "PSSubmenuManager.h"
 
 @implementation PSSlider
 
@@ -41,8 +42,8 @@
 }
 - (void) valueChanged:(UISlider*)slider
 {
-    NSLog(@"value changed");
     [self updateTooltipPositionAndValue:slider.value];
+    [[PSSubmenuManager sharedInstance] sliderValueChanged:self];
 }
 - (void) setSliderValue:(CGFloat)value
 {
@@ -66,43 +67,5 @@
 
     return sliderValueToPixels;
 }
-
-
-//#pragma mark - UIControl touch event tracking
-//
-//- (BOOL)beginTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
-//    // Fade in and update the popup view
-//    CGPoint touchPoint = [touch locationInView:self];
-//    // Check if the knob is touched. Only in this case show the popup-view
-//    if(CGRectContainsPoint(self.thumbRect, touchPoint)) {
-//        [self _positionAndUpdatePopupView];
-//        [self _fadePopupViewInAndOut:YES];
-//    }
-//    return [super beginTrackingWithTouch:touch withEvent:event];
-//}
-//
-//- (BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
-//    // Update the popup view as slider knob is being moved
-//    [self _positionAndUpdatePopupView];
-//    return [super continueTrackingWithTouch:touch withEvent:event];
-//}
-//
-//- (void)cancelTrackingWithEvent:(UIEvent *)event {
-//    [super cancelTrackingWithEvent:event];
-//}
-//
-//- (void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event {
-//    // Fade out the popoup view
-//    [self _fadePopupViewInAndOut:NO];
-//    [super endTrackingWithTouch:touch withEvent:event];
-//}
-
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
-}
-*/
 
 @end

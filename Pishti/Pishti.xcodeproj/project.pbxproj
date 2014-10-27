@@ -49,6 +49,9 @@
 		054BF33A19ED8C4800685EBC /* text_btn_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 054BF33319ED8C4800685EBC /* text_btn_normal@2x~ipad.png */; };
 		054BF33E19ED960E00685EBC /* PSSubmenuManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 054BF33D19ED960E00685EBC /* PSSubmenuManager.m */; };
 		054BF35319EDAC7700685EBC /* golge@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 054BF35219EDAC7700685EBC /* golge@2x~ipad.png */; };
+		05B827D219FD313E007765A9 /* PSTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D119FD313E007765A9 /* PSTableView.m */; };
+		05B827D519FD3268007765A9 /* PSTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D419FD3268007765A9 /* PSTableViewCell.m */; };
+		05B827D819FD438C007765A9 /* PSSubmenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D719FD438C007765A9 /* PSSubmenuView.m */; };
 		05C197BB1927C416000ABA01 /* PSMainNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 05C197BA1927C416000ABA01 /* PSMainNavigationController.m */; };
 		05C197BE1927D243000ABA01 /* PSSubmenuTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 05C197BD1927D243000ABA01 /* PSSubmenuTableViewCell.m */; };
 		05CDEA411923FECF000CC487 /* haziral_btn_highlighted@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 05CDEA3D1923FECF000CC487 /* haziral_btn_highlighted@2x.png */; };
@@ -397,6 +400,12 @@
 		054BF33C19ED960E00685EBC /* PSSubmenuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSSubmenuManager.h; sourceTree = "<group>"; };
 		054BF33D19ED960E00685EBC /* PSSubmenuManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSSubmenuManager.m; sourceTree = "<group>"; };
 		054BF35219EDAC7700685EBC /* golge@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "golge@2x~ipad.png"; sourceTree = "<group>"; };
+		05B827D019FD313E007765A9 /* PSTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableView.h; sourceTree = "<group>"; };
+		05B827D119FD313E007765A9 /* PSTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSTableView.m; sourceTree = "<group>"; };
+		05B827D319FD3268007765A9 /* PSTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableViewCell.h; sourceTree = "<group>"; };
+		05B827D419FD3268007765A9 /* PSTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSTableViewCell.m; sourceTree = "<group>"; };
+		05B827D619FD438C007765A9 /* PSSubmenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSSubmenuView.h; sourceTree = "<group>"; };
+		05B827D719FD438C007765A9 /* PSSubmenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSSubmenuView.m; sourceTree = "<group>"; };
 		05C197B91927C416000ABA01 /* PSMainNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSMainNavigationController.h; sourceTree = "<group>"; };
 		05C197BA1927C416000ABA01 /* PSMainNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMainNavigationController.m; sourceTree = "<group>"; };
 		05C197BC1927D243000ABA01 /* PSSubmenuTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSSubmenuTableViewCell.h; sourceTree = "<group>"; };
@@ -506,6 +515,12 @@
 				05EF17DE19FABA9000B87C1B /* PSSlider.m */,
 				05EF17E019FADDE200B87C1B /* PSSubmenuTextView.h */,
 				05EF17E119FADDE200B87C1B /* PSSubmenuTextView.m */,
+				05B827D019FD313E007765A9 /* PSTableView.h */,
+				05B827D119FD313E007765A9 /* PSTableView.m */,
+				05B827D319FD3268007765A9 /* PSTableViewCell.h */,
+				05B827D419FD3268007765A9 /* PSTableViewCell.m */,
+				05B827D619FD438C007765A9 /* PSSubmenuView.h */,
+				05B827D719FD438C007765A9 /* PSSubmenuView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1329,15 +1344,18 @@
 				054BF31319ED833900685EBC /* PSDesignViewController2.m in Sources */,
 				0509BA58191F9B7F00BA83EC /* PSDesignViewController.m in Sources */,
 				05EF172B19F8EB5100B87C1B /* PSLabel.m in Sources */,
+				05B827D219FD313E007765A9 /* PSTableView.m in Sources */,
 				0543C66218F460060049D846 /* PSAppDelegate.m in Sources */,
 				05C197BE1927D243000ABA01 /* PSSubmenuTableViewCell.m in Sources */,
 				05EF17E219FADDE200B87C1B /* PSSubmenuTextView.m in Sources */,
 				0531EBF719671B49000202E4 /* PSTextView.m in Sources */,
+				05B827D519FD3268007765A9 /* PSTableViewCell.m in Sources */,
 				05EF17DF19FABA9000B87C1B /* PSSlider.m in Sources */,
 				050155241926CC35009FEE6D /* PSHelpPageViewController.m in Sources */,
 				0543C7E918F46FCF0049D846 /* Util.m in Sources */,
 				054BF33E19ED960E00685EBC /* PSSubmenuManager.m in Sources */,
 				05C197BB1927C416000ABA01 /* PSMainNavigationController.m in Sources */,
+				05B827D819FD438C007765A9 /* PSSubmenuView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

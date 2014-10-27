@@ -11,16 +11,30 @@
 #import "PSCommons.h"
 #import "Util.h"
 #import "PSLabel.h"
-#import "PSSlider.h"
+#import "PSTableView.h"
+#import "PSTableViewCell.h"
+#import "PSSubmenuView.h"
+#import "PSSubmenuTextView.h"
 
 #define SUBMENU_HEIGHT 255.0
+#define TEXT_OPACITY_KEY @"kTextOpacity"
+#define BOLDNESS_KEY @"kIsBold"
+#define ITALICNESS_KEY @"kIsItalic"
+#define DIRECTION_KEY @"kIsVertical"
+#define TEXT_ALIGNMENT_KEY @"kTextAlignment"
+#define TEXT_COLOR_INDEX_KEY @"kTextColor"
+#define TEXT_FONT_INDEX_KEY @"kTextFontIndex"
+
+#define IMAGE_OPACITY_KEY @"kImageOpacity"
+
+#define FABRIC_COLOR_INDEX_KEY @"kFabricColorIndex"
 
 static PSSubmenuManager* __sharedInstance;
 
 @implementation PSSubmenuManager
 {
 #pragma mark - Variables
-    UIViewController* submenuDelegate;
+    PSDesignViewController2* submenuDelegate;
     
     PSSubmenuType currentSubmenuType;
     PSSubmenuType nextSubmenuType;
@@ -28,6 +42,47 @@ static PSSubmenuManager* __sharedInstance;
     UIView* nextSubmenu;
     
     NSMutableArray* submenuItems;
+    
+    UIImagePickerController* imagePicker;
+    
+    PSSlider* imageOpacitySlider;
+    PSSlider* textOpacitySlider;
+    
+    NSArray* colors;
+    NSArray* colorNames;
+    
+    PSTableView* fabricColorTableView;
+    UIView* fabricColorTableViewHolder;
+    UIView* fabricColorView;
+    PSLabel* fabricColorValue;
+    
+    PSTableView* textColorTableView;
+    UIView* textColorTableViewHolder;
+    UIView* textColorView;
+    PSLabel* textColorValue;
+    
+    PSTableView* textFontTableView;
+    UIView* textFontTableViewHolder;
+    PSLabel* textFontValue;
+    
+    NSArray* fonts;
+    NSArray* fontNames;
+    
+    NSMutableDictionary* labelSettings;
+    NSMutableDictionary* fabricSettings;
+    NSMutableDictionary* imageSettings;
+    
+    UIButton* boldnessButton;
+    UIButton* italicnessButton;
+    UIButton* directionButton;
+    UIButton* leftAlignmentButton;
+    UIButton* rightAlignmentButton;
+    UIButton* centerAlignmentButton;
+    
+    PSSubmenuTextView* textView;
+    UIView* textViewHolder;
+    
+    CGFloat heightChange;
 }
 #pragma mark - Frames
 #pragma mark - Fabric Frames
@@ -185,12 +240,59 @@ static PSSubmenuManager* __sharedInstance;
 {
     if (__sharedInstance == nil) {
         __sharedInstance = [[PSSubmenuManager alloc] init];
+        [__sharedInstance submenuSetups];
+        [[NSNotificationCenter defaultCenter] addObserver:__sharedInstance
+                                                 selector:@selector(keyboardWillShow:)
+                                                     name:UIKeyboardWillShowNotification
+                                                   object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:__sharedInstance
+                                                 selector:@selector(keyboardWillHide:)
+                                                     name:UIKeyboardWillHideNotification
+                                                   object:nil];
     }
     
     return __sharedInstance;
 }
+- (void) submenuSetups
+{
+    colors = @[[UIColor colorWithRed:57.0/255.0 green:66.0/255.0 blue:100.0/255.0 alpha:1.0],
+               [UIColor colorWithRed:17.0/255.0 green:168.0/255.0 blue:171.0/255.0 alpha:1.0],
+               [UIColor colorWithRed:230.0/255.0 green:76.0/255.0 blue:101.0/255.0 alpha:1.0],
+               [UIColor colorWithRed:252.0/255.0 green:177.0/255.0 blue:80.0/255.0 alpha:1.0],
+               [UIColor colorWithRed:185.0/255.0 green:190.0/255.0 blue:60.0/255.0 alpha:1.0],
+               [UIColor colorWithRed:123.0/255.0 green:91.0/255.0 blue:162.0/255.0 alpha:1.0],
+               [UIColor colorWithRed:111.0/255.0 green:104.0/255.0 blue:119.0/255.0 alpha:1.0]];
+    
+    colorNames = @[@"KOYU MOR",
+                   @"TURKUAZ",
+                   @"SOFT PEMBE",
+                   @"HARDAL SARI",
+                   @"ÇİM YEŞİL",
+                   @"MOR",
+                   @"FÜME"];
+    
+    fonts = @[[UIFont fontWithName:@"HelveticaNeue" size:15.0],
+              [UIFont fontWithName:@"ArialMT" size:15.0]];
+    
+    fontNames = @[@"Helvetica",
+                  @"Arial"];
+    
+    fabricSettings = @{FABRIC_COLOR_INDEX_KEY:[NSNumber numberWithInteger:2]}.mutableCopy;
+    
+    labelSettings = @{TEXT_OPACITY_KEY:[NSNumber numberWithFloat:1.0],
+                      BOLDNESS_KEY:[NSNumber numberWithBool:NO],
+                      ITALICNESS_KEY:[NSNumber numberWithBool:NO],
+                      DIRECTION_KEY:[NSNumber numberWithBool:NO],
+                      TEXT_COLOR_INDEX_KEY:[NSNumber numberWithInteger:0],
+                      TEXT_ALIGNMENT_KEY:[NSNumber numberWithInteger:NSTextAlignmentLeft],
+                      TEXT_FONT_INDEX_KEY:[NSNumber numberWithInteger:0]}.mutableCopy;
+    
+    imageSettings = @{IMAGE_OPACITY_KEY:[NSNumber numberWithFloat:1.0]}.mutableCopy;
+    
+}
 #pragma mark - Public methods
-- (void) setSubmenuDelegate:(UIViewController*)viewController
+- (void) setSubmenuDelegate:(PSDesignViewController2*)viewController
 {
     submenuDelegate = viewController;
 }
@@ -201,8 +303,10 @@ static PSSubmenuManager* __sharedInstance;
     if (currentSubmenuType == nextSubmenuType) {
         return;
     } else {
+        [self removeAnyTable];
         nextSubmenu = [self generateSubmenuWithType:nextSubmenuType];
         [submenuDelegate.view addSubview:nextSubmenu];
+        [submenuDelegate addViewToUnwantedViews:nextSubmenu];
         [self showNextSubmenu];
     }
 }
@@ -210,16 +314,8 @@ static PSSubmenuManager* __sharedInstance;
 - (UIView*) generateSubmenuWithType:(PSSubmenuType)submenuType
 {
     CGRect frame = submenuDelegate.view.frame;
-    UIView* submenu = [[UIView alloc] initWithFrame:CGRectMake(0.0, frame.size.height, frame.size.width, SUBMENU_HEIGHT)];
-    submenu.backgroundColor = SUBMENU_BACKGROUND_COLOR;
+    PSSubmenuView* submenu = [[PSSubmenuView alloc] initWithFrame:CGRectMake(0.0, frame.size.height, frame.size.width, SUBMENU_HEIGHT)];
     
-    UIImageView* shadowView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, -9.0, 768.0, 9.0)];
-    shadowView.backgroundColor = [UIColor clearColor];
-    UIImage* shadowImage = [UIImage imageNamed:@"container_shadow.png"];
-    shadowView.image = shadowImage;
-    shadowView.alpha = 0.6;
-    [submenu setClipsToBounds:NO];
-    [submenu addSubview:shadowView];
     
     [self addSubviewsToSubmenu:submenu withType:submenuType];
     
@@ -244,7 +340,6 @@ static PSSubmenuManager* __sharedInstance;
             break;
     }
 }
-
 - (void) addSubviewsToFabricSubmenu:(UIView*)submenu
 {
     submenuItems = @[].mutableCopy;
@@ -340,9 +435,12 @@ static PSSubmenuManager* __sharedInstance;
     [thirdHolder.layer addSublayer:bottomBorder3];
     
     // fourth item
+    
     CGRect frame4 = [self fourthItemHolderFrame];
     
-    UIView* fourthHolder = [[UIView alloc] initWithFrame:frame4];
+    UIButton* fourthHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fourthHolder.frame = frame4;
+    [fourthHolder addTarget:self action:@selector(fabricColorClicked:) forControlEvents:UIControlEventTouchUpInside];
     fourthHolder.backgroundColor = [UIColor clearColor];
     [submenu addSubview:fourthHolder];
     [submenuItems addObject:fourthHolder];
@@ -354,21 +452,20 @@ static PSSubmenuManager* __sharedInstance;
     fourthItemTitle.text = @"Kumaş Renk Seçimi";
     [fourthHolder addSubview:fourthItemTitle];
     
-    UIView* colorView = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
-    colorView.backgroundColor = [UIColor cyanColor];
-    [fourthHolder addSubview:colorView];
+    fabricColorView = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
+    fabricColorView.backgroundColor = [UIColor clearColor];
+    [fourthHolder addSubview:fabricColorView];
     
     UIImageView* fourthItemIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
     fourthItemIcon.backgroundColor = [UIColor clearColor];
     fourthItemIcon.image = [UIImage imageNamed:@"color_mask.png"];
+    fourthItemIcon.userInteractionEnabled = NO;
     [fourthHolder addSubview:fourthItemIcon];
     
-    PSLabel* fourthItemValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
-    fourthItemValue.backgroundColor = [UIColor clearColor];
-    fourthItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    fourthItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    fourthItemValue.text = @"TURKUAZ";
-    [fourthHolder addSubview:fourthItemValue];
+    fabricColorValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
+    fabricColorValue.backgroundColor = [UIColor clearColor];
+    fabricColorValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    [fourthHolder addSubview:fabricColorValue];
     
     fourthHolder.clipsToBounds = YES;
     CALayer* bottomBorder4 = [CALayer layer];
@@ -458,27 +555,27 @@ static PSSubmenuManager* __sharedInstance;
     [self addViewOptionsSubviewsToSubmenu:submenu];
     
     [self addPriceSubviewsToSubmenu:submenu];
+    
+    [self configureFabricSubmenuWithCurrentOptions];
 }
-
 - (void) addSubviewsToTextSubmenu:(UIView*)submenu
 {
     submenuItems = @[].mutableCopy;
     
-    UIView* textViewHolder = [[UIView alloc] initWithFrame:[self textViewHolderFrame]];
+    textViewHolder = [[UIView alloc] initWithFrame:[self textViewHolderFrame]];
     textViewHolder.backgroundColor = [UIColor clearColor];
     [submenu addSubview:textViewHolder];
     [submenuItems addObject:textViewHolder];
     
-    UITextView* textView = [[UITextView alloc] initWithFrame:[self textViewFrame]];
+    textView = [[PSSubmenuTextView alloc] initWithFrame:[self textViewFrame]];
     textView.backgroundColor = [UIColor whiteColor];
-    textView.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    textView.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
     textView.contentInset = UIEdgeInsetsMake(10.0, 0.0, 10.0, 0.0);
     textView.textContainerInset = UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0);
     textView.contentSize = CGSizeMake(textView.frame.size.width, 1000.0);
     [textView setShowsHorizontalScrollIndicator:NO];
     textView.layer.borderWidth = 1.0;
     textView.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
+    [submenuDelegate addViewToUnwantedViews:textView];
     [textViewHolder addSubview:textView];
     
     UIButton* addNewButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -504,9 +601,8 @@ static PSSubmenuManager* __sharedInstance;
     textOpacityTitle.text = @"Opaklık Seçimi";
     [firstHolder addSubview:textOpacityTitle];
     
-    PSSlider* opacitySlider = [[PSSlider alloc] initWithFrame:[self opacitySliderFrame]];
-    [firstHolder addSubview:opacitySlider];
-    [opacitySlider setSliderValue:0.5];
+    textOpacitySlider = [[PSSlider alloc] initWithFrame:[self opacitySliderFrame]];
+    [firstHolder addSubview:textOpacitySlider];
     
     firstHolder.clipsToBounds = YES;
     CALayer *bottomBorder = [CALayer layer];
@@ -519,7 +615,9 @@ static PSSubmenuManager* __sharedInstance;
     
     CGRect frame2 = [self fourthItemHolderFrame];
     
-    UIView* secondHolder = [[UIView alloc] initWithFrame:frame2];
+    UIButton* secondHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    secondHolder.frame = frame2;
+    [secondHolder addTarget:self action:@selector(textFontClicked:) forControlEvents:UIControlEventTouchUpInside];
     secondHolder.backgroundColor = [UIColor clearColor];
     [submenu addSubview:secondHolder];
     [submenuItems addObject:secondHolder];
@@ -531,11 +629,10 @@ static PSSubmenuManager* __sharedInstance;
     textFontTitle.text = @"Yazı Karakter Seçimi";
     [secondHolder addSubview:textFontTitle];
     
-    PSLabel* textFontValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
+    textFontValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
     textFontValue.backgroundColor = [UIColor clearColor];
     textFontValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
     textFontValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    textFontValue.text = @"HELVETICA";
     [secondHolder addSubview:textFontValue];
     
     secondHolder.clipsToBounds = YES;
@@ -561,52 +658,58 @@ static PSSubmenuManager* __sharedInstance;
     styleTitle.text = @"Seçenekler";
     [thirdHolder addSubview:styleTitle];
     
-    UIButton* boldnessButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    boldnessButton = [UIButton buttonWithType:UIButtonTypeCustom];
     boldnessButton.frame = [self firstSettingFrame];
     boldnessButton.backgroundColor = [UIColor clearColor];
+    boldnessButton.adjustsImageWhenHighlighted = NO;
     [boldnessButton setBackgroundImage:[UIImage imageNamed:@"text_bold_normal.png"] forState:UIControlStateNormal];
-    [boldnessButton setBackgroundImage:[UIImage imageNamed:@"text_bold_active.png"] forState:UIControlStateHighlighted];
     [boldnessButton setBackgroundImage:[UIImage imageNamed:@"text_bold_active.png"] forState:UIControlStateSelected];
+    [boldnessButton addTarget:self action:@selector(boldnessClicked:) forControlEvents:UIControlEventTouchUpInside];
     [thirdHolder addSubview:boldnessButton];
     
-    UIButton* italicnessButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    italicnessButton = [UIButton buttonWithType:UIButtonTypeCustom];
     italicnessButton.frame = [self secondSettingFrame];
     italicnessButton.backgroundColor = [UIColor clearColor];
+    italicnessButton.adjustsImageWhenHighlighted = NO;
     [italicnessButton setBackgroundImage:[UIImage imageNamed:@"text_italic_normal.png"] forState:UIControlStateNormal];
-    [italicnessButton setBackgroundImage:[UIImage imageNamed:@"text_italic_active.png"] forState:UIControlStateHighlighted];
     [italicnessButton setBackgroundImage:[UIImage imageNamed:@"text_italic_active.png"] forState:UIControlStateSelected];
+    [italicnessButton addTarget:self action:@selector(italicnessClicked:) forControlEvents:UIControlEventTouchUpInside];
     [thirdHolder addSubview:italicnessButton];
     
-    UIButton* directionButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    directionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     directionButton.frame = [self thirdSettingFrame];
     directionButton.backgroundColor = [UIColor clearColor];
+    directionButton.adjustsImageWhenHighlighted = NO;
     [directionButton setBackgroundImage:[UIImage imageNamed:@"text_ltr_active.png"] forState:UIControlStateNormal];
-    [directionButton setBackgroundImage:nil forState:UIControlStateHighlighted];
-    [directionButton setBackgroundImage:[UIImage imageNamed:@"text_ltr_active.png"] forState:UIControlStateSelected];
+    [directionButton setBackgroundImage:[UIImage imageNamed:@"text_ttb_active.png"] forState:UIControlStateSelected];
+    [directionButton addTarget:self action:@selector(directionClicked:) forControlEvents:UIControlEventTouchUpInside];
     [thirdHolder addSubview:directionButton];
     
-    UIButton* leftAlignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    leftAlignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
     leftAlignmentButton.frame = [self fourthSettingFrame];
     leftAlignmentButton.backgroundColor = [UIColor clearColor];
+    leftAlignmentButton.adjustsImageWhenHighlighted = NO;
     [leftAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_leftalign_normal.png"] forState:UIControlStateNormal];
-    [leftAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_leftalign_active.png"] forState:UIControlStateHighlighted];
     [leftAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_leftalign_active.png"] forState:UIControlStateSelected];
+    [leftAlignmentButton addTarget:self action:@selector(leftAlignmentClicked:) forControlEvents:UIControlEventTouchUpInside];
     [thirdHolder addSubview:leftAlignmentButton];
     
-    UIButton* rightAlignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    rightAlignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
     rightAlignmentButton.frame = [self fifthSettingFrame];
     rightAlignmentButton.backgroundColor = [UIColor clearColor];
+    rightAlignmentButton.adjustsImageWhenHighlighted = NO;
     [rightAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_rightalign_normal.png"] forState:UIControlStateNormal];
-    [rightAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_rightalign_active.png"] forState:UIControlStateHighlighted];
     [rightAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_rightalign_active.png"] forState:UIControlStateSelected];
+    [rightAlignmentButton addTarget:self action:@selector(rightAlignmentClicked:) forControlEvents:UIControlEventTouchUpInside];
     [thirdHolder addSubview:rightAlignmentButton];
     
-    UIButton* centerAlignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    centerAlignmentButton = [UIButton buttonWithType:UIButtonTypeCustom];
     centerAlignmentButton.frame = [self sixthSettingFrame];
     centerAlignmentButton.backgroundColor = [UIColor clearColor];
+    centerAlignmentButton.adjustsImageWhenHighlighted = NO;
     [centerAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_centeralign_normal.png"] forState:UIControlStateNormal];
-    [centerAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_centeralign_active.png"] forState:UIControlStateHighlighted];
     [centerAlignmentButton setBackgroundImage:[UIImage imageNamed:@"text_centeralign_active.png"] forState:UIControlStateSelected];
+    [centerAlignmentButton addTarget:self action:@selector(centerAlignmentClicked:) forControlEvents:UIControlEventTouchUpInside];
     [thirdHolder addSubview:centerAlignmentButton];
     
     thirdHolder.clipsToBounds = YES;
@@ -620,7 +723,9 @@ static PSSubmenuManager* __sharedInstance;
     
     CGRect frame4 = [self sixthItemHolderFrame];
     
-    UIView* fourthHolder = [[UIView alloc] initWithFrame:frame4];
+    UIButton* fourthHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fourthHolder.frame = frame4;
+    [fourthHolder addTarget:self action:@selector(textColorClicked:) forControlEvents:UIControlEventTouchUpInside];
     fourthHolder.backgroundColor = [UIColor clearColor];
     [submenu addSubview:fourthHolder];
     [submenuItems addObject:fourthHolder];
@@ -632,21 +737,19 @@ static PSSubmenuManager* __sharedInstance;
     textColorTitle.text = @"Yazı Renk Seçimi";
     [fourthHolder addSubview:textColorTitle];
     
-    UIView* colorView = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
-    colorView.backgroundColor = [UIColor cyanColor];
-    [fourthHolder addSubview:colorView];
+    textColorView = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
+    textColorView.backgroundColor = [UIColor clearColor];
+    [fourthHolder addSubview:textColorView];
     
     UIImageView* fourthItemIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
     fourthItemIcon.backgroundColor = [UIColor clearColor];
     fourthItemIcon.image = [UIImage imageNamed:@"color_mask.png"];
     [fourthHolder addSubview:fourthItemIcon];
     
-    PSLabel* fourthItemValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
-    fourthItemValue.backgroundColor = [UIColor clearColor];
-    fourthItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    fourthItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    fourthItemValue.text = @"TURKUAZ";
-    [fourthHolder addSubview:fourthItemValue];
+    textColorValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
+    textColorValue.backgroundColor = [UIColor clearColor];
+    textColorValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    [fourthHolder addSubview:textColorValue];
     
     fourthHolder.clipsToBounds = YES;
     CALayer *bottomBorder4 = [CALayer layer];
@@ -661,8 +764,8 @@ static PSSubmenuManager* __sharedInstance;
     
     [self addPriceSubviewsToSubmenu:submenu];
     
+    [self configureTextSubmenuWithCurrentOptions];
 }
-
 - (void) addSubviewsToImageSubmenu:(UIView*)submenu
 {
     submenuItems = @[].mutableCopy;
@@ -691,6 +794,7 @@ static PSSubmenuManager* __sharedInstance;
     selectImageButton.backgroundColor = [UIColor clearColor];
     [selectImageButton setBackgroundImage:[UIImage imageNamed:@"image_selectphoto_normal.png"] forState:UIControlStateNormal];
     [selectImageButton setBackgroundImage:[UIImage imageNamed:@"image_selectphoto_highlighted.png"] forState:UIControlStateHighlighted];
+    [selectImageButton addTarget:self action:@selector(selectImageClicked:) forControlEvents:UIControlEventTouchUpInside];
     [firstHolder addSubview:selectImageButton];
     
     UIButton* captureImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -698,6 +802,7 @@ static PSSubmenuManager* __sharedInstance;
     captureImageButton.backgroundColor = [UIColor clearColor];
     [captureImageButton setBackgroundImage:[UIImage imageNamed:@"image_takephoto_normal.png"] forState:UIControlStateNormal];
     [captureImageButton setBackgroundImage:[UIImage imageNamed:@"image_takephoto_highlighted.png"] forState:UIControlStateHighlighted];
+    [captureImageButton addTarget:self action:@selector(captureImageClicked:) forControlEvents:UIControlEventTouchUpInside];
     [firstHolder addSubview:captureImageButton];
     
     CGRect frame2 = [self sixthItemHolderFrame];
@@ -714,9 +819,8 @@ static PSSubmenuManager* __sharedInstance;
     imageOpacityTitle.text = @"Opaklık Seçimi";
     [secondHolder addSubview:imageOpacityTitle];
     
-    PSSlider* opacitySlider = [[PSSlider alloc] initWithFrame:[self opacitySliderFrame]];
-    [secondHolder addSubview:opacitySlider];
-    [opacitySlider setSliderValue:0.5];
+    imageOpacitySlider = [[PSSlider alloc] initWithFrame:[self opacitySliderFrame]];
+    [secondHolder addSubview:imageOpacitySlider];
     
     secondHolder.clipsToBounds = YES;
     CALayer *bottomBorder = [CALayer layer];
@@ -731,6 +835,7 @@ static PSSubmenuManager* __sharedInstance;
     
     [self addPriceSubviewsToSubmenu:submenu];
     
+    [self configureImageSubmenuWithCurrentOptions];
 }
 - (void) addViewOptionsSubviewsToSubmenu:(UIView*)submenu
 {
@@ -771,6 +876,7 @@ static PSSubmenuManager* __sharedInstance;
     deleteLastButton.backgroundColor = [UIColor clearColor];
     [deleteLastButton setBackgroundImage:[UIImage imageNamed:@"delete_last_normal.png"] forState:UIControlStateNormal];
     [deleteLastButton setBackgroundImage:[UIImage imageNamed:@"delete_last_highlighted.png"] forState:UIControlStateHighlighted];
+    [deleteLastButton addTarget:self action:@selector(deleteLastClicked:) forControlEvents:UIControlEventTouchUpInside];
     [deleteHolder addSubview:deleteLastButton];
     
     UIButton* deleteAllButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -778,6 +884,7 @@ static PSSubmenuManager* __sharedInstance;
     deleteAllButton.backgroundColor = [UIColor clearColor];
     [deleteAllButton setBackgroundImage:[UIImage imageNamed:@"delete_all_normal.png"] forState:UIControlStateNormal];
     [deleteAllButton setBackgroundImage:[UIImage imageNamed:@"delete_all_highlighted.png"] forState:UIControlStateHighlighted];
+    [deleteAllButton addTarget:self action:@selector(deleteAllClicked:) forControlEvents:UIControlEventTouchUpInside];
     [deleteHolder addSubview:deleteAllButton];
 }
 - (void) addPriceSubviewsToSubmenu:(UIView*)submenu
@@ -801,6 +908,67 @@ static PSSubmenuManager* __sharedInstance;
     [tlButton setBackgroundImage:[UIImage imageNamed:@"turkish_lira_normal.png"] forState:UIControlStateNormal];
     [tlButton setBackgroundImage:[UIImage imageNamed:@"turkish_lira_highlighted.png"] forState:UIControlStateHighlighted];
     [priceHolder addSubview:tlButton];
+}
+#pragma mark - Configuring submenus
+- (void) configureFabricSubmenuWithCurrentOptions
+{
+    NSInteger fabricColorIndex = [[fabricSettings objectForKey:FABRIC_COLOR_INDEX_KEY] integerValue];
+    
+    fabricColorView.backgroundColor = [colors objectAtIndex:fabricColorIndex];
+    
+    fabricColorValue.textColor = [colors objectAtIndex:fabricColorIndex];
+    fabricColorValue.text = [colorNames objectAtIndex:fabricColorIndex];
+}
+- (void) configureTextSubmenuWithCurrentOptions
+{
+    CGFloat opacity = [[labelSettings objectForKey:TEXT_OPACITY_KEY] floatValue];
+    NSInteger textFontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
+    bool isBold = [[labelSettings objectForKey:BOLDNESS_KEY] boolValue];
+    bool isItalic = [[labelSettings objectForKey:ITALICNESS_KEY] boolValue];
+    bool direction = [[labelSettings objectForKey:DIRECTION_KEY] boolValue];
+    NSInteger alignment = [[labelSettings objectForKey:TEXT_ALIGNMENT_KEY] integerValue];
+    NSInteger textColorIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
+    
+    [textOpacitySlider setSliderValue:opacity];
+    
+    textColorView.backgroundColor = [colors objectAtIndex:textColorIndex];
+    
+    textColorValue.textColor = [colors objectAtIndex:textColorIndex];
+    textColorValue.text = [colorNames objectAtIndex:textColorIndex];
+    
+    textFontValue.text = [fontNames objectAtIndex:textFontIndex];
+    
+    textView.font = [fonts objectAtIndex:textFontIndex];
+    textView.textColor = [colors objectAtIndex:textColorIndex];
+    textView.tintColor = [colors objectAtIndex:textColorIndex];
+    
+    if (isBold) {
+        boldnessButton.selected = YES;
+    }
+    if (isItalic) {
+        italicnessButton.selected = YES;
+    }
+    if (direction) {
+        directionButton.selected = YES;
+    }
+    switch (alignment) {
+        case NSTextAlignmentLeft:
+            leftAlignmentButton.selected = YES;
+            break;
+        case NSTextAlignmentRight:
+            rightAlignmentButton.selected = YES;
+            break;
+        case NSTextAlignmentCenter:
+            centerAlignmentButton.selected = YES;
+            break;
+        default:
+            break;
+    }
+}
+- (void) configureImageSubmenuWithCurrentOptions
+{
+    CGFloat opacity = [[imageSettings objectForKey:IMAGE_OPACITY_KEY] floatValue];
+    [imageOpacitySlider setSliderValue:opacity];
 }
 #pragma mark - Displaying submenus
 - (void) showNextSubmenu
@@ -835,6 +1003,7 @@ static PSSubmenuManager* __sharedInstance;
     
     for (int i = 0; i < submenuItems.count; i++) {
         UIView* currentView = [submenuItems objectAtIndex:i];
+        
         CGRect frame = currentView.frame;
         CGRect oldFrame = frame;
         frame.origin.y = SUBMENU_HEIGHT;
@@ -849,4 +1018,505 @@ static PSSubmenuManager* __sharedInstance;
     }
 }
 
+#pragma mark - Public Methods
+- (CGFloat) getCurrentOpacity
+{
+    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
+        return imageOpacitySlider.value;
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
+        return textOpacitySlider.value;
+    } else {
+        return 0.0;
+    }
+}
+- (void) sliderValueChanged:(PSSlider *)slider
+{
+    if (slider == textOpacitySlider) {
+        [self textOpacityChanged];
+    } else if (slider == imageOpacitySlider) {
+        [self imageOpacityChanged];
+    }
+}
+#pragma mark - Tableview Delegates
+- (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    if (tableView == fabricColorTableView) {
+        return colors.count;
+    } else if (tableView == textFontTableView) {
+        return fonts.count;
+    } else if (tableView == textColorTableView) {
+        return colors.count;
+    } else {
+        return 0;
+    }
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 37.0;
+}
+- (UITableViewCell*) tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    PSTableViewCell* cell;
+    
+    if (tableView == fabricColorTableView) {
+        cell = [tableView dequeueReusableCellWithIdentifier:COLOR_CELL_IDENTIFIER];
+        [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
+        cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
+    } else if (tableView == textFontTableView) {
+        cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
+        cell.mainLabel.text = [fontNames objectAtIndex:indexPath.row];
+    } else if (tableView == textColorTableView) {
+        cell = [tableView dequeueReusableCellWithIdentifier:COLOR_CELL_IDENTIFIER];
+        [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
+        cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
+    }
+    
+    return cell;
+}
+- (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (tableView == fabricColorTableView) {
+        
+        NSInteger fabricColorIndex = indexPath.row;
+        
+        [fabricSettings setObject:[NSNumber numberWithInteger:fabricColorIndex] forKey:FABRIC_COLOR_INDEX_KEY];
+        [self configureFabricSubmenuWithCurrentOptions];
+        
+        [submenuDelegate fabricColorSelected:[colors objectAtIndex:fabricColorIndex]];
+    } else if (tableView == textFontTableView) {
+        NSInteger textFontIndex = indexPath.row;
+        
+        [labelSettings setObject:[NSNumber numberWithInteger:textFontIndex] forKey:TEXT_FONT_INDEX_KEY];
+        [self configureTextSubmenuWithCurrentOptions];
+    } else if (tableView == textColorTableView) {
+        NSInteger textColorIndex = indexPath.row;
+        
+        [labelSettings setObject:[NSNumber numberWithInteger:textColorIndex] forKey:TEXT_COLOR_INDEX_KEY];
+        [self configureTextSubmenuWithCurrentOptions];
+    }
+}
+#pragma mark - Button actions
+
+#pragma mark - Fabric actions
+- (void) fabricColorClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLOR];
+}
+
+#pragma mark - Text actions
+- (void) textFontClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_TEXT_FONT];
+}
+- (void) textColorClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_TEXT_COLOR];
+}
+- (void) boldnessClicked:(UIButton*)button
+{
+    boldnessButton.selected = !boldnessButton.selected;
+    
+    [labelSettings setObject:[NSNumber numberWithBool:boldnessButton.selected] forKey:BOLDNESS_KEY];
+}
+- (void) italicnessClicked:(UIButton*)button
+{
+    italicnessButton.selected = !italicnessButton.selected;
+    
+    [labelSettings setObject:[NSNumber numberWithBool:italicnessButton.selected] forKey:ITALICNESS_KEY];
+}
+- (void) directionClicked:(UIButton*)button
+{
+    directionButton.selected = !directionButton.selected;
+    
+    [labelSettings setObject:[NSNumber numberWithBool:directionButton.selected] forKey:DIRECTION_KEY];
+}
+- (void) leftAlignmentClicked:(UIButton*)button
+{
+    if (leftAlignmentButton.selected) {
+        return;
+    }
+    
+    leftAlignmentButton.selected = YES;
+    rightAlignmentButton.selected = NO;
+    centerAlignmentButton.selected = NO;
+    
+    [labelSettings setObject:[NSNumber numberWithInteger:NSTextAlignmentLeft] forKey:TEXT_ALIGNMENT_KEY];
+}
+- (void) rightAlignmentClicked:(UIButton*)button
+{
+    if (rightAlignmentButton.selected) {
+        return;
+    }
+    
+    leftAlignmentButton.selected = NO;
+    rightAlignmentButton.selected = YES;
+    centerAlignmentButton.selected = NO;
+    
+    [labelSettings setObject:[NSNumber numberWithInteger:NSTextAlignmentRight] forKey:TEXT_ALIGNMENT_KEY];
+}
+- (void) centerAlignmentClicked:(UIButton*)button
+{
+    if (centerAlignmentButton.selected) {
+        return;
+    }
+    
+    leftAlignmentButton.selected = NO;
+    rightAlignmentButton.selected = NO;
+    centerAlignmentButton.selected = YES;
+    
+    [labelSettings setObject:[NSNumber numberWithInteger:NSTextAlignmentCenter] forKey:TEXT_ALIGNMENT_KEY];
+}
+- (void) textOpacityChanged
+{
+    [labelSettings setObject:[NSNumber numberWithFloat:textOpacitySlider.value] forKey:TEXT_OPACITY_KEY];
+}
+
+#pragma mark - Table Openings - Closings
+- (void) addTableWithType:(PSSubmenuTableType)tableType
+{
+    [self removeAnyTable];
+    
+    CGRect frame;
+    
+    switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
+            frame = [self fourthItemHolderFrame];
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_FONT:
+            frame = [self fourthItemHolderFrame];
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_COLOR:
+            frame = [self sixthItemHolderFrame];
+            break;
+            
+        default:
+            break;
+    }
+    
+    CGRect holderFrame = CGRectMake(frame.origin.x+currentSubmenu.frame.origin.x,
+                                    frame.origin.y+currentSubmenu.frame.origin.y+frame.size.height-206.0-1.0,
+                                    frame.size.width, 206.0);
+    
+    CGRect tableFrame = CGRectMake(0.0,
+                                   0.0,
+                                   frame.size.width, 206.0);
+    
+    
+    
+    UIView* tableViewHolder = [[UIView alloc] initWithFrame:holderFrame];
+    tableViewHolder.backgroundColor = [UIColor clearColor];
+    tableViewHolder.clipsToBounds = YES;
+    [submenuDelegate.view addSubview:tableViewHolder];
+    [submenuDelegate addViewToUnwantedViews:tableViewHolder];
+    
+    tableViewHolder.layer.shadowColor = [UIColor blackColor].CGColor;
+    tableViewHolder.layer.shadowOpacity = 0.55;
+    tableViewHolder.layer.shadowRadius = 65.0;
+    
+    PSTableView* tableView = [[PSTableView alloc] initWithFrame:tableFrame];
+    
+    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:COLOR_CELL_IDENTIFIER];
+    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:MAIN_CELL_IDENTIFIER];
+    
+    tableView.delegate = self;
+    tableView.dataSource = self;
+    [tableViewHolder addSubview:tableView];
+    
+    CGRect titleFrame = [self titleFrame];
+    
+    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, titleFrame.size.height+10.0)];
+    headerView.backgroundColor = SUBMENU_BACKGROUND_COLOR;
+    
+    UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 0.0, frame.size.width-20.0, titleFrame.size.height+10.0)];
+    headerLabel.backgroundColor = [UIColor clearColor];
+    headerLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    headerLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    [headerView addSubview:headerLabel];
+    tableView.tableHeaderView = headerView;
+    
+    switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
+            headerLabel.text = @"Kumaş Renk Seçimi";
+            fabricColorTableViewHolder = tableViewHolder;
+            fabricColorTableView = tableView;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_FONT:
+            headerLabel.text = @"Yazı Karakter Seçimi";
+            textFontTableViewHolder = tableViewHolder;
+            textFontTableView = tableView;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_COLOR:
+            headerLabel.text = @"Yazı Renk Seçimi";
+            textColorTableViewHolder = tableViewHolder;
+            textColorTableView = tableView;
+            break;
+            
+        default:
+            break;
+    }
+    
+    [self animateTableOpeningWithType:tableType];
+}
+- (void) removeTableWithType:(PSSubmenuTableType)tableType
+{
+    [self animateTableClosingWithType:tableType];
+}
+- (void) animateTableOpeningWithType:(PSSubmenuTableType)tableType
+{
+    UIView* holderView;
+    
+    switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
+            holderView = fabricColorTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_FONT:
+            holderView = textFontTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_COLOR:
+            holderView = textColorTableViewHolder;
+            break;
+            
+        default:
+            break;
+    }
+    
+    holderView.clipsToBounds = NO;
+    CGRect frame = holderView.frame;
+    holderView.layer.anchorPoint = CGPointMake(0.5, 1.0);
+    holderView.frame = frame;
+    
+    holderView.transform = CGAffineTransformMakeScale(0.8, 0.1);
+    
+    [UIView animateWithDuration:0.17 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        holderView.transform = CGAffineTransformMakeScale(1.15, 1.15);
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            holderView.transform = CGAffineTransformMakeScale(1.0, 1.0);
+        } completion:^(BOOL finished) {
+            holderView.layer.anchorPoint = CGPointMake(0.5, 0.5);
+            holderView.frame = frame;
+        }];
+    }];
+}
+- (void) animateTableClosingWithType:(PSSubmenuTableType)tableType
+{
+    UIView* holderView;
+    
+    switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
+            holderView = fabricColorTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_FONT:
+            holderView = textFontTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_COLOR:
+            holderView = textColorTableViewHolder;
+            break;
+            
+        default:
+            break;
+    }
+    
+    CGRect frame = holderView.frame;
+    holderView.layer.anchorPoint = CGPointMake(0.5, 1.0);
+    holderView.frame = frame;
+    
+    [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        holderView.transform = CGAffineTransformMakeScale(1.15, 1.15);
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.17 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
+            holderView.transform = CGAffineTransformMakeScale(0.8, 0.1);
+        } completion:^(BOOL finished) {
+            [self tableCleanupsWithType:tableType];
+        }];
+    }];
+}
+- (void) tableCleanupsWithType:(PSSubmenuTableType)tableType
+{
+    
+    switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
+            [fabricColorTableView removeFromSuperview];
+            fabricColorTableView = nil;
+            
+            [fabricColorTableViewHolder removeFromSuperview];
+            fabricColorTableViewHolder = nil;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_FONT:
+            [textFontTableView removeFromSuperview];
+            textFontTableView = nil;
+            
+            [textFontTableViewHolder removeFromSuperview];
+            textFontTableViewHolder = nil;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_COLOR:
+            [textColorTableView removeFromSuperview];
+            textColorTableView = nil;
+            
+            [textColorTableViewHolder removeFromSuperview];
+            textColorTableViewHolder = nil;
+            break;
+            
+        default:
+            break;
+    }
+}
+- (void) removeAnyTable
+{
+    if (fabricColorTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLOR];
+    }
+    if (textFontTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_TEXT_FONT];
+    }
+    if (textColorTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_TEXT_COLOR];
+    }
+}
+
+#pragma mark - Image Actions
+- (void) selectImageClicked:(UIButton*)button
+{
+    [self initializeImagePicker];
+    
+    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    
+    [self presentImagePicker];
+}
+- (void) captureImageClicked:(UIButton*)button
+{
+    [self initializeImagePicker];
+    
+    imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+    
+    [self presentImagePicker];
+}
+- (void) initializeImagePicker
+{
+    if (imagePicker == nil) {
+        imagePicker = [[UIImagePickerController alloc] init];
+        imagePicker.delegate = submenuDelegate;
+        imagePicker.navigationBar.translucent = NO;
+        imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;
+    }
+}
+- (void) presentImagePicker
+{
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+    
+    [submenuDelegate addChildViewController:imagePicker];
+    [submenuDelegate.view addSubview:imagePicker.view];
+    imagePicker.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    imagePicker.view.frame = submenuDelegate.view.bounds;
+    [imagePicker didMoveToParentViewController:submenuDelegate];
+}
+- (void) imageOpacityChanged
+{
+    [imageSettings setObject:[NSNumber numberWithFloat:imageOpacitySlider.value] forKey:IMAGE_OPACITY_KEY];
+}
+
+#pragma mark - General Buttons Actions
+- (void) deleteLastClicked:(UIButton*)button
+{
+    NSLog(@"delete last clicked");
+    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
+        [self deleteLastImage];
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
+        [self deleteLastLabel];
+    }
+}
+- (void) deleteAllClicked:(UIButton*)button
+{
+    NSLog(@"delete all clicked");
+    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
+        [self deleteAllImages];
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
+        [self deleteAllLabels];
+    }
+}
+- (void) deleteLastImage
+{
+    NSLog(@"delete last image from submenu manager");
+    [submenuDelegate deleteLastImage];
+}
+- (void) deleteLastLabel
+{
+    [submenuDelegate deleteLastLabel];
+}
+- (void) deleteAllImages
+{
+    NSLog(@"delete all images from submenu manager");
+    [submenuDelegate deleteAllImages];
+}
+- (void) deleteAllLabels
+{
+    [submenuDelegate deleteAllLabels];
+}
+- (void) dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+#pragma mark - Keyboard Opening - Closing
+- (void) keyboardWillShow:(NSNotification *)note{
+    [self removeAnyTable];
+    // get keyboard size and loctaion
+    CGRect keyboardFrameBegin;
+    CGRect keyboardFrameEnd;
+    
+    keyboardFrameBegin = [[note.userInfo valueForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+    keyboardFrameEnd = [[note.userInfo valueForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    
+    heightChange = keyboardFrameBegin.origin.y-keyboardFrameEnd.origin.y;
+    
+    NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    
+    CGRect frame = textView.frame;
+    frame.origin.y -= heightChange;
+    
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    [UIView setAnimationDuration:[duration floatValue]];
+    [UIView setAnimationCurve:[curve integerValue]];
+    [UIView setAnimationDelegate:self];
+    
+    // animations here
+    
+    textView.frame = frame;
+    
+    [UIView commitAnimations];
+}
+- (void) keyboardWillHide:(NSNotification *)note{
+    
+    CGRect keyboardFrameBegin;
+    CGRect keyboardFrameEnd;
+    
+    keyboardFrameBegin = [[note.userInfo valueForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+    keyboardFrameEnd = [[note.userInfo valueForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    
+    heightChange = keyboardFrameEnd.origin.y-keyboardFrameBegin.origin.y;
+    
+    NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
+    NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
+    
+    CGRect frame = textView.frame;
+    frame.origin.y += heightChange;
+    
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationBeginsFromCurrentState:YES];
+    [UIView setAnimationDuration:[duration floatValue]];
+    [UIView setAnimationCurve:[curve integerValue]];
+    [UIView setAnimationDelegate:self];
+    
+    // animations here
+    
+    textView.frame = frame;
+    
+    [UIView commitAnimations];
+}
 @end
