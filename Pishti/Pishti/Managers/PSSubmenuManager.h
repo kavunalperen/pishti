@@ -25,7 +25,7 @@ typedef enum PSSubmenuTableType
     SUBMENU_TABLE_TYPE_TEXT_COLOR
 } PSSubmenuTableType;
 
-@interface PSSubmenuManager : NSObject <UITableViewDelegate, UITableViewDataSource>
+@interface PSSubmenuManager : NSObject <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate>
 
 + (PSSubmenuManager*) sharedInstance;
 

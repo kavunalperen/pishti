@@ -82,6 +82,9 @@ static PSSubmenuManager* __sharedInstance;
     PSSubmenuTextView* textView;
     UIView* textViewHolder;
     
+    PSSubmenuTextView* proxyTextView;
+    UIView* proxyTextViewHolder;
+    
     CGFloat heightChange;
 }
 #pragma mark - Frames
@@ -135,6 +138,14 @@ static PSSubmenuManager* __sharedInstance;
     return CGRectMake(0.0, 0.0, 260.0, 156.0);
 }
 - (CGRect) textViewFrame
+{
+    return CGRectMake(30.0, 30.0, 230.0, 126.0);
+}
+- (CGRect) proxyTextViewHolderFrame
+{
+    return CGRectMake(0.0, SCREEN_SIZE.height-SUBMENU_HEIGHT, 260.0, 156.0);
+}
+- (CGRect) proxyTextViewFrame
 {
     return CGRectMake(30.0, 30.0, 230.0, 126.0);
 }
@@ -575,7 +586,7 @@ static PSSubmenuManager* __sharedInstance;
     [textView setShowsHorizontalScrollIndicator:NO];
     textView.layer.borderWidth = 1.0;
     textView.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
-    [submenuDelegate addViewToUnwantedViews:textView];
+    textView.delegate = self;
     [textViewHolder addSubview:textView];
     
     UIButton* addNewButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -1017,7 +1028,52 @@ static PSSubmenuManager* __sharedInstance;
         }];
     }
 }
-
+#pragma mark - Textfield Delegates
+- (BOOL)textViewShouldBeginEditing:(UITextView *)aTextView
+{
+    
+    if (aTextView == textView) {
+        
+        proxyTextViewHolder = [[UIView alloc] initWithFrame:[self proxyTextViewHolderFrame]];
+        proxyTextViewHolder.backgroundColor = [UIColor clearColor];
+        proxyTextViewHolder.alpha = 0.0;
+        [submenuDelegate.view addSubview:proxyTextViewHolder];
+        
+        proxyTextView = [[PSSubmenuTextView alloc] initWithFrame:[self proxyTextViewFrame]];
+        proxyTextView.backgroundColor = [UIColor whiteColor];
+        proxyTextView.contentInset = UIEdgeInsetsMake(10.0, 0.0, 10.0, 0.0);
+        proxyTextView.textContainerInset = UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0);
+        proxyTextView.contentSize = CGSizeMake(proxyTextView.frame.size.width, 1000.0);
+        [proxyTextView setShowsHorizontalScrollIndicator:NO];
+        proxyTextView.layer.borderWidth = 1.0;
+        proxyTextView.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
+        proxyTextView.delegate = self;
+        [proxyTextViewHolder addSubview:proxyTextView];
+        
+        NSInteger fontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
+        proxyTextView.font = [fonts objectAtIndex:fontIndex];
+        
+        NSInteger textColorIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
+        proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
+        proxyTextView.tintColor = [colors objectAtIndex:textColorIndex];
+        
+        proxyTextView.text = textView.text;
+        
+        [proxyTextView becomeFirstResponder];
+        
+        return NO;
+    } else if (aTextView == proxyTextView) {
+        return YES;
+    }
+    
+    return YES;
+}
+- (void)textViewDidChange:(UITextView*)aTextView
+{
+    if (aTextView == proxyTextView) {
+        textView.text = aTextView.text;
+    }
+}
 #pragma mark - Public Methods
 - (CGFloat) getCurrentOpacity
 {
@@ -1476,7 +1532,7 @@ static PSSubmenuManager* __sharedInstance;
     NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
     
-    CGRect frame = textView.frame;
+    CGRect frame = proxyTextViewHolder.frame;
     frame.origin.y -= heightChange;
     
     [UIView beginAnimations:nil context:NULL];
@@ -1487,7 +1543,8 @@ static PSSubmenuManager* __sharedInstance;
     
     // animations here
     
-    textView.frame = frame;
+    proxyTextViewHolder.frame = frame;
+    proxyTextViewHolder.alpha = 1.0;
     
     [UIView commitAnimations];
 }
@@ -1504,19 +1561,29 @@ static PSSubmenuManager* __sharedInstance;
     NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
     
-    CGRect frame = textView.frame;
+    CGRect frame = proxyTextViewHolder.frame;
     frame.origin.y += heightChange;
     
     [UIView beginAnimations:nil context:NULL];
     [UIView setAnimationBeginsFromCurrentState:YES];
     [UIView setAnimationDuration:[duration floatValue]];
     [UIView setAnimationCurve:[curve integerValue]];
+    [UIView setAnimationDidStopSelector:@selector(animationFinished)];
     [UIView setAnimationDelegate:self];
     
     // animations here
     
-    textView.frame = frame;
+    proxyTextViewHolder.frame = frame;
+    proxyTextViewHolder.alpha = 0.0;
     
     [UIView commitAnimations];
+}
+- (void) animationFinished
+{
+    [proxyTextView removeFromSuperview];
+    proxyTextView = nil;
+    
+    [proxyTextViewHolder removeFromSuperview];
+    proxyTextViewHolder = nil;
 }
 @end
