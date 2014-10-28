@@ -1005,6 +1005,7 @@ static PSSubmenuManager* __sharedInstance;
         frame.origin.y -= SUBMENU_HEIGHT;
         nextSubmenu.frame = frame;
     } completion:^(BOOL finished) {
+        [submenuDelegate removeViewFromUnwantedViews:currentSubmenu];
         [currentSubmenu removeFromSuperview];
         currentSubmenuType = nextSubmenuType;
         currentSubmenu = nextSubmenu;
@@ -1038,6 +1039,7 @@ static PSSubmenuManager* __sharedInstance;
         proxyTextViewHolder.backgroundColor = [UIColor clearColor];
         proxyTextViewHolder.alpha = 0.0;
         [submenuDelegate.view addSubview:proxyTextViewHolder];
+        [submenuDelegate addViewToUnwantedViews:proxyTextViewHolder];
         
         proxyTextView = [[PSSubmenuTextView alloc] initWithFrame:[self proxyTextViewFrame]];
         proxyTextView.backgroundColor = [UIColor whiteColor];
@@ -1093,6 +1095,10 @@ static PSSubmenuManager* __sharedInstance;
         [self imageOpacityChanged];
     }
 }
+- (PSSubmenuType)getCurrentSubmenuType
+{
+    return currentSubmenuType;
+}
 #pragma mark - Tableview Delegates
 - (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -1119,16 +1125,28 @@ static PSSubmenuManager* __sharedInstance;
     PSTableViewCell* cell;
     
     if (tableView == fabricColorTableView) {
+        NSInteger index = [[fabricSettings objectForKey:FABRIC_COLOR_INDEX_KEY] integerValue];
         cell = [tableView dequeueReusableCellWithIdentifier:COLOR_CELL_IDENTIFIER];
         [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
         cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
     } else if (tableView == textFontTableView) {
+        NSInteger index = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
         cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
         cell.mainLabel.text = [fontNames objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
     } else if (tableView == textColorTableView) {
+        NSInteger index = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
         cell = [tableView dequeueReusableCellWithIdentifier:COLOR_CELL_IDENTIFIER];
         [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
         cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
     }
     
     return cell;
@@ -1143,16 +1161,19 @@ static PSSubmenuManager* __sharedInstance;
         [self configureFabricSubmenuWithCurrentOptions];
         
         [submenuDelegate fabricColorSelected:[colors objectAtIndex:fabricColorIndex]];
+        [fabricColorTableView reloadData];
     } else if (tableView == textFontTableView) {
         NSInteger textFontIndex = indexPath.row;
         
         [labelSettings setObject:[NSNumber numberWithInteger:textFontIndex] forKey:TEXT_FONT_INDEX_KEY];
         [self configureTextSubmenuWithCurrentOptions];
+        [textFontTableView reloadData];
     } else if (tableView == textColorTableView) {
         NSInteger textColorIndex = indexPath.row;
         
         [labelSettings setObject:[NSNumber numberWithInteger:textColorIndex] forKey:TEXT_COLOR_INDEX_KEY];
         [self configureTextSubmenuWithCurrentOptions];
+        [textColorTableView reloadData];
     }
 }
 #pragma mark - Button actions
@@ -1319,6 +1340,24 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) removeTableWithType:(PSSubmenuTableType)tableType
 {
+    UIView* view;
+    
+    switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
+            view = fabricColorTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_FONT:
+            view = textFontTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_TEXT_COLOR:
+            view = textColorTableViewHolder;
+            break;
+            
+        default:
+            break;
+    }
+    
+    [submenuDelegate removeViewFromUnwantedViews:view];
     [self animateTableClosingWithType:tableType];
 }
 - (void) animateTableOpeningWithType:(PSSubmenuTableType)tableType
@@ -1355,6 +1394,12 @@ static PSSubmenuManager* __sharedInstance;
         } completion:^(BOOL finished) {
             holderView.layer.anchorPoint = CGPointMake(0.5, 0.5);
             holderView.frame = frame;
+            
+            if (fabricColorTableView.indexPathForSelectedRow != nil) {
+                NSLog(@"not nil");
+            } else {
+                NSLog(@"nil");
+            }
         }];
     }];
 }
@@ -1580,6 +1625,7 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) animationFinished
 {
+    [submenuDelegate removeViewFromUnwantedViews:proxyTextViewHolder];
     [proxyTextView removeFromSuperview];
     proxyTextView = nil;
     

@@ -44,6 +44,8 @@
     
     self.accessoryType = UITableViewCellAccessoryNone;
     
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    
     self.backgroundColor = [UIColor clearColor];
 }
 - (void) stylizeForMainCell
@@ -71,28 +73,22 @@
     [self addSubview:self.mainLabel];
     
 }
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
-    
-    self.colorView.backgroundColor = colorForColorView;
-    
-    if (selected) {
-        self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_SELECTED_TEXT_COLOR;
-    } else {
-        self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
-    }
+- (void) makeSelected
+{
+    self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_SELECTED_TEXT_COLOR;
 }
 - (void) setHighlighted:(BOOL)highlighted animated:(BOOL)animated
 {
+    
+    if (!self.highlighted && highlighted) {
+        self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_HIGHLIGHTED_TEXT_COLOR;
+    } else if (self.highlighted && !highlighted) {
+        self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
+    }
+    
     [super setHighlighted:highlighted animated:animated];
     
     self.colorView.backgroundColor = colorForColorView;
-    
-    if (highlighted) {
-        self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_HIGHLIGHTED_TEXT_COLOR;
-    } else {
-        self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
-    }
 }
 - (void) setColorForColorView:(UIColor*)color
 {
@@ -103,5 +99,8 @@
 {
     return colorForColorView;
 }
-
+- (void) prepareForReuse
+{
+    self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
+}
 @end

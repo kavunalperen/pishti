@@ -30,12 +30,10 @@ typedef enum PSSubmenuTableType
 + (PSSubmenuManager*) sharedInstance;
 
 - (void) setSubmenuDelegate:(PSDesignViewController2*)viewController;
-
 - (void) showSubmenuWithType:(PSSubmenuType)submenuType;
-
-- (CGFloat) getCurrentOpacity;
 - (void) sliderValueChanged:(PSSlider*)slider;
-
 - (void) removeAnyTable;
+- (CGFloat) getCurrentOpacity;
+- (PSSubmenuType)getCurrentSubmenuType;
 
 @end

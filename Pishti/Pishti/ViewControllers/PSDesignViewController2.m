@@ -70,7 +70,12 @@
     
     unwantedViews = @[].mutableCopy;
 }
-
+- (void) viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+    [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_FABRIC];
+}
 #pragma mark - View Setup Methods
 - (void) initialSetups
 {
@@ -107,6 +112,10 @@
 {
     [unwantedViews addObject:view];
 }
+- (void) removeViewFromUnwantedViews:(UIView*)view
+{
+    [unwantedViews removeObject:view];
+}
 #pragma mark - Gesture Recognizer Methods
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
@@ -136,64 +145,74 @@
         menuCenterPoint = menuPoint;
         [self showMenu];
     } else if (longPress.state == UIGestureRecognizerStateChanged) {
-        if ([fabricSubmenuButton.layer containsPoint:fabricTouch]) {
-            [fabricSubmenuButton setHighlighted:YES];
-            CGPoint oldCenter = fabricSubmenuButton.center;
-            [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                fabricSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
-                fabricSubmenuButton.center = oldCenter;
-            } completion:^(BOOL finished) {
-                ;
-            }];
-        } else {
-            [fabricSubmenuButton setHighlighted:NO];
-            CGPoint oldCenter = fabricSubmenuButton.center;
-            [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                fabricSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
-                fabricSubmenuButton.center = oldCenter;
-            } completion:^(BOOL finished) {
-                ;
-            }];
+        
+        PSSubmenuType currentType = [[PSSubmenuManager sharedInstance] getCurrentSubmenuType];
+        
+        if (currentType != SUBMENU_TYPE_FABRIC) {
+        
+            if ([fabricSubmenuButton.layer containsPoint:fabricTouch]) {
+                [fabricSubmenuButton setHighlighted:YES];
+                CGPoint oldCenter = fabricSubmenuButton.center;
+                [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    fabricSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+                    fabricSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            } else {
+                [fabricSubmenuButton setHighlighted:NO];
+                CGPoint oldCenter = fabricSubmenuButton.center;
+                [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    fabricSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
+                    fabricSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            }
         }
         
-        if ([imageSubmenuButton.layer containsPoint:imageTouch]) {
-            [imageSubmenuButton setHighlighted:YES];
-            CGPoint oldCenter = imageSubmenuButton.center;
-            [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                imageSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
-                imageSubmenuButton.center = oldCenter;
-            } completion:^(BOOL finished) {
-                ;
-            }];
-        } else {
-            [imageSubmenuButton setHighlighted:NO];
-            CGPoint oldCenter = imageSubmenuButton.center;
-            [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                imageSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
-                imageSubmenuButton.center = oldCenter;
-            } completion:^(BOOL finished) {
-                ;
-            }];
+        if (currentType != SUBMENU_TYPE_IMAGE) {
+            if ([imageSubmenuButton.layer containsPoint:imageTouch]) {
+                [imageSubmenuButton setHighlighted:YES];
+                CGPoint oldCenter = imageSubmenuButton.center;
+                [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    imageSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+                    imageSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            } else {
+                [imageSubmenuButton setHighlighted:NO];
+                CGPoint oldCenter = imageSubmenuButton.center;
+                [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    imageSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
+                    imageSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            }
         }
         
-        if ([textSubmenuButton.layer containsPoint:textTouch]) {
-            [textSubmenuButton setHighlighted:YES];
-            CGPoint oldCenter = textSubmenuButton.center;
-            [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                textSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
-                textSubmenuButton.center = oldCenter;
-            } completion:^(BOOL finished) {
-                ;
-            }];
-        } else {
-            [textSubmenuButton setHighlighted:NO];
-            CGPoint oldCenter = textSubmenuButton.center;
-            [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                textSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
-                textSubmenuButton.center = oldCenter;
-            } completion:^(BOOL finished) {
-                ;
-            }];
+        if (currentType != SUBMENU_TYPE_TEXT) {
+            if ([textSubmenuButton.layer containsPoint:textTouch]) {
+                [textSubmenuButton setHighlighted:YES];
+                CGPoint oldCenter = textSubmenuButton.center;
+                [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    textSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+                    textSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            } else {
+                [textSubmenuButton setHighlighted:NO];
+                CGPoint oldCenter = textSubmenuButton.center;
+                [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    textSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
+                    textSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            }
         }
     } else if (longPress.state == UIGestureRecognizerStateEnded){
         NSLog(@"long press ended");
@@ -266,6 +285,34 @@
     [textSubmenuButton setBackgroundImage:[UIImage imageNamed:@"text_btn_normal.png"] forState:UIControlStateNormal];
     [textSubmenuButton setBackgroundImage:[UIImage imageNamed:@"text_btn_highlighted.png"] forState:UIControlStateHighlighted];
     [menuBackgroundView addSubview:textSubmenuButton];
+    
+    PSSubmenuType currentType = [[PSSubmenuManager sharedInstance] getCurrentSubmenuType];
+    
+    CGPoint oldCenter;
+    
+    switch (currentType) {
+        case SUBMENU_TYPE_FABRIC:
+            fabricSubmenuButton.highlighted = YES;
+            oldCenter = fabricSubmenuButton.center;
+            fabricSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+            fabricSubmenuButton.center = oldCenter;
+            break;
+        case SUBMENU_TYPE_TEXT:
+            textSubmenuButton.highlighted = YES;
+            oldCenter = textSubmenuButton.center;
+            textSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+            textSubmenuButton.center = oldCenter;
+            break;
+        case SUBMENU_TYPE_IMAGE:
+            imageSubmenuButton.highlighted = YES;
+            oldCenter = imageSubmenuButton.center;
+            imageSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+            imageSubmenuButton.center = oldCenter;
+            break;
+            
+        default:
+            break;
+    }
     
     [UIView animateWithDuration:0.44 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         menuBackgroundImageView.alpha = 1.0;

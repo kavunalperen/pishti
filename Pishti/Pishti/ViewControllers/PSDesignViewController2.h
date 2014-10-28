@@ -23,5 +23,6 @@
 - (void) deleteAllLabels;
 
 - (void) addViewToUnwantedViews:(UIView*)view;
+- (void) removeViewFromUnwantedViews:(UIView*)view;
 
 @end

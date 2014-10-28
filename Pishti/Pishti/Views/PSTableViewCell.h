@@ -19,5 +19,6 @@
 
 - (void) setColorForColorView:(UIColor*)color;
 - (UIColor*) getColorForColorView;
+- (void) makeSelected;
 
 @end

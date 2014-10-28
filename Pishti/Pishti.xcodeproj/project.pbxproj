@@ -49,6 +49,7 @@
 		054BF33A19ED8C4800685EBC /* text_btn_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 054BF33319ED8C4800685EBC /* text_btn_normal@2x~ipad.png */; };
 		054BF33E19ED960E00685EBC /* PSSubmenuManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 054BF33D19ED960E00685EBC /* PSSubmenuManager.m */; };
 		054BF35319EDAC7700685EBC /* golge@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 054BF35219EDAC7700685EBC /* golge@2x~ipad.png */; };
+		0589060A1A001B5400AFBA9A /* PSTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 058906091A001B5400AFBA9A /* PSTableViewController.m */; };
 		05B827D219FD313E007765A9 /* PSTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D119FD313E007765A9 /* PSTableView.m */; };
 		05B827D519FD3268007765A9 /* PSTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D419FD3268007765A9 /* PSTableViewCell.m */; };
 		05B827D819FD438C007765A9 /* PSSubmenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D719FD438C007765A9 /* PSSubmenuView.m */; };
@@ -400,6 +401,8 @@
 		054BF33C19ED960E00685EBC /* PSSubmenuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSSubmenuManager.h; sourceTree = "<group>"; };
 		054BF33D19ED960E00685EBC /* PSSubmenuManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSSubmenuManager.m; sourceTree = "<group>"; };
 		054BF35219EDAC7700685EBC /* golge@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "golge@2x~ipad.png"; sourceTree = "<group>"; };
+		058906081A001B5400AFBA9A /* PSTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableViewController.h; sourceTree = "<group>"; };
+		058906091A001B5400AFBA9A /* PSTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSTableViewController.m; sourceTree = "<group>"; };
 		05B827D019FD313E007765A9 /* PSTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableView.h; sourceTree = "<group>"; };
 		05B827D119FD313E007765A9 /* PSTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSTableView.m; sourceTree = "<group>"; };
 		05B827D319FD3268007765A9 /* PSTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableViewCell.h; sourceTree = "<group>"; };
@@ -1013,6 +1016,8 @@
 				050155231926CC35009FEE6D /* PSHelpPageViewController.m */,
 				05C197B91927C416000ABA01 /* PSMainNavigationController.h */,
 				05C197BA1927C416000ABA01 /* PSMainNavigationController.m */,
+				058906081A001B5400AFBA9A /* PSTableViewController.h */,
+				058906091A001B5400AFBA9A /* PSTableViewController.m */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -1342,6 +1347,7 @@
 				050194EF1927947B00464D23 /* PSModelCanvas.m in Sources */,
 				050155211926CBBA009FEE6D /* PSHelpContentViewController.m in Sources */,
 				054BF31319ED833900685EBC /* PSDesignViewController2.m in Sources */,
+				0589060A1A001B5400AFBA9A /* PSTableViewController.m in Sources */,
 				0509BA58191F9B7F00BA83EC /* PSDesignViewController.m in Sources */,
 				05EF172B19F8EB5100B87C1B /* PSLabel.m in Sources */,
 				05B827D219FD313E007765A9 /* PSTableView.m in Sources */,
