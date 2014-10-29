@@ -1411,7 +1411,7 @@
     currentDeleteView.backgroundColor = [UIColor clearColor];
     UIImageView* imageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_delete_normal.png"]];
     [currentDeleteView addSubview:imageView2];
-    currentDeleteView.tag = DELETE_VIEW_TAG;
+    currentDeleteView.tag = DELETE_VIEW_TAG2;
     currentDeleteView.layer.zPosition = currentZIndex;
     [modelCanvas addSubview:currentDeleteView];
     
@@ -1423,7 +1423,7 @@
     currentMoveView.backgroundColor = [UIColor clearColor];
     UIImageView* imageView3 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_move_normal.png"]];
     [currentMoveView addSubview:imageView3];
-    currentMoveView.tag = MOVE_VIEW_TAG;
+    currentMoveView.tag = MOVE_VIEW_TAG2;
     currentMoveView.layer.zPosition = currentZIndex;
     [modelCanvas addSubview:currentMoveView];
     
@@ -1435,7 +1435,7 @@
     currentRotateView.backgroundColor = [UIColor clearColor];
     UIImageView* imageView4 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_rotate_normal.png"]];
     [currentRotateView addSubview:imageView4];
-    currentRotateView.tag = ROTATE_VIEW_TAG;
+    currentRotateView.tag = ROTATE_VIEW_TAG2;
     currentRotateView.layer.zPosition = currentZIndex;
     [modelCanvas addSubview:currentRotateView];
     
@@ -1447,7 +1447,7 @@
         currentEditView.backgroundColor = [UIColor clearColor];
         UIImageView* imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_edit_normal.png"]];
         [currentEditView addSubview:imageView];
-        currentEditView.tag = EDIT_VIEW_TAG;
+        currentEditView.tag = EDIT_VIEW_TAG2;
         currentEditView.layer.zPosition = currentZIndex;
         [modelCanvas addSubview:currentEditView];
         
@@ -1482,8 +1482,8 @@
     } else if ([selectedItem isKindOfClass:[UIImageView class]]) {
         PSImageView* imageView = (PSImageView*)selectedItem;
         
-        imageOpacitySlider.value = imageView.opacity*100;
-        imageOpacity = imageView.opacity;
+//        imageOpacitySlider.value = imageView.opacity*100;
+//        imageOpacity = imageView.opacity;
     }
 }
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
@@ -1668,7 +1668,7 @@
         imageView.backgroundColor = [UIColor clearColor];
         imageView.image = newImage;
         imageView.alpha = imageOpacity;
-        imageView.opacity = imageOpacity;
+//        imageView.opacity = imageOpacity;
 //        imageView.layer.zPosition = currentZIndex;
         currentZIndex += 1.0;
         [modelCanvas addSubview:imageView];
@@ -2509,8 +2509,8 @@
     } else {
         imageOpacity = sliderValuePercent;
         if (selectedItem && [selectedItem isKindOfClass:[UIImageView class]]) {
-            ((PSImageView*)selectedItem).opacity = imageOpacity;
-            ((PSImageView*)selectedItem).alpha = imageOpacity;
+//            ((PSImageView*)selectedItem).opacity = imageOpacity;
+//            ((PSImageView*)selectedItem).alpha = imageOpacity;
         }
     }
 }

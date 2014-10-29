@@ -10,6 +10,10 @@
 
 @interface PSImageView : UIImageView
 
-@property CGFloat opacity;
+@property NSMutableDictionary* imageSettings;
+
+- (id) initWithCenter:(CGPoint)center;
+
+- (void) configureImageWithSettings;
 
 @end

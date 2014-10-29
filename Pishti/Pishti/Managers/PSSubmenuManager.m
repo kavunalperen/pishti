@@ -15,19 +15,9 @@
 #import "PSTableViewCell.h"
 #import "PSSubmenuView.h"
 #import "PSSubmenuTextView.h"
+#import "PSDesignLabel.h"
 
 #define SUBMENU_HEIGHT 255.0
-#define TEXT_OPACITY_KEY @"kTextOpacity"
-#define BOLDNESS_KEY @"kIsBold"
-#define ITALICNESS_KEY @"kIsItalic"
-#define DIRECTION_KEY @"kIsVertical"
-#define TEXT_ALIGNMENT_KEY @"kTextAlignment"
-#define TEXT_COLOR_INDEX_KEY @"kTextColor"
-#define TEXT_FONT_INDEX_KEY @"kTextFontIndex"
-
-#define IMAGE_OPACITY_KEY @"kImageOpacity"
-
-#define FABRIC_COLOR_INDEX_KEY @"kFabricColorIndex"
 
 static PSSubmenuManager* __sharedInstance;
 
@@ -65,8 +55,7 @@ static PSSubmenuManager* __sharedInstance;
     UIView* textFontTableViewHolder;
     PSLabel* textFontValue;
     
-    NSArray* fonts;
-    NSArray* fontNames;
+    NSArray* fontFamilyNames;
     
     NSMutableDictionary* labelSettings;
     NSMutableDictionary* fabricSettings;
@@ -283,15 +272,13 @@ static PSSubmenuManager* __sharedInstance;
                    @"MOR",
                    @"FÜME"];
     
-    fonts = @[[UIFont fontWithName:@"HelveticaNeue" size:15.0],
-              [UIFont fontWithName:@"ArialMT" size:15.0]];
-    
-    fontNames = @[@"Helvetica",
+    fontFamilyNames = @[@"Helvetica",
                   @"Arial"];
     
     fabricSettings = @{FABRIC_COLOR_INDEX_KEY:[NSNumber numberWithInteger:2]}.mutableCopy;
     
-    labelSettings = @{TEXT_OPACITY_KEY:[NSNumber numberWithFloat:1.0],
+    labelSettings = @{CURRENT_TEXT_KEY:@"",
+                      TEXT_OPACITY_KEY:[NSNumber numberWithFloat:1.0],
                       BOLDNESS_KEY:[NSNumber numberWithBool:NO],
                       ITALICNESS_KEY:[NSNumber numberWithBool:NO],
                       DIRECTION_KEY:[NSNumber numberWithBool:NO],
@@ -589,13 +576,14 @@ static PSSubmenuManager* __sharedInstance;
     textView.delegate = self;
     [textViewHolder addSubview:textView];
     
-    UIButton* addNewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    addNewButton.frame = [self addNewtextButtonFrame];
-    addNewButton.center = CGPointMake(30.0, 30.0);
-    addNewButton.backgroundColor = [UIColor clearColor];
-    [addNewButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_normal.png"] forState:UIControlStateNormal];
-    [addNewButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_highlighted.png"] forState:UIControlStateHighlighted];
-    [textViewHolder addSubview:addNewButton];
+    UIButton* addNewLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    addNewLabelButton.frame = [self addNewtextButtonFrame];
+    addNewLabelButton.center = CGPointMake(30.0, 30.0);
+    addNewLabelButton.backgroundColor = [UIColor clearColor];
+    [addNewLabelButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_normal.png"] forState:UIControlStateNormal];
+    [addNewLabelButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_highlighted.png"] forState:UIControlStateHighlighted];
+    [addNewLabelButton addTarget:self action:@selector(addNewLabelClicked:) forControlEvents:UIControlEventTouchUpInside];
+    [textViewHolder addSubview:addNewLabelButton];
     
     // opacity slider
     CGRect frame = [self thirdItemHolderFrame];
@@ -932,6 +920,8 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) configureTextSubmenuWithCurrentOptions
 {
+    [submenuDelegate labelSettingsChanged:labelSettings];
+    
     CGFloat opacity = [[labelSettings objectForKey:TEXT_OPACITY_KEY] floatValue];
     NSInteger textFontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
     bool isBold = [[labelSettings objectForKey:BOLDNESS_KEY] boolValue];
@@ -939,6 +929,7 @@ static PSSubmenuManager* __sharedInstance;
     bool direction = [[labelSettings objectForKey:DIRECTION_KEY] boolValue];
     NSInteger alignment = [[labelSettings objectForKey:TEXT_ALIGNMENT_KEY] integerValue];
     NSInteger textColorIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
+    NSString* currentText = [labelSettings objectForKey:CURRENT_TEXT_KEY];
     
     [textOpacitySlider setSliderValue:opacity];
     
@@ -947,29 +938,44 @@ static PSSubmenuManager* __sharedInstance;
     textColorValue.textColor = [colors objectAtIndex:textColorIndex];
     textColorValue.text = [colorNames objectAtIndex:textColorIndex];
     
-    textFontValue.text = [fontNames objectAtIndex:textFontIndex];
+    textFontValue.text = [fontFamilyNames objectAtIndex:textFontIndex];
     
-    textView.font = [fonts objectAtIndex:textFontIndex];
+    NSString* fontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:textFontIndex] andIsBold:isBold andIsItalic:isItalic];
+    textView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
     textView.textColor = [colors objectAtIndex:textColorIndex];
     textView.tintColor = [colors objectAtIndex:textColorIndex];
+    textView.text = currentText;
+    textView.textAlignment = alignment;
     
     if (isBold) {
         boldnessButton.selected = YES;
+    } else {
+        boldnessButton.selected = NO;
     }
     if (isItalic) {
         italicnessButton.selected = YES;
+    } else {
+        italicnessButton.selected = NO;
     }
     if (direction) {
         directionButton.selected = YES;
+    } else {
+        directionButton.selected = NO;
     }
     switch (alignment) {
         case NSTextAlignmentLeft:
             leftAlignmentButton.selected = YES;
+            rightAlignmentButton.selected = NO;
+            centerAlignmentButton.selected = NO;
             break;
         case NSTextAlignmentRight:
+            leftAlignmentButton.selected = NO;
             rightAlignmentButton.selected = YES;
+            centerAlignmentButton.selected = NO;
             break;
         case NSTextAlignmentCenter:
+            leftAlignmentButton.selected = NO;
+            rightAlignmentButton.selected = NO;
             centerAlignmentButton.selected = YES;
             break;
         default:
@@ -978,6 +984,8 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) configureImageSubmenuWithCurrentOptions
 {
+    [submenuDelegate imageSettingsChanged:imageSettings];
+    
     CGFloat opacity = [[imageSettings objectForKey:IMAGE_OPACITY_KEY] floatValue];
     [imageOpacitySlider setSliderValue:opacity];
 }
@@ -1053,7 +1061,14 @@ static PSSubmenuManager* __sharedInstance;
         [proxyTextViewHolder addSubview:proxyTextView];
         
         NSInteger fontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
-        proxyTextView.font = [fonts objectAtIndex:fontIndex];
+        bool isBold = [[labelSettings objectForKey:BOLDNESS_KEY] boolValue];
+        bool isItalic = [[labelSettings objectForKey:ITALICNESS_KEY] boolValue];
+        NSInteger alignment = [[labelSettings objectForKey:TEXT_ALIGNMENT_KEY] integerValue];
+        
+        NSString* fontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:fontIndex] andIsBold:isBold andIsItalic:isItalic];
+        proxyTextView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
+        
+        proxyTextView.textAlignment = alignment;
         
         NSInteger textColorIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
         proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
@@ -1073,7 +1088,12 @@ static PSSubmenuManager* __sharedInstance;
 - (void)textViewDidChange:(UITextView*)aTextView
 {
     if (aTextView == proxyTextView) {
-        textView.text = aTextView.text;
+        NSString* currentText = aTextView.text;
+        textView.text = currentText;
+        if (currentText == nil) {
+            currentText = @"";
+        }
+        [labelSettings setObject:currentText forKey:CURRENT_TEXT_KEY];
     }
 }
 #pragma mark - Public Methods
@@ -1087,6 +1107,20 @@ static PSSubmenuManager* __sharedInstance;
         return 0.0;
     }
 }
+- (NSDictionary*) getImageSettings
+{
+    return imageSettings;
+}
+- (void) setImageSettings:(NSMutableDictionary*)settings
+{
+    imageSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+    [self configureImageSubmenuWithCurrentOptions];
+}
+- (void) setTextSettings:(NSMutableDictionary*)settings
+{
+    labelSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+    [self configureTextSubmenuWithCurrentOptions];
+}
 - (void) sliderValueChanged:(PSSlider *)slider
 {
     if (slider == textOpacitySlider) {
@@ -1099,6 +1133,24 @@ static PSSubmenuManager* __sharedInstance;
 {
     return currentSubmenuType;
 }
+- (UIColor*) getColorWithColorIndex:(NSInteger)colorIndex
+{
+    return [colors objectAtIndex:colorIndex];
+}
+- (NSString*) getFontFamilyWithFontIndex:(NSInteger)fontIndex
+{
+    return [fontFamilyNames objectAtIndex:fontIndex];
+}
+
+- (void) designLabelSelected:(PSDesignLabel*)label
+{
+    
+}
+- (void) anImageSelected:(PSImageView*)image
+{
+    
+}
+
 #pragma mark - Tableview Delegates
 - (NSInteger) numberOfSectionsInTableView:(UITableView *)tableView
 {
@@ -1109,7 +1161,7 @@ static PSSubmenuManager* __sharedInstance;
     if (tableView == fabricColorTableView) {
         return colors.count;
     } else if (tableView == textFontTableView) {
-        return fonts.count;
+        return fontFamilyNames.count;
     } else if (tableView == textColorTableView) {
         return colors.count;
     } else {
@@ -1135,7 +1187,7 @@ static PSSubmenuManager* __sharedInstance;
     } else if (tableView == textFontTableView) {
         NSInteger index = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
         cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
-        cell.mainLabel.text = [fontNames objectAtIndex:indexPath.row];
+        cell.mainLabel.text = [fontFamilyNames objectAtIndex:indexPath.row];
         if (indexPath.row == index) {
             [cell makeSelected];
         }
@@ -1185,6 +1237,15 @@ static PSSubmenuManager* __sharedInstance;
 }
 
 #pragma mark - Text actions
+- (void) addNewLabelClicked:(UIButton*)button
+{
+    CGPoint menuCenterPoint = [submenuDelegate getMenuCenterPoint];
+    PSDesignLabel* newLabel = [[PSDesignLabel alloc] initWithCenter:menuCenterPoint];
+    newLabel.labelSettings = [NSMutableDictionary dictionaryWithDictionary:labelSettings];
+    [newLabel configureLabelWithSettings];
+    
+    [submenuDelegate addDesignLabel:newLabel];
+}
 - (void) textFontClicked:(UIButton*)button
 {
     [self addTableWithType:SUBMENU_TABLE_TYPE_TEXT_FONT];
@@ -1198,18 +1259,21 @@ static PSSubmenuManager* __sharedInstance;
     boldnessButton.selected = !boldnessButton.selected;
     
     [labelSettings setObject:[NSNumber numberWithBool:boldnessButton.selected] forKey:BOLDNESS_KEY];
+    [self configureTextSubmenuWithCurrentOptions];
 }
 - (void) italicnessClicked:(UIButton*)button
 {
     italicnessButton.selected = !italicnessButton.selected;
     
     [labelSettings setObject:[NSNumber numberWithBool:italicnessButton.selected] forKey:ITALICNESS_KEY];
+    [self configureTextSubmenuWithCurrentOptions];
 }
 - (void) directionClicked:(UIButton*)button
 {
     directionButton.selected = !directionButton.selected;
     
     [labelSettings setObject:[NSNumber numberWithBool:directionButton.selected] forKey:DIRECTION_KEY];
+    [self configureTextSubmenuWithCurrentOptions];
 }
 - (void) leftAlignmentClicked:(UIButton*)button
 {
@@ -1222,6 +1286,8 @@ static PSSubmenuManager* __sharedInstance;
     centerAlignmentButton.selected = NO;
     
     [labelSettings setObject:[NSNumber numberWithInteger:NSTextAlignmentLeft] forKey:TEXT_ALIGNMENT_KEY];
+    
+    [self configureTextSubmenuWithCurrentOptions];
 }
 - (void) rightAlignmentClicked:(UIButton*)button
 {
@@ -1234,6 +1300,8 @@ static PSSubmenuManager* __sharedInstance;
     centerAlignmentButton.selected = NO;
     
     [labelSettings setObject:[NSNumber numberWithInteger:NSTextAlignmentRight] forKey:TEXT_ALIGNMENT_KEY];
+    
+    [self configureTextSubmenuWithCurrentOptions];
 }
 - (void) centerAlignmentClicked:(UIButton*)button
 {
@@ -1246,10 +1314,92 @@ static PSSubmenuManager* __sharedInstance;
     centerAlignmentButton.selected = YES;
     
     [labelSettings setObject:[NSNumber numberWithInteger:NSTextAlignmentCenter] forKey:TEXT_ALIGNMENT_KEY];
+    
+    [self configureTextSubmenuWithCurrentOptions];
 }
 - (void) textOpacityChanged
 {
     [labelSettings setObject:[NSNumber numberWithFloat:textOpacitySlider.value] forKey:TEXT_OPACITY_KEY];
+    [self configureTextSubmenuWithCurrentOptions];
+}
+
+#pragma mark - Image Actions
+- (void) selectImageClicked:(UIButton*)button
+{
+    [self initializeImagePicker];
+    
+    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    
+    [self presentImagePicker];
+}
+- (void) captureImageClicked:(UIButton*)button
+{
+    [self initializeImagePicker];
+    
+    imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+    
+    [self presentImagePicker];
+}
+- (void) initializeImagePicker
+{
+    if (imagePicker == nil) {
+        imagePicker = [[UIImagePickerController alloc] init];
+        imagePicker.delegate = submenuDelegate;
+        imagePicker.navigationBar.translucent = NO;
+        imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;
+    }
+}
+- (void) presentImagePicker
+{
+    [[UIApplication sharedApplication] setStatusBarHidden:YES];
+    
+    [submenuDelegate addChildViewController:imagePicker];
+    [submenuDelegate.view addSubview:imagePicker.view];
+    imagePicker.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    imagePicker.view.frame = submenuDelegate.view.bounds;
+    [imagePicker didMoveToParentViewController:submenuDelegate];
+}
+- (void) imageOpacityChanged
+{
+    [imageSettings setObject:[NSNumber numberWithFloat:imageOpacitySlider.value] forKey:IMAGE_OPACITY_KEY];
+    [self configureImageSubmenuWithCurrentOptions];
+}
+
+#pragma mark - General Buttons Actions
+- (void) deleteLastClicked:(UIButton*)button
+{
+    NSLog(@"delete last clicked");
+    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
+        [self deleteLastImage];
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
+        [self deleteLastLabel];
+    }
+}
+- (void) deleteAllClicked:(UIButton*)button
+{
+    NSLog(@"delete all clicked");
+    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
+        [self deleteAllImages];
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
+        [self deleteAllLabels];
+    }
+}
+- (void) deleteLastImage
+{
+    [submenuDelegate deleteLastImage];
+}
+- (void) deleteLastLabel
+{
+    [submenuDelegate deleteLastLabel];
+}
+- (void) deleteAllImages
+{
+    NSLog(@"delete all images from submenu manager");
+    [submenuDelegate deleteAllImages];
+}
+- (void) deleteAllLabels
+{
+    [submenuDelegate deleteAllLabels];
 }
 
 #pragma mark - Table Openings - Closings
@@ -1479,89 +1629,6 @@ static PSSubmenuManager* __sharedInstance;
     }
 }
 
-#pragma mark - Image Actions
-- (void) selectImageClicked:(UIButton*)button
-{
-    [self initializeImagePicker];
-    
-    imagePicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
-    
-    [self presentImagePicker];
-}
-- (void) captureImageClicked:(UIButton*)button
-{
-    [self initializeImagePicker];
-    
-    imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
-    
-    [self presentImagePicker];
-}
-- (void) initializeImagePicker
-{
-    if (imagePicker == nil) {
-        imagePicker = [[UIImagePickerController alloc] init];
-        imagePicker.delegate = submenuDelegate;
-        imagePicker.navigationBar.translucent = NO;
-        imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;
-    }
-}
-- (void) presentImagePicker
-{
-    [[UIApplication sharedApplication] setStatusBarHidden:YES];
-    
-    [submenuDelegate addChildViewController:imagePicker];
-    [submenuDelegate.view addSubview:imagePicker.view];
-    imagePicker.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    imagePicker.view.frame = submenuDelegate.view.bounds;
-    [imagePicker didMoveToParentViewController:submenuDelegate];
-}
-- (void) imageOpacityChanged
-{
-    [imageSettings setObject:[NSNumber numberWithFloat:imageOpacitySlider.value] forKey:IMAGE_OPACITY_KEY];
-}
-
-#pragma mark - General Buttons Actions
-- (void) deleteLastClicked:(UIButton*)button
-{
-    NSLog(@"delete last clicked");
-    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
-        [self deleteLastImage];
-    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
-        [self deleteLastLabel];
-    }
-}
-- (void) deleteAllClicked:(UIButton*)button
-{
-    NSLog(@"delete all clicked");
-    if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
-        [self deleteAllImages];
-    } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
-        [self deleteAllLabels];
-    }
-}
-- (void) deleteLastImage
-{
-    NSLog(@"delete last image from submenu manager");
-    [submenuDelegate deleteLastImage];
-}
-- (void) deleteLastLabel
-{
-    [submenuDelegate deleteLastLabel];
-}
-- (void) deleteAllImages
-{
-    NSLog(@"delete all images from submenu manager");
-    [submenuDelegate deleteAllImages];
-}
-- (void) deleteAllLabels
-{
-    [submenuDelegate deleteAllLabels];
-}
-- (void) dealloc
-{
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 #pragma mark - Keyboard Opening - Closing
 - (void) keyboardWillShow:(NSNotification *)note{
     [self removeAnyTable];
@@ -1631,5 +1698,10 @@ static PSSubmenuManager* __sharedInstance;
     
     [proxyTextViewHolder removeFromSuperview];
     proxyTextViewHolder = nil;
+}
+
+- (void) dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 @end

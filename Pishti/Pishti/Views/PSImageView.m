@@ -7,25 +7,25 @@
 //
 
 #import "PSImageView.h"
+#import "Util.h"
+#import "PSSubmenuManager.h"
 
 @implementation PSImageView
 
-- (id)initWithFrame:(CGRect)frame
+- (id) initWithCenter:(CGPoint)center
 {
-    self = [super initWithFrame:frame];
-    if (self) {
-        // Initialization code
+    if (self = [super init]) {
+        self.backgroundColor = [UIColor clearColor];
+        self.center = center;
     }
+    
     return self;
 }
-
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect
+- (void) configureImageWithSettings
 {
-    // Drawing code
+    CGFloat opacity = [[_imageSettings objectForKey:IMAGE_OPACITY_KEY] floatValue];
+    
+    self.alpha = opacity;
 }
-*/
 
 @end

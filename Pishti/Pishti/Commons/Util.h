@@ -34,4 +34,8 @@
 - (NSString*) nilAndNullCheckWithString:(NSString*)aString;
 - (NSNumber*) nilAndNullCheckWithNumber:(NSNumber*)aNumber;
 
+- (NSString*) getFontNameForFamily:(NSString*)family
+                         andIsBold:(bool)isBold
+                       andIsItalic:(bool)isItalic;
+
 @end

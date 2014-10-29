@@ -37,6 +37,23 @@
     PSModelCanvas* modelCanvas;
     
     NSMutableArray* unwantedViews;
+    
+    float currentZIndex;
+    
+    UIView* selectedItem;
+    UIView* currentDeleteView;
+    UIView* currentMoveView;
+    UIView* currentRotateView;
+    UIView* currentScaleView;
+    
+    BOOL isMoving;
+    BOOL isRotating;
+    BOOL isScaling;
+    
+    CGPoint moveStartingPoint;
+    CGPoint rotateStartingPoint;
+    CGPoint rotateCenterPoint;
+    CGPoint scaleStartingPoint;
 }
 #pragma mark - Frame Getters
 
@@ -48,6 +65,22 @@
 - (CGRect) logoFrame
 {
     return CGRectMake(SCREEN_SIZE.width-84.0, 18.0, 84.0, 94.0);
+}
+- (CGRect) deleteViewFrameWithFrame:(CGRect)frame
+{
+    return CGRectMake(frame.origin.x-40.0, frame.origin.y-40.0, 40.0, 40.0);
+}
+- (CGRect) scaleViewFrameWithFrame:(CGRect)frame
+{
+    return CGRectMake(frame.origin.x+frame.size.width, frame.origin.y-40.0, 40.0, 40.0);
+}
+- (CGRect) moveViewFrameWithFrame:(CGRect)frame
+{
+    return CGRectMake(frame.origin.x-40.0, frame.origin.y+frame.size.height, 40.0, 40.0);
+}
+- (CGRect) rotateViewFrameWithFrame:(CGRect)frame
+{
+    return CGRectMake(frame.origin.x+frame.size.width, frame.origin.y+frame.size.height, 40.0, 40.0);
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -65,10 +98,11 @@
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    [self initialSetups];
-    [self addModelCanvas];
     
     unwantedViews = @[].mutableCopy;
+    
+    [self initialSetups];
+    [self addModelCanvas];
 }
 - (void) viewDidAppear:(BOOL)animated
 {
@@ -95,6 +129,8 @@
     [self.view addGestureRecognizer:menuGesture];
     
     [[PSSubmenuManager sharedInstance] setSubmenuDelegate:self];
+    
+    currentZIndex = 0.0;
 }
 - (void) addModelCanvas
 {
@@ -106,6 +142,8 @@
     UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(10.0, 0.0, 747.0, 768.0)];
     shadow.backgroundColor = [UIColor clearColor];
     shadow.image = [UIImage imageNamed:@"golge.png"];
+    shadow.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
     [self.view addSubview:shadow];
 }
 - (void) addViewToUnwantedViews:(UIView*)view
@@ -415,7 +453,10 @@
     NSLog(@"show text submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEXT];
 }
-
+- (CGPoint) getMenuCenterPoint
+{
+    return menuCenterPoint;
+}
 #pragma mark - Image picker controller delegate methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
@@ -439,55 +480,96 @@
         
         CGSize imageSize = newImage.size;
         
-        PSImageView* imageView = [[PSImageView alloc] initWithFrame:CGRectMake(0.0,
-                                                                               0.0,
-                                                                               imageSize.width,
-                                                                               imageSize.height)];
-        imageView.center = menuCenterPoint;
-        
-        imageView.backgroundColor = [UIColor clearColor];
+        PSImageView* imageView = [[PSImageView alloc] initWithCenter:menuCenterPoint];
         imageView.image = newImage;
         
-        CGFloat currentOpacity = [[PSSubmenuManager sharedInstance] getCurrentOpacity];
+        CGPoint oldCenter = imageView.center;
         
-        imageView.alpha = currentOpacity;
-        imageView.opacity = currentOpacity;
+        imageView.frame = CGRectMake(0.0,
+                                     0.0,
+                                     imageSize.width,
+                                     imageSize.height);
         
-        [modelCanvas addSubview:imageView];
+        imageView.center = oldCenter;
+        
+        NSMutableDictionary* imageSettings = [[PSSubmenuManager sharedInstance] getImageSettings];
+        
+        imageView.imageSettings = [NSMutableDictionary dictionaryWithDictionary:imageSettings];
+        [imageView configureImageWithSettings];
+        
+        imageView.layer.zPosition = currentZIndex;
+        currentZIndex += 1.0;
         
         [modelCanvas.allImages addObject:imageView];
+        
+        [modelCanvas addSubview:imageView];
     }
+}
+#pragma mark - Selected Item Settings
+- (void) imageSettingsChanged:(NSMutableDictionary*)settings
+{
+    if (selectedItem) {
+        if ([selectedItem isKindOfClass:[PSImageView class]]) {
+            ((PSImageView*)selectedItem).imageSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+            [((PSImageView*)selectedItem) configureImageWithSettings];
+            [self rearrangeSelectionRelatedViewsFrame];
+        }
+    }
+}
+- (void) labelSettingsChanged:(NSMutableDictionary*)settings
+{
+    if (selectedItem) {
+        if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+            ((PSDesignLabel*)selectedItem).labelSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+            [((PSDesignLabel*)selectedItem) configureLabelWithSettings];
+            [self rearrangeSelectionRelatedViewsFrame];
+        }
+    }
+}
+#pragma mark - Adding Labels
+- (void) addDesignLabel:(PSDesignLabel*)label
+{
+    label.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [modelCanvas.allLabels addObject:label];
+    [modelCanvas addSubview:label];
 }
 #pragma mark - Deletion Operations
 - (void) deleteLastImage
 {
-    NSLog(@"delete last image from design view");
     if (modelCanvas.allImages.count > 0) {
-        UIView* lastImage = [modelCanvas.allImages objectAtIndex:modelCanvas.allImages.count-1];
-        [lastImage removeFromSuperview];
-        [modelCanvas.allImages removeObject:lastImage];
+        PSImageView* lastImage = [modelCanvas.allImages objectAtIndex:modelCanvas.allImages.count-1];
+        [self deleteAImage:lastImage];
     }
 }
 - (void) deleteAllImages
 {
-    NSLog(@"delete all images from design view");
-    for (UIView* view in modelCanvas.allImages) {
+    for (PSImageView* view in modelCanvas.allImages) {
         [view removeFromSuperview];
     }
     
     modelCanvas.allImages = @[].mutableCopy;
 }
+- (void) deleteAImage:(PSImageView*)image
+{
+    [image removeFromSuperview];
+    [modelCanvas.allImages removeObject:image];
+}
 - (void) deleteLastLabel
 {
     if (modelCanvas.allLabels.count > 0) {
-        UIView* lastLabel = [modelCanvas.allLabels objectAtIndex:modelCanvas.allLabels.count-1];
-        [lastLabel removeFromSuperview];
-        [modelCanvas.allImages removeObject:lastLabel];
+        PSDesignLabel* lastLabel = [modelCanvas.allLabels objectAtIndex:modelCanvas.allLabels.count-1];
+        [self deleteALabel:lastLabel];
     }
+}
+- (void) deleteALabel:(PSDesignLabel*)label
+{
+    [label removeFromSuperview];
+    [modelCanvas.allLabels removeObject:label];
 }
 - (void) deleteAllLabels
 {
-    for (UIView* view in modelCanvas.allLabels) {
+    for (PSDesignLabel* view in modelCanvas.allLabels) {
         [view removeFromSuperview];
     }
     
@@ -502,10 +584,354 @@
 #pragma mark - Touch Operations
 - (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [super touchesBegan:touches withEvent:event];
     [[PSSubmenuManager sharedInstance] removeAnyTable];
+    if (selectedItem) {
+        UITouch* touch = [touches anyObject];
+        
+        CGPoint p1 = [touch locationInView:currentDeleteView];
+        
+        CGPoint p2 = [touch locationInView:currentScaleView];
+        
+        CGPoint p3 = [touch locationInView:currentMoveView];
+        
+        CGPoint p4 = [touch locationInView:currentRotateView];
+        
+        if (CGRectContainsPoint(currentDeleteView.bounds, p1)) {
+            if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+                [self deleteALabel:(PSDesignLabel *)selectedItem];
+                
+            } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
+                [self deleteAImage:(PSImageView*)selectedItem];
+            }
+            [self removeSelectionRelatedItems];
+        } else if (CGRectContainsPoint(currentScaleView.bounds, p2)) {
+            isScaling = YES;
+            scaleStartingPoint = [touch locationInView:modelCanvas];
+            return;
+        } else if (CGRectContainsPoint(currentMoveView.bounds, p3)) {
+            // move
+            isMoving = YES;
+            moveStartingPoint = [touch locationInView:modelCanvas];
+            return;
+        } else if (CGRectContainsPoint(currentRotateView.bounds, p4)) {
+            // rotate
+            isRotating = YES;
+            rotateStartingPoint = [touch locationInView:modelCanvas];
+            rotateCenterPoint = selectedItem.center;
+            return;
+        }
+    }
+    
+    UIView* newlySelectedItem = nil;
+    
+    for (PSDesignLabel* label in modelCanvas.allLabels) {
+        
+        UITouch* touch = [touches anyObject];
+        CGPoint p = [touch locationInView:label];
+        
+        if (CGRectContainsPoint(label.bounds, p)) {
+            if (newlySelectedItem) {
+                if (label.layer.zPosition > newlySelectedItem.layer.zPosition) {
+                    newlySelectedItem = label;
+                }
+            } else {
+                newlySelectedItem = label;
+            }
+        }
+    }
+    
+    for (UIImageView* imageView in modelCanvas.allImages) {
+        
+        UITouch* touch = [touches anyObject];
+        CGPoint p = [touch locationInView:imageView];
+        
+        if (CGRectContainsPoint(imageView.bounds, p)) {
+            if (newlySelectedItem) {
+                if (imageView.layer.zPosition > newlySelectedItem.layer.zPosition) {
+                    newlySelectedItem = imageView;
+                }
+            } else {
+                newlySelectedItem = imageView;
+            }
+        }
+    }
+    
+    if (newlySelectedItem) {
+        if (newlySelectedItem == selectedItem) {
+            
+        } else {
+            [self removeSelectionRelatedItems];
+            [self addSelectionRelatedViewToItem:newlySelectedItem];
+        }
+        
+    } else {
+        if (selectedItem) {
+            [self removeSelectionRelatedItems];
+        }
+    }
+    
+    [super touchesBegan:touches withEvent:event];
 }
-
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    if (isMoving) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint moveVector = CGPointMake(currentPoint.x-moveStartingPoint.x,
+                                         currentPoint.y-moveStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        center.x += moveVector.x;
+        center.y += moveVector.y;
+        
+        selectedItem.center = center;
+        moveStartingPoint = currentPoint;
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+    } else if (isRotating) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint andCenterPoint:selectedItem.center];
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformRotate(transform, angle);
+        selectedItem.transform = transform;
+        rotateStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+    } else if (isScaling) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint scaleVector = CGPointMake(currentPoint.x-scaleStartingPoint.x,
+                                          currentPoint.y-scaleStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        CGFloat sx = 1+(scaleVector.x/selectedItem.frame.size.width);
+        CGFloat sy = 1+(-scaleVector.y/selectedItem.frame.size.height);
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformScale(transform, sx, sy);
+        selectedItem.transform = transform;
+        selectedItem.center = center;
+        scaleStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+    }
+}
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+    
+    if (isMoving) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint moveVector = CGPointMake(currentPoint.x-moveStartingPoint.x,
+                                         currentPoint.y-moveStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        center.x += moveVector.x;
+        center.y += moveVector.y;
+        
+        selectedItem.center = center;
+        moveStartingPoint = currentPoint;
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+        isMoving = NO;
+    } else if (isRotating) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGFloat angle = [self getAngleFromStartingPoint:rotateStartingPoint toEndPoint:currentPoint andCenterPoint:selectedItem.center];
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformRotate(transform, angle);
+        selectedItem.transform = transform;
+        rotateStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+        isRotating = NO;
+    } else if (isScaling) {
+        UITouch* touch = [touches anyObject];
+        CGPoint currentPoint = [touch locationInView:modelCanvas];
+        
+        CGPoint scaleVector = CGPointMake(currentPoint.x-scaleStartingPoint.x,
+                                          currentPoint.y-scaleStartingPoint.y);
+        
+        CGPoint center = selectedItem.center;
+        
+        CGFloat sx = 1+(scaleVector.x/selectedItem.frame.size.width);
+        CGFloat sy = 1+(-scaleVector.y/selectedItem.frame.size.height);
+        
+        CGAffineTransform transform = selectedItem.transform;
+        transform = CGAffineTransformScale(transform, sx, sy);
+        selectedItem.transform = transform;
+        selectedItem.center = center;
+        scaleStartingPoint = currentPoint;
+        
+        [self rearrangeSelectionRelatedViewsFrame];
+        
+        isScaling = NO;
+    }
+}
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self touchesEnded:touches withEvent:event];
+}
+- (CGFloat) computeAngleOfTheLine:(CGPoint)firstPoint andSecondPoint:(CGPoint)secondPoint
+{
+    CGFloat x1 = firstPoint.x;
+    CGFloat x2 = secondPoint.x;
+    CGFloat y1 = firstPoint.y;
+    CGFloat y2 = secondPoint.y;
+    
+    CGFloat angle = 0.0;
+    
+    if (y1 == y2) {
+        if (x1 > x2) {
+            return M_PI;
+        } else {
+            return 0;
+        }
+    }
+    if (x1 == x2) {
+        if (y1 > y2) {
+            return M_PI_2;
+        } else {
+            return 3*M_PI_2;
+        }
+    }
+    
+    angle = atanf((y2 - y1) / (x2 - x1));
+    if (x2 < x1) {
+        angle += M_PI;
+    } else if (y2 > y1) {
+        angle += 2 * M_PI;
+    }
+    return angle;
+}
+- (CGFloat) getAngleFromStartingPoint:(CGPoint)startingPoint toEndPoint:(CGPoint)endPoint andCenterPoint:(CGPoint)centerPoint
+{
+    CGFloat angle1 = [self computeAngleOfTheLine:centerPoint andSecondPoint:endPoint];
+    CGFloat angle2 = [self computeAngleOfTheLine:centerPoint andSecondPoint:startingPoint];
+    
+    return angle1-angle2;
+}
+- (CGFloat) getLengthFromStartingPoint:(CGPoint)startingPoint toEndPoint:(CGPoint)endPoint
+{
+    CGFloat x1 = startingPoint.x;
+    CGFloat y1 = startingPoint.y;
+    CGFloat x2 = endPoint.x;
+    CGFloat y2 = endPoint.y;
+    
+    return sqrtf(powf(x1-x2, 2) + powf(y1-y2, 2));
+}
+- (void) removeSelectionRelatedItems
+{
+    
+    if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+        if (((PSDesignLabel*)selectedItem).text == nil ||
+            ((PSDesignLabel*)selectedItem).text.length == 0) {
+            [selectedItem removeFromSuperview];
+            [modelCanvas.allLabels removeObject:selectedItem];
+        }
+    }
+    
+    [currentDeleteView removeFromSuperview];
+    currentDeleteView = nil;
+    
+    [currentScaleView removeFromSuperview];
+    currentScaleView = nil;
+    
+    [currentMoveView removeFromSuperview];
+    currentMoveView = nil;
+    
+    [currentRotateView removeFromSuperview];
+    currentRotateView = nil;
+    
+    selectedItem = nil;
+    
+    
+}
+- (void) rearrangeSelectionRelatedViewsFrame
+{
+    CGRect frame = selectedItem.frame;
+    frame.origin.x -= 4.0;
+    frame.origin.y -= 4.0;
+    frame.size.width += 8.0;
+    frame.size.height += 8.0;
+    
+    currentDeleteView.frame = [self deleteViewFrameWithFrame:frame];
+    
+    currentScaleView.frame = [self scaleViewFrameWithFrame:frame];
+    
+    currentMoveView.frame = [self moveViewFrameWithFrame:frame];
+    
+    currentRotateView.frame = [self rotateViewFrameWithFrame:frame];
+}
+- (void) addSelectionRelatedViewToItem:(UIView*)item
+{
+    selectedItem = item;
+    
+    CGRect frame = item.frame;
+    frame.origin.x -= 4.0;
+    frame.origin.y -= 4.0;
+    frame.size.width += 8.0;
+    frame.size.height += 8.0;
+    
+    currentDeleteView = [[UIView alloc] initWithFrame:[self deleteViewFrameWithFrame:frame]];
+    
+    currentDeleteView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_delete_normal.png"]];
+    [currentDeleteView addSubview:imageView];
+    currentDeleteView.tag = DELETE_VIEW_TAG;
+    currentDeleteView.layer.zPosition = currentZIndex;
+    [modelCanvas addSubview:currentDeleteView];
+    
+    currentScaleView = [[UIView alloc] initWithFrame:[self scaleViewFrameWithFrame:frame]];
+    
+    currentScaleView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_edit_normal.png"]];
+    [currentScaleView addSubview:imageView2];
+    currentScaleView.tag = SCALE_VIEW_TAG;
+    currentScaleView.layer.zPosition = currentZIndex;
+    [modelCanvas addSubview:currentScaleView];
+    
+    currentMoveView = [[UIView alloc] initWithFrame:[self moveViewFrameWithFrame:frame]];
+    
+    currentMoveView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView3 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_move_normal.png"]];
+    [currentMoveView addSubview:imageView3];
+    currentMoveView.tag = MOVE_VIEW_TAG;
+    currentMoveView.layer.zPosition = currentZIndex;
+    [modelCanvas addSubview:currentMoveView];
+    
+    currentRotateView = [[UIView alloc] initWithFrame:[self rotateViewFrameWithFrame:frame]];
+    
+    currentRotateView.backgroundColor = [UIColor clearColor];
+    UIImageView* imageView4 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_rotate_normal.png"]];
+    [currentRotateView addSubview:imageView4];
+    currentRotateView.tag = ROTATE_VIEW_TAG;
+    currentRotateView.layer.zPosition = currentZIndex;
+    [modelCanvas addSubview:currentRotateView];
+    
+    currentZIndex += 1.0;
+    
+    if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+        
+        [[PSSubmenuManager sharedInstance] setTextSettings:((PSDesignLabel*)selectedItem).labelSettings];
+        
+    } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
+        [[PSSubmenuManager sharedInstance] setImageSettings:((PSImageView*)selectedItem).imageSettings];
+    }
+}
 #pragma mark - Memory warning
 - (void)didReceiveMemoryWarning
 {

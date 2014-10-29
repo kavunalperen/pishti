@@ -106,23 +106,23 @@
         [self setNeedsDisplay];
     }
 }
-- (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
-{
-    BOOL isInside = NO;
-    if (CGRectContainsPoint(self.bounds, point)) {
-        for (UITextView* textView in self.allLabels) {
-            CGPoint p = [textView convertPoint:point fromView:self];
-            if (CGRectContainsPoint(textView.bounds, p) && textView == self.selectedTextView) {
-                isInside = YES;
-            }
-        }
-//        if (self.isBrushActive) {
-            isInside = YES;
+//- (BOOL) pointInside:(CGPoint)point withEvent:(UIEvent *)event
+//{
+//    BOOL isInside = NO;
+//    if (CGRectContainsPoint(self.bounds, point)) {
+//        for (UITextView* textView in self.allLabels) {
+//            CGPoint p = [textView convertPoint:point fromView:self];
+//            if (CGRectContainsPoint(textView.bounds, p) && textView == self.selectedTextView) {
+//                isInside = YES;
+//            }
 //        }
-    }
-
-    return isInside;
-}
+////        if (self.isBrushActive) {
+//            isInside = YES;
+////        }
+//    }
+//
+//    return isInside;
+//}
 
 //- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 //{

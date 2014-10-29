@@ -49,6 +49,11 @@
 		054BF33A19ED8C4800685EBC /* text_btn_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 054BF33319ED8C4800685EBC /* text_btn_normal@2x~ipad.png */; };
 		054BF33E19ED960E00685EBC /* PSSubmenuManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 054BF33D19ED960E00685EBC /* PSSubmenuManager.m */; };
 		054BF35319EDAC7700685EBC /* golge@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 054BF35219EDAC7700685EBC /* golge@2x~ipad.png */; };
+		056990F61A014CFE002C327D /* PSDesignLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 056990F51A014CFE002C327D /* PSDesignLabel.m */; };
+		056991031A016143002C327D /* tool_move_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 056991001A016143002C327D /* tool_move_normal@2x~ipad.png */; };
+		056991051A016732002C327D /* tool_rotate_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 056991041A016732002C327D /* tool_rotate_normal@2x~ipad.png */; };
+		056991071A016748002C327D /* tool_delete_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 056991061A016748002C327D /* tool_delete_normal@2x~ipad.png */; };
+		056991091A0167E7002C327D /* tool_edit_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 056991081A0167E7002C327D /* tool_edit_normal@2x~ipad.png */; };
 		0589060A1A001B5400AFBA9A /* PSTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 058906091A001B5400AFBA9A /* PSTableViewController.m */; };
 		05B827D219FD313E007765A9 /* PSTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D119FD313E007765A9 /* PSTableView.m */; };
 		05B827D519FD3268007765A9 /* PSTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D419FD3268007765A9 /* PSTableViewCell.m */; };
@@ -401,6 +406,12 @@
 		054BF33C19ED960E00685EBC /* PSSubmenuManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSSubmenuManager.h; sourceTree = "<group>"; };
 		054BF33D19ED960E00685EBC /* PSSubmenuManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSSubmenuManager.m; sourceTree = "<group>"; };
 		054BF35219EDAC7700685EBC /* golge@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "golge@2x~ipad.png"; sourceTree = "<group>"; };
+		056990F41A014CFE002C327D /* PSDesignLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSDesignLabel.h; sourceTree = "<group>"; };
+		056990F51A014CFE002C327D /* PSDesignLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSDesignLabel.m; sourceTree = "<group>"; };
+		056991001A016143002C327D /* tool_move_normal@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tool_move_normal@2x~ipad.png"; sourceTree = "<group>"; };
+		056991041A016732002C327D /* tool_rotate_normal@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tool_rotate_normal@2x~ipad.png"; sourceTree = "<group>"; };
+		056991061A016748002C327D /* tool_delete_normal@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tool_delete_normal@2x~ipad.png"; sourceTree = "<group>"; };
+		056991081A0167E7002C327D /* tool_edit_normal@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "tool_edit_normal@2x~ipad.png"; sourceTree = "<group>"; };
 		058906081A001B5400AFBA9A /* PSTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableViewController.h; sourceTree = "<group>"; };
 		058906091A001B5400AFBA9A /* PSTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSTableViewController.m; sourceTree = "<group>"; };
 		05B827D019FD313E007765A9 /* PSTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTableView.h; sourceTree = "<group>"; };
@@ -524,6 +535,8 @@
 				05B827D419FD3268007765A9 /* PSTableViewCell.m */,
 				05B827D619FD438C007765A9 /* PSSubmenuView.h */,
 				05B827D719FD438C007765A9 /* PSSubmenuView.m */,
+				056990F41A014CFE002C327D /* PSDesignLabel.h */,
+				056990F51A014CFE002C327D /* PSDesignLabel.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1048,6 +1061,7 @@
 				054BF31B19ED868500685EBC /* mainscreen_logo@2x~ipad.png */,
 				05EF179E19FABA5A00B87C1B /* submenu */,
 				054BF31E19ED8B8000685EBC /* menu */,
+				056990F71A01611D002C327D /* edit */,
 			);
 			path = design;
 			sourceTree = "<group>";
@@ -1073,6 +1087,17 @@
 				054BF33D19ED960E00685EBC /* PSSubmenuManager.m */,
 			);
 			path = Managers;
+			sourceTree = "<group>";
+		};
+		056990F71A01611D002C327D /* edit */ = {
+			isa = PBXGroup;
+			children = (
+				056991081A0167E7002C327D /* tool_edit_normal@2x~ipad.png */,
+				056991061A016748002C327D /* tool_delete_normal@2x~ipad.png */,
+				056991001A016143002C327D /* tool_move_normal@2x~ipad.png */,
+				056991041A016732002C327D /* tool_rotate_normal@2x~ipad.png */,
+			);
+			path = edit;
 			sourceTree = "<group>";
 		};
 		05CDEA1E1923FDB2000CC487 /* mainMenu */ = {
@@ -1243,9 +1268,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				056991091A0167E7002C327D /* tool_edit_normal@2x~ipad.png in Resources */,
 				05EF180319FAE4F200B87C1B /* view_front@2x~ipad.png in Resources */,
 				05EF17DB19FABA5A00B87C1B /* text_rightalign_normal@2x~ipad.png in Resources */,
 				054BF31D19ED868500685EBC /* mainscreen_logo@2x~ipad.png in Resources */,
+				056991051A016732002C327D /* tool_rotate_normal@2x~ipad.png in Resources */,
 				05CDEA441923FECF000CC487 /* tasarla_btn_normal@2x.png in Resources */,
 				05EF180D19FAF7DA00B87C1B /* image_takephoto_normal@2x~ipad.png in Resources */,
 				05EF17FD19FAE4F200B87C1B /* slider_loader@2x~ipad.png in Resources */,
@@ -1275,6 +1302,7 @@
 				05EF180A19FAF7DA00B87C1B /* image_selectphoto_highlighted@2x~ipad.png in Resources */,
 				05EF17F919FAE4F200B87C1B /* delete_last_normal@2x~ipad.png in Resources */,
 				0501551A1926CB5C009FEE6D /* help1.png in Resources */,
+				056991071A016748002C327D /* tool_delete_normal@2x~ipad.png in Resources */,
 				05EF180219FAE4F200B87C1B /* view_back@2x~ipad.png in Resources */,
 				05EF17CF19FABA5A00B87C1B /* text_addnew_highlighted@2x~ipad.png in Resources */,
 				05EF180519FAE4F200B87C1B /* view_right@2x~ipad.png in Resources */,
@@ -1284,6 +1312,7 @@
 				05EF17D019FABA5A00B87C1B /* text_addnew_normal@2x~ipad.png in Resources */,
 				0543C65C18F460060049D846 /* InfoPlist.strings in Resources */,
 				054265961926A6B90009A02E /* AkzidenzGroteskBQ-LigCndTR.ttf in Resources */,
+				056991031A016143002C327D /* tool_move_normal@2x~ipad.png in Resources */,
 				054BF33719ED8C4800685EBC /* image_btn_normal@2x~ipad.png in Resources */,
 				0543C66418F460060049D846 /* Images.xcassets in Resources */,
 				05EF180C19FAF7DA00B87C1B /* image_takephoto_highlighted@2x~ipad.png in Resources */,
@@ -1342,6 +1371,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0543C65E18F460060049D846 /* main.m in Sources */,
+				056990F61A014CFE002C327D /* PSDesignLabel.m in Sources */,
 				0531EC0A19673C76000202E4 /* PSImageView.m in Sources */,
 				0543C7E118F4691F0049D846 /* PSMenuViewController.m in Sources */,
 				050194EF1927947B00464D23 /* PSModelCanvas.m in Sources */,

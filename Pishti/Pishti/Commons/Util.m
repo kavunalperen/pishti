@@ -12,13 +12,47 @@ static Util* sharedInstance = nil;
 static NSArray* groupParticipantColors = nil;
 
 @implementation Util
-
+{
+    NSDictionary* fontMapping;
+}
 + (Util*) sharedInstance
 {
     if (sharedInstance == nil) {
         sharedInstance = [[Util alloc] init];
+        [sharedInstance generateFontMappings];
     }
     return sharedInstance;
+}
+- (void) generateFontMappings
+{
+    fontMapping = @{@"Arial":@{@"Bold":@{@"Italic":@"Arial-BoldItalicMT",
+                                         @"NotItalic":@"Arial-BoldMT"},
+                               @"NotBold":@{@"Italic":@"Arial-ItalicMT",
+                                            @"NotItalic":@"ArialMT"}},
+                    @"Helvetica":@{@"Bold":@{@"Italic":@"Helvetica-BoldOblique",
+                                             @"NotItalic":@"Helvetica-Bold"},
+                                   @"NotBold":@{@"Italic":@"Helvetica-Oblique",
+                                                @"NotItalic":@"Helvetica"}}};
+}
+- (NSString*) getFontNameForFamily:(NSString*)family
+                         andIsBold:(bool)isBold
+                       andIsItalic:(bool)isItalic
+{
+    NSDictionary* familyDict = [fontMapping objectForKey:family];
+    NSDictionary* firstDict;
+    if (isBold) {
+        firstDict = [familyDict objectForKey:@"Bold"];
+    } else {
+        firstDict = [familyDict objectForKey:@"NotBold"];
+    }
+    NSString* fontName;
+    if (isItalic) {
+        fontName = [firstDict objectForKey:@"Italic"];
+    } else {
+        fontName = [firstDict objectForKey:@"NotItalic"];
+    }
+    
+    return fontName;
 }
 - (NSString*) nilAndNullCheckWithString:(NSString*)aString
 {
@@ -126,18 +160,18 @@ static NSArray* groupParticipantColors = nil;
                                           nil];
 
     
-    if (text.length > 1) {
-        if ([[text substringWithRange:NSMakeRange(text.length-1, 1)] isEqualToString:@"\n"]) {
-            text = [NSString stringWithFormat:@"%@\n",text];
-        }
-    }
+//    if (text.length > 1) {
+//        if ([[text substringWithRange:NSMakeRange(text.length-1, 1)] isEqualToString:@"\n"]) {
+//            text = [NSString stringWithFormat:@"%@\n",text];
+//        }
+//    }
     
     CGRect frame = [text boundingRectWithSize:size
                                       options:(NSStringDrawingUsesLineFragmentOrigin)
                                    attributes:attributesDictionary
                                       context:nil];
     
-    CGSize labelSize = CGSizeMake((ceilf)(frame.size.width), (ceilf)(frame.size.height));
+    CGSize labelSize = CGSizeMake((ceilf)(frame.size.width+1.0), (ceilf)(frame.size.height+1.0));
     
     return labelSize;
 }
