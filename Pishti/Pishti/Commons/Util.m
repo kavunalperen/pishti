@@ -167,7 +167,7 @@ static NSArray* groupParticipantColors = nil;
 //    }
     
     CGRect frame = [text boundingRectWithSize:size
-                                      options:(NSStringDrawingUsesLineFragmentOrigin)
+                                      options:(NSStringDrawingUsesFontLeading)
                                    attributes:attributesDictionary
                                       context:nil];
     

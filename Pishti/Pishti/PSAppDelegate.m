@@ -9,11 +9,16 @@
 #import "PSAppDelegate.h"
 #import "PSMenuViewController.h"
 #import "PSMainNavigationController.h"
+#import "Util.h"
 
 @implementation PSAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    
+    CGSize size = [[Util sharedInstance] text:@"ÖĞŞÇİ" sizeWithFont:DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT constrainedToSize:CGSizeMake(1000.0, 1000.0)];
+    NSLog(@"size.width = %f, size.height = %f",size.width,size.height);
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     

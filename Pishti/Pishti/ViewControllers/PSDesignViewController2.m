@@ -106,6 +106,7 @@
     
     [self initialSetups];
     [self addModelCanvas];
+    [self addLogo];
 }
 - (void) viewDidAppear:(BOOL)animated
 {
@@ -121,11 +122,6 @@
     backgroundView.frame = [self backgroundViewFrame];
     [self.view addSubview:backgroundView];
     
-    UIImageView* logoView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"mainscreen_logo.png"]];
-    logoView.backgroundColor = [UIColor clearColor];
-    logoView.frame = [self logoFrame];
-    [self.view addSubview:logoView];
-    
     menuGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressed:)];
     menuGesture.minimumPressDuration = 0.5;
     menuGesture.delegate = self;
@@ -135,6 +131,24 @@
     
     currentZIndex = 0.0;
 }
+- (void) addLogo
+{
+    UIButton* logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    logoButton.backgroundColor = [UIColor clearColor];
+    logoButton.frame = [self logoFrame];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"mainscreen_logo.png"] forState:UIControlStateNormal];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"mainscreen_logo.png"] forState:UIControlStateHighlighted];
+    [logoButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    logoButton.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [self.view addSubview:logoButton];
+    [unwantedViews addObject:logoButton];
+}
+- (void) goBack
+{
+    [[PSSubmenuManager sharedInstance] cleanups];
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
 - (void) addModelCanvas
 {
     modelCanvas = [[PSModelCanvas alloc] initWithFrame:CGRectMake(10.0, 0.0, 747.0, 768.0)];
@@ -142,12 +156,12 @@
     modelCanvas.fillColor = [UIColor colorWithRed:230.0/255.0 green:76.0/255.0 blue:101.0/255.0 alpha:1.0];
     [self.view addSubview:modelCanvas];
     
-    UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(10.0, 0.0, 747.0, 768.0)];
+    UIImageView* shadow = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 747.0, 768.0)];
     shadow.backgroundColor = [UIColor clearColor];
     shadow.image = [UIImage imageNamed:@"golge.png"];
     shadow.layer.zPosition = currentZIndex;
     currentZIndex += 1.0;
-    [self.view addSubview:shadow];
+    [modelCanvas addSubview:shadow];
 }
 - (void) addViewToUnwantedViews:(UIView*)view
 {
@@ -362,33 +376,33 @@
     }];
     
     [UIView animateWithDuration:0.17 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_BOUNCE_RADIUS*sqrtf(3)*0.5, MENU_HEIGHT*0.5-BUTTON_BOUNCE_RADIUS*0.5);
+        fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_BOUNCE_RADIUS, MENU_HEIGHT*0.5);
         fabricSubmenuButton.alpha = 1.0;
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_RADIUS*sqrtf(3)*0.5, MENU_HEIGHT*0.5-BUTTON_RADIUS*0.5);
+            fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_RADIUS, MENU_HEIGHT*0.5);
         } completion:^(BOOL finished) {
             ;
         }];
     }];
     
     [UIView animateWithDuration:0.17 delay:0.07 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*sqrtf(3)*0.5, MENU_HEIGHT*0.5-BUTTON_BOUNCE_RADIUS*0.5);
-        imageSubmenuButton.alpha = 1.0;
+        textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(75.0)), MENU_HEIGHT*0.5-BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(75.0)));
+        textSubmenuButton.alpha = 1.0;
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*sqrtf(3)*0.5, MENU_HEIGHT*0.5-BUTTON_RADIUS*0.5);
+            textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(75.0)), MENU_HEIGHT*0.5-BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(75.0)));
         } completion:^(BOOL finished) {
             ;
         }];
     }];
     
     [UIView animateWithDuration:0.17 delay:0.12 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5, MENU_HEIGHT*0.5+BUTTON_BOUNCE_RADIUS);
-        textSubmenuButton.alpha = 1.0;
+        imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(30.0)), MENU_HEIGHT*0.5-BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(30.0)));
+        imageSubmenuButton.alpha = 1.0;
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5, MENU_HEIGHT*0.5+BUTTON_RADIUS);
+            imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(30.0)), MENU_HEIGHT*0.5-BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(30.0)));
         } completion:^(BOOL finished) {
             ;
         }];
@@ -954,7 +968,7 @@
     currentScaleView = [[UIView alloc] initWithFrame:[self scaleViewFrameWithFrame:frame]];
     
     currentScaleView.backgroundColor = [UIColor clearColor];
-    UIImageView* imageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_edit_normal.png"]];
+    UIImageView* imageView2 = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"tool_scale_normal.png"]];
     [currentScaleView addSubview:imageView2];
     currentScaleView.tag = SCALE_VIEW_TAG;
     currentScaleView.layer.zPosition = currentZIndex;

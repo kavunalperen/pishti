@@ -63,4 +63,6 @@ typedef enum PSSubmenuTableType
 - (void) designLabelSelected:(PSDesignLabel*)label;
 - (void) anImageSelected:(PSImageView*)image;
 
+- (void) cleanups;
+
 @end

@@ -254,6 +254,11 @@ static PSSubmenuManager* __sharedInstance;
     
     return __sharedInstance;
 }
+- (void) cleanups
+{
+    currentSubmenuType = SUBMENU_TYPE_NONE;
+    currentSubmenu = nil;
+}
 - (void) submenuSetups
 {
     colors = @[[UIColor colorWithRed:57.0/255.0 green:66.0/255.0 blue:100.0/255.0 alpha:1.0],
@@ -742,7 +747,7 @@ static PSSubmenuManager* __sharedInstance;
     
     UIImageView* fourthItemIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
     fourthItemIcon.backgroundColor = [UIColor clearColor];
-    fourthItemIcon.image = [UIImage imageNamed:@"color_mask.png"];
+    fourthItemIcon.image = [UIImage imageNamed:@"color_mask_main.png"];
     [fourthHolder addSubview:fourthItemIcon];
     
     textColorValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
@@ -845,7 +850,7 @@ static PSSubmenuManager* __sharedInstance;
     
     UIImageView* frontView = [[UIImageView alloc] initWithFrame:[self frontViewFrame]];
     frontView.backgroundColor = [UIColor clearColor];
-    frontView.image = [UIImage imageNamed:@"view_front.png"];
+    frontView.image = [UIImage imageNamed:@"view_front_selected.png"];
     [viewOptionsHolder addSubview:frontView];
     
     UIImageView* rightView = [[UIImageView alloc] initWithFrame:[self rightViewFrame]];
@@ -1179,7 +1184,7 @@ static PSSubmenuManager* __sharedInstance;
     
     if (tableView == fabricColorTableView) {
         NSInteger index = [[fabricSettings objectForKey:FABRIC_COLOR_INDEX_KEY] integerValue];
-        cell = [tableView dequeueReusableCellWithIdentifier:COLOR_CELL_IDENTIFIER];
+        cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_COLOR_CELL_IDENTIFIER];
         [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
         cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
         if (indexPath.row == index) {
@@ -1194,7 +1199,7 @@ static PSSubmenuManager* __sharedInstance;
         }
     } else if (tableView == textColorTableView) {
         NSInteger index = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
-        cell = [tableView dequeueReusableCellWithIdentifier:COLOR_CELL_IDENTIFIER];
+        cell = [tableView dequeueReusableCellWithIdentifier:GENERAL_COLOR_CELL_IDENTIFIER];
         [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
         cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
         if (indexPath.row == index) {
@@ -1446,46 +1451,53 @@ static PSSubmenuManager* __sharedInstance;
             break;
     }
     
-    CGRect holderFrame = CGRectMake(frame.origin.x+currentSubmenu.frame.origin.x,
-                                    frame.origin.y+currentSubmenu.frame.origin.y+frame.size.height-206.0-1.0,
-                                    frame.size.width, 206.0);
+    CGRect holderFrame = CGRectMake(frame.origin.x+currentSubmenu.frame.origin.x-37.0,
+                                    frame.origin.y+currentSubmenu.frame.origin.y+frame.size.height-258.0-1.0,
+                                    304.0, 258.0);
     
-    CGRect tableFrame = CGRectMake(0.0,
-                                   0.0,
-                                   frame.size.width, 206.0);
+    CGRect tableFrame = CGRectMake(37.0,
+                                   68.0,
+                                   230.0, 190.0);
     
     
     
     UIView* tableViewHolder = [[UIView alloc] initWithFrame:holderFrame];
     tableViewHolder.backgroundColor = [UIColor clearColor];
     tableViewHolder.clipsToBounds = YES;
+    
+    UIImageView* tableBackgroundView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"submenu_table_bg.png"]];
+    tableBackgroundView.backgroundColor = [UIColor clearColor];
+    [tableViewHolder addSubview:tableBackgroundView];
+    
     [submenuDelegate.view addSubview:tableViewHolder];
     [submenuDelegate addViewToUnwantedViews:tableViewHolder];
     
-    tableViewHolder.layer.shadowColor = [UIColor blackColor].CGColor;
-    tableViewHolder.layer.shadowOpacity = 0.55;
-    tableViewHolder.layer.shadowRadius = 65.0;
+//    tableViewHolder.layer.shadowColor = [UIColor blackColor].CGColor;
+//    tableViewHolder.layer.shadowOpacity = 0.55;
+//    tableViewHolder.layer.shadowRadius = 65.0;
     
     PSTableView* tableView = [[PSTableView alloc] initWithFrame:tableFrame];
     
-    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:COLOR_CELL_IDENTIFIER];
+    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:FABRIC_COLOR_CELL_IDENTIFIER];
+    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:GENERAL_COLOR_CELL_IDENTIFIER];
     [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:MAIN_CELL_IDENTIFIER];
     
     tableView.delegate = self;
     tableView.dataSource = self;
     [tableViewHolder addSubview:tableView];
     
-    CGRect titleFrame = [self titleFrame];
+//    CGRect titleFrame = [self titleFrame];
     
-    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, titleFrame.size.height+10.0)];
-    headerView.backgroundColor = SUBMENU_BACKGROUND_COLOR;
+    UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(37.0, 37.0, 230.0, 32.0)];
+    headerView.backgroundColor = [UIColor clearColor];
     
-    UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 0.0, frame.size.width-20.0, titleFrame.size.height+10.0)];
+    UILabel* headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 0.0, 210.0, 32.0)];
     headerLabel.backgroundColor = [UIColor clearColor];
     headerLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     headerLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
     [headerView addSubview:headerLabel];
-    tableView.tableHeaderView = headerView;
+//    tableView.tableHeaderView = headerView;
+    [tableViewHolder addSubview:headerView];
     
     switch (tableType) {
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:

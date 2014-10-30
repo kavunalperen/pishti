@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "PSCommons.h"
 
-#define COLOR_CELL_IDENTIFIER @"PSColorTableViewCellIdentifier"
+#define FABRIC_COLOR_CELL_IDENTIFIER @"PSFabricColorTableViewCellIdentifier"
+#define GENERAL_COLOR_CELL_IDENTIFIER @"PSGeneralColorTableViewCellIdentifier"
 #define MAIN_CELL_IDENTIFIER @"PSMainTableViewCellIdentifier"
 
 @interface PSTableViewCell : UITableViewCell

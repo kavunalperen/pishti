@@ -23,8 +23,10 @@
 {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         [self commonInitializer];
-        if ([reuseIdentifier isEqualToString:COLOR_CELL_IDENTIFIER]) {
-            [self stylizeForColorCell];
+        if ([reuseIdentifier isEqualToString:FABRIC_COLOR_CELL_IDENTIFIER]) {
+            [self stylizeForFabricColorCell];
+        } else if ([reuseIdentifier isEqualToString:GENERAL_COLOR_CELL_IDENTIFIER]) {
+            [self stylizeForGeneralColorCell];
         } else if ([reuseIdentifier isEqualToString:MAIN_CELL_IDENTIFIER]) {
             [self stylizeForMainCell];
         }
@@ -50,13 +52,13 @@
 }
 - (void) stylizeForMainCell
 {
-    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 0.0, 170.0, 37.0)];
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 3.0, 170.0, 37.0)];
     self.mainLabel.backgroundColor = [UIColor clearColor];
     self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
     [self addSubview:self.mainLabel];
 }
-- (void) stylizeForColorCell
+- (void) stylizeForFabricColorCell
 {
     self.colorView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, 56.0, 37.0)];
     self.colorView.backgroundColor = [UIColor clearColor];
@@ -66,12 +68,27 @@
     [self.colorView addSubview:mask];
     [self addSubview:self.colorView];
     
-    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 0.0, 170.0, 37.0)];
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 170.0, 37.0)];
     self.mainLabel.backgroundColor = [UIColor clearColor];
     self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
     [self addSubview:self.mainLabel];
+}
+- (void) stylizeForGeneralColorCell
+{
+    self.colorView = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, 56.0, 37.0)];
+    self.colorView.backgroundColor = [UIColor clearColor];
     
+    UIImageView* mask = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"color_mask_main.png"]];
+    mask.backgroundColor = [UIColor clearColor];
+    [self.colorView addSubview:mask];
+    [self addSubview:self.colorView];
+    
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 170.0, 37.0)];
+    self.mainLabel.backgroundColor = [UIColor clearColor];
+    self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
+    self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
+    [self addSubview:self.mainLabel];
 }
 - (void) makeSelected
 {
