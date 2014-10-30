@@ -21,7 +21,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1371</string>
+	<string>1381</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIAppFonts</key>
@@ -31,6 +31,30 @@
 		<string>HelveticaNeueLTPro-Cn.otf</string>
 		<string>HelveticaNeueLTPro-HvCn.otf</string>
 		<string>HelveticaNeueLTPro-ThCn.otf</string>
+		<string>BOOKOS.TTF</string>
+		<string>BOOKOSB.TTF</string>
+		<string>BOOKOSBI.TTF</string>
+		<string>BOOKOSI.TTF</string>
+		<string>ROCK.TTF</string>
+		<string>ROCKB.TTF</string>
+		<string>ROCKBI.TTF</string>
+		<string>ROCKI.TTF</string>
+		<string>TRCourierNew.TTF</string>
+		<string>TRCourierNewBold.TTF</string>
+		<string>TRCourierNewBoldItalik.TTF</string>
+		<string>TRCourierNewItalik.TTF</string>
+		<string>TREagles.TTF</string>
+		<string>TREaglesBold.TTF</string>
+		<string>TREaglesBoldItalik.TTF</string>
+		<string>TREaglesItalik.TTF</string>
+		<string>trebuc.ttf</string>
+		<string>trebucbd.ttf</string>
+		<string>trebucbi.ttf</string>
+		<string>trebucit.ttf</string>
+		<string>TRMcLean.TTF</string>
+		<string>TRMcLeanBold.TTF</string>
+		<string>TRMcLeanBoldItalik.TTF</string>
+		<string>TRMcLeanItalik.TTF</string>
 	</array>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>

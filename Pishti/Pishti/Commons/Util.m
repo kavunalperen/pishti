@@ -32,7 +32,31 @@ static NSArray* groupParticipantColors = nil;
                     @"Helvetica":@{@"Bold":@{@"Italic":@"Helvetica-BoldOblique",
                                              @"NotItalic":@"Helvetica-Bold"},
                                    @"NotBold":@{@"Italic":@"Helvetica-Oblique",
-                                                @"NotItalic":@"Helvetica"}}};
+                                                @"NotItalic":@"Helvetica"}},
+                    @"Bookman Old Style":@{@"Bold":@{@"Italic":@"BookmanOldStyle-BoldItalic",
+                                                     @"NotItalic":@"BookmanOldStyle-Bold"},
+                                           @"NotBold":@{@"Italic":@"BookmanOldStyle-Italic",
+                                                        @"NotItalic":@"BookmanOldStyle"}},
+                    @"Rockwell":@{@"Bold":@{@"Italic":@"Rockwell-BoldItalic",
+                                             @"NotItalic":@"Rockwell-Bold"},
+                                    @"NotBold":@{@"Italic":@"Rockwell-Italic",
+                                                @"NotItalic":@"Rockwell"}},
+                    @"TR Courier New":@{@"Bold":@{@"Italic":@"TRCourierNewBoldItalic",
+                                                  @"NotItalic":@"TRCourierNewBold"},
+                                          @"NotBold":@{@"Italic":@"TRCourierNewItalic",
+                                                       @"NotItalic":@"TRCourierNew"}},
+                    @"TR Eagles":@{@"Bold":@{@"Italic":@"TREaglesBoldItalic",
+                                              @"NotItalic":@"TREaglesBold"},
+                                    @"NotBold":@{@"Italic":@"TREaglesItalic",
+                                                 @"NotItalic":@"TREagles"}},
+                    @"TR McLean":@{@"Bold":@{@"Italic":@"TRMcLeanBoldItalic",
+                                             @"NotItalic":@"TRMcLeanBold"},
+                                    @"NotBold":@{@"Italic":@"TRMcLeanItalic",
+                                                 @"NotItalic":@"TRMcLean"}},
+                    @"Trebuchet MS":@{@"Bold":@{@"Italic":@"Trebuchet-BoldItalic",
+                                                 @"NotItalic":@"TrebuchetMS-Bold"},
+                                       @"NotBold":@{@"Italic":@"TrebuchetMS-Italic",
+                                                    @"NotItalic":@"TrebuchetMS"}}};
 }
 - (NSString*) getFontNameForFamily:(NSString*)family
                          andIsBold:(bool)isBold

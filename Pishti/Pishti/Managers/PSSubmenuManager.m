@@ -277,8 +277,18 @@ static PSSubmenuManager* __sharedInstance;
                    @"MOR",
                    @"FÜME"];
     
-    fontFamilyNames = @[@"Helvetica",
-                  @"Arial"];
+    fontFamilyNames = @[@"Arial",
+                        @"Bookman Old Style",
+                        @"Rockwell",
+                        @"TR McLean",
+                        @"TR Eagles",
+                        @"TR Courier New",
+                        @"Trebuchet MS",
+                        @"Helvetica"];
+    
+    fontFamilyNames = [fontFamilyNames sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
+        return [obj1 compare:obj2];
+    }];
     
     fabricSettings = @{FABRIC_COLOR_INDEX_KEY:[NSNumber numberWithInteger:2]}.mutableCopy;
     
@@ -1193,7 +1203,11 @@ static PSSubmenuManager* __sharedInstance;
     } else if (tableView == textFontTableView) {
         NSInteger index = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
         cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
-        cell.mainLabel.text = [fontFamilyNames objectAtIndex:indexPath.row];
+        NSString* fontFamily = [fontFamilyNames objectAtIndex:indexPath.row];
+        cell.mainLabel.text = fontFamily;
+        NSString* fontName = [[Util sharedInstance] getFontNameForFamily:fontFamily andIsBold:NO andIsItalic:NO];
+        cell.mainLabel.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
+        
         if (indexPath.row == index) {
             [cell makeSelected];
         }

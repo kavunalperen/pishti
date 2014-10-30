@@ -52,7 +52,7 @@
 }
 - (void) stylizeForMainCell
 {
-    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 3.0, 170.0, 37.0)];
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(10.0, 3.0, 210.0, 37.0)];
     self.mainLabel.backgroundColor = [UIColor clearColor];
     self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
@@ -68,7 +68,7 @@
     [self.colorView addSubview:mask];
     [self addSubview:self.colorView];
     
-    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 170.0, 37.0)];
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 210.0, 37.0)];
     self.mainLabel.backgroundColor = [UIColor clearColor];
     self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
@@ -84,7 +84,7 @@
     [self.colorView addSubview:mask];
     [self addSubview:self.colorView];
     
-    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 170.0, 37.0)];
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 210.0, 37.0)];
     self.mainLabel.backgroundColor = [UIColor clearColor];
     self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;

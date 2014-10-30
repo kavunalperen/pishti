@@ -16,8 +16,12 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     
-    CGSize size = [[Util sharedInstance] text:@"ÖĞŞÇİ" sizeWithFont:DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT constrainedToSize:CGSizeMake(1000.0, 1000.0)];
-    NSLog(@"size.width = %f, size.height = %f",size.width,size.height);
+    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Bookman Old Style"]);
+    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR McLean"]);
+    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Courier New"]);
+    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Eagles"]);
+    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Trebuchet MS"]);
+    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Rockwell"]);
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
