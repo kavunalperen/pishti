@@ -1094,6 +1094,7 @@ static PSSubmenuManager* __sharedInstance;
             currentText = @"";
         }
         [labelSettings setObject:currentText forKey:CURRENT_TEXT_KEY];
+        [self configureTextSubmenuWithCurrentOptions];
     }
 }
 #pragma mark - Public Methods
@@ -1209,23 +1210,44 @@ static PSSubmenuManager* __sharedInstance;
         
         NSInteger fabricColorIndex = indexPath.row;
         
-        [fabricSettings setObject:[NSNumber numberWithInteger:fabricColorIndex] forKey:FABRIC_COLOR_INDEX_KEY];
-        [self configureFabricSubmenuWithCurrentOptions];
+        NSInteger oldIndex = [[fabricSettings objectForKey:FABRIC_COLOR_INDEX_KEY] integerValue];
         
-        [submenuDelegate fabricColorSelected:[colors objectAtIndex:fabricColorIndex]];
-        [fabricColorTableView reloadData];
+        if (fabricColorIndex == oldIndex) {
+            [fabricColorTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLOR];
+        } else {
+            [fabricSettings setObject:[NSNumber numberWithInteger:fabricColorIndex] forKey:FABRIC_COLOR_INDEX_KEY];
+            [self configureFabricSubmenuWithCurrentOptions];
+            
+            [submenuDelegate fabricColorSelected:[colors objectAtIndex:fabricColorIndex]];
+            [fabricColorTableView reloadData];
+        }
     } else if (tableView == textFontTableView) {
         NSInteger textFontIndex = indexPath.row;
         
-        [labelSettings setObject:[NSNumber numberWithInteger:textFontIndex] forKey:TEXT_FONT_INDEX_KEY];
-        [self configureTextSubmenuWithCurrentOptions];
-        [textFontTableView reloadData];
+        NSInteger oldIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
+        
+        if (textFontIndex == oldIndex) {
+            [textFontTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_TEXT_FONT];
+        } else {
+            [labelSettings setObject:[NSNumber numberWithInteger:textFontIndex] forKey:TEXT_FONT_INDEX_KEY];
+            [self configureTextSubmenuWithCurrentOptions];
+            [textFontTableView reloadData];
+        }
     } else if (tableView == textColorTableView) {
         NSInteger textColorIndex = indexPath.row;
         
-        [labelSettings setObject:[NSNumber numberWithInteger:textColorIndex] forKey:TEXT_COLOR_INDEX_KEY];
-        [self configureTextSubmenuWithCurrentOptions];
-        [textColorTableView reloadData];
+        NSInteger oldIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
+        
+        if (textColorIndex == oldIndex) {
+            [textColorTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_TEXT_COLOR];
+        } else {
+            [labelSettings setObject:[NSNumber numberWithInteger:textColorIndex] forKey:TEXT_COLOR_INDEX_KEY];
+            [self configureTextSubmenuWithCurrentOptions];
+            [textColorTableView reloadData];
+        }
     }
 }
 #pragma mark - Button actions

@@ -11,6 +11,7 @@
 @interface PSImageView : UIImageView
 
 @property NSMutableDictionary* imageSettings;
+@property CGSize originalSize;
 
 - (id) initWithCenter:(CGPoint)center;
 

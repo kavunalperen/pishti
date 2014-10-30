@@ -18,6 +18,7 @@
     if (self = [super init]) {
         self.backgroundColor = [UIColor clearColor];
         self.center = center;
+        self.isVerticalSized = NO;
     }
     return self;
 }
@@ -48,6 +49,11 @@
     
     if (direction) {
         [self makeVertical];
+        if (!self.isVerticalSized || CGSizeEqualToSize(self.originalSize, CGSizeZero)) {
+            self.originalSize = self.frame.size;
+            self.isVerticalSized = YES;
+        }
+        
     } else {
         self.text = currentText;
         
@@ -56,6 +62,12 @@
         CGSize textSize = [[Util sharedInstance] text:self.text sizeWithFont:self.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
         self.frame = CGRectMake(0.0, 0.0, textSize.width, textSize.height);
         self.center = oldCenter;
+        
+        if (self.isVerticalSized || CGSizeEqualToSize(self.originalSize, CGSizeZero)) {
+            
+            self.originalSize = self.frame.size;
+            self.isVerticalSized = NO;
+        }
     }
     
     self.transform = oldTransform;
@@ -73,6 +85,7 @@
     CGSize textSize = [[Util sharedInstance] text:self.text sizeWithFont:self.font constrainedToSize:CGSizeMake(1000.0, 1000.0)];
     self.frame = CGRectMake(0.0, 0.0, textSize.width, textSize.height);
     self.center = oldCenter;
+    
 }
 - (NSString*) convertTextToVertical:(NSString*)text
 {

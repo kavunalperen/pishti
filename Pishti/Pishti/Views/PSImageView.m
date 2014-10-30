@@ -17,6 +17,7 @@
     if (self = [super init]) {
         self.backgroundColor = [UIColor clearColor];
         self.center = center;
+        self.originalSize = CGSizeZero;
     }
     
     return self;
@@ -26,6 +27,10 @@
     CGFloat opacity = [[_imageSettings objectForKey:IMAGE_OPACITY_KEY] floatValue];
     
     self.alpha = opacity;
+    
+    if (CGSizeEqualToSize(self.originalSize, CGSizeZero)) {
+        self.originalSize = self.frame.size;
+    }
 }
 
 @end

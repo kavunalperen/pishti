@@ -12,6 +12,7 @@
 #define BUTTON_BOUNCE_RADIUS 95.0
 #define BUTTON_SIZE_NORMAL 70.0
 #define BUTTON_SIZE_HIGHLIGHTED 87.0
+#define MINIMUM_SCALE_FACTOR 0.25
 
 #import "PSDesignViewController2.h"
 #import "PSSubmenuManager.h"
@@ -54,6 +55,8 @@
     CGPoint rotateStartingPoint;
     CGPoint rotateCenterPoint;
     CGPoint scaleStartingPoint;
+    
+//    CGSize scaleStartingSize;
 }
 #pragma mark - Frame Getters
 
@@ -533,6 +536,9 @@
     currentZIndex += 1.0;
     [modelCanvas.allLabels addObject:label];
     [modelCanvas addSubview:label];
+    
+    [self removeSelectionRelatedItems];
+    [self addSelectionRelatedViewToItem:label];
 }
 #pragma mark - Deletion Operations
 - (void) deleteLastImage
@@ -658,7 +664,9 @@
     
     if (newlySelectedItem) {
         if (newlySelectedItem == selectedItem) {
-            
+            UITouch* touch = [touches anyObject];
+            isMoving = YES;
+            moveStartingPoint = [touch locationInView:modelCanvas];
         } else {
             [self removeSelectionRelatedItems];
             [self addSelectionRelatedViewToItem:newlySelectedItem];
@@ -710,6 +718,7 @@
                                           currentPoint.y-scaleStartingPoint.y);
         
         CGPoint center = selectedItem.center;
+        CGAffineTransform oldTransform = selectedItem.transform;
         
         CGFloat sx = 1+(scaleVector.x/selectedItem.frame.size.width);
         CGFloat sy = 1+(-scaleVector.y/selectedItem.frame.size.height);
@@ -717,10 +726,33 @@
         CGAffineTransform transform = selectedItem.transform;
         transform = CGAffineTransformScale(transform, sx, sy);
         selectedItem.transform = transform;
-        selectedItem.center = center;
-        scaleStartingPoint = currentPoint;
         
-        [self rearrangeSelectionRelatedViewsFrame];
+        CGSize newSize = selectedItem.frame.size;
+        
+        if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+            
+            if ((newSize.width/((PSDesignLabel*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
+                (newSize.height/((PSDesignLabel*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
+                sx < 0 || sy < 0) {
+                selectedItem.transform = oldTransform;
+            } else {
+                selectedItem.center = center;
+                scaleStartingPoint = currentPoint;
+                
+                [self rearrangeSelectionRelatedViewsFrame];
+            }
+        } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
+            if ((newSize.width/((PSImageView*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
+                (newSize.height/((PSImageView*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
+                sx < 0 || sy < 0) {
+                selectedItem.transform = oldTransform;
+            } else {
+                selectedItem.center = center;
+                scaleStartingPoint = currentPoint;
+                
+                [self rearrangeSelectionRelatedViewsFrame];
+            }
+        }
     }
 }
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
@@ -766,6 +798,7 @@
                                           currentPoint.y-scaleStartingPoint.y);
         
         CGPoint center = selectedItem.center;
+        CGAffineTransform oldTransform = selectedItem.transform;
         
         CGFloat sx = 1+(scaleVector.x/selectedItem.frame.size.width);
         CGFloat sy = 1+(-scaleVector.y/selectedItem.frame.size.height);
@@ -773,10 +806,33 @@
         CGAffineTransform transform = selectedItem.transform;
         transform = CGAffineTransformScale(transform, sx, sy);
         selectedItem.transform = transform;
-        selectedItem.center = center;
-        scaleStartingPoint = currentPoint;
         
-        [self rearrangeSelectionRelatedViewsFrame];
+        CGSize newSize = selectedItem.frame.size;
+        
+        if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+            
+            if ((newSize.width/((PSDesignLabel*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
+                (newSize.height/((PSDesignLabel*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
+                sx < 0 || sy < 0) {
+                selectedItem.transform = oldTransform;
+            } else {
+                selectedItem.center = center;
+                scaleStartingPoint = currentPoint;
+                
+                [self rearrangeSelectionRelatedViewsFrame];
+            }
+        } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
+            if ((newSize.width/((PSImageView*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
+                (newSize.height/((PSImageView*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
+                sx < 0 || sy < 0) {
+                selectedItem.transform = oldTransform;
+            } else {
+                selectedItem.center = center;
+                scaleStartingPoint = currentPoint;
+                
+                [self rearrangeSelectionRelatedViewsFrame];
+            }
+        }
         
         isScaling = NO;
     }
@@ -927,10 +983,13 @@
     if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
         
         [[PSSubmenuManager sharedInstance] setTextSettings:((PSDesignLabel*)selectedItem).labelSettings];
+        [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEXT];
         
     } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
         [[PSSubmenuManager sharedInstance] setImageSettings:((PSImageView*)selectedItem).imageSettings];
+        [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_IMAGE];
     }
+    
 }
 #pragma mark - Memory warning
 - (void)didReceiveMemoryWarning

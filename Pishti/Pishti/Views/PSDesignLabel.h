@@ -12,6 +12,8 @@
 
 @property NSMutableDictionary* labelSettings;
 @property NSString* originalText;
+@property bool isVerticalSized;
+@property CGSize originalSize;
 
 - (id) initWithCenter:(CGPoint)center;
 - (void) configureLabelWithSettings;
