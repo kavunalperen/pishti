@@ -41,15 +41,15 @@ static NSArray* groupParticipantColors = nil;
                                              @"NotItalic":@"Rockwell-Bold"},
                                     @"NotBold":@{@"Italic":@"Rockwell-Italic",
                                                 @"NotItalic":@"Rockwell"}},
-                    @"TR Courier New":@{@"Bold":@{@"Italic":@"TRCourierNewBoldItalic",
+                    @"Courier New":@{@"Bold":@{@"Italic":@"TRCourierNewBoldItalic",
                                                   @"NotItalic":@"TRCourierNewBold"},
                                           @"NotBold":@{@"Italic":@"TRCourierNewItalic",
                                                        @"NotItalic":@"TRCourierNew"}},
-                    @"TR Eagles":@{@"Bold":@{@"Italic":@"TREaglesBoldItalic",
+                    @"Eagles":@{@"Bold":@{@"Italic":@"TREaglesBoldItalic",
                                               @"NotItalic":@"TREaglesBold"},
                                     @"NotBold":@{@"Italic":@"TREaglesItalic",
                                                  @"NotItalic":@"TREagles"}},
-                    @"TR McLean":@{@"Bold":@{@"Italic":@"TRMcLeanBoldItalic",
+                    @"McLean":@{@"Bold":@{@"Italic":@"TRMcLeanBoldItalic",
                                              @"NotItalic":@"TRMcLeanBold"},
                                     @"NotBold":@{@"Italic":@"TRMcLeanItalic",
                                                  @"NotItalic":@"TRMcLean"}},
@@ -191,7 +191,7 @@ static NSArray* groupParticipantColors = nil;
 //    }
     
     CGRect frame = [text boundingRectWithSize:size
-                                      options:(NSStringDrawingUsesFontLeading)
+                                      options:(NSStringDrawingUsesLineFragmentOrigin)
                                    attributes:attributesDictionary
                                       context:nil];
     

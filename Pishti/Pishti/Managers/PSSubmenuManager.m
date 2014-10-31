@@ -70,6 +70,7 @@ static PSSubmenuManager* __sharedInstance;
     
     PSSubmenuTextView* textView;
     UIView* textViewHolder;
+    UIButton* addNewLabelButton;
     
     PSSubmenuTextView* proxyTextView;
     UIView* proxyTextViewHolder;
@@ -280,9 +281,9 @@ static PSSubmenuManager* __sharedInstance;
     fontFamilyNames = @[@"Arial",
                         @"Bookman Old Style",
                         @"Rockwell",
-                        @"TR McLean",
-                        @"TR Eagles",
-                        @"TR Courier New",
+                        @"McLean",
+                        @"Eagles",
+                        @"Courier New",
                         @"Trebuchet MS",
                         @"Helvetica"];
     
@@ -591,13 +592,14 @@ static PSSubmenuManager* __sharedInstance;
     textView.delegate = self;
     [textViewHolder addSubview:textView];
     
-    UIButton* addNewLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    addNewLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
     addNewLabelButton.frame = [self addNewtextButtonFrame];
     addNewLabelButton.center = CGPointMake(30.0, 30.0);
     addNewLabelButton.backgroundColor = [UIColor clearColor];
     [addNewLabelButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_normal.png"] forState:UIControlStateNormal];
     [addNewLabelButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_highlighted.png"] forState:UIControlStateHighlighted];
     [addNewLabelButton addTarget:self action:@selector(addNewLabelClicked:) forControlEvents:UIControlEventTouchUpInside];
+    addNewLabelButton.enabled = NO;
     [textViewHolder addSubview:addNewLabelButton];
     
     // opacity slider
@@ -953,14 +955,24 @@ static PSSubmenuManager* __sharedInstance;
     textColorValue.textColor = [colors objectAtIndex:textColorIndex];
     textColorValue.text = [colorNames objectAtIndex:textColorIndex];
     
-    textFontValue.text = [fontFamilyNames objectAtIndex:textFontIndex];
-    
     NSString* fontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:textFontIndex] andIsBold:isBold andIsItalic:isItalic];
     textView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
     textView.textColor = [colors objectAtIndex:textColorIndex];
     textView.tintColor = [colors objectAtIndex:textColorIndex];
     textView.text = currentText;
     textView.textAlignment = alignment;
+    
+    textFontValue.text = [fontFamilyNames objectAtIndex:textFontIndex];
+    NSString* valueFontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:textFontIndex] andIsBold:NO andIsItalic:NO];
+    textFontValue.font = [UIFont fontWithName:valueFontName size:DEFAULT_FONT_HEIGHT];
+    
+    if (proxyTextView != nil) {
+        proxyTextView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
+        proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
+        proxyTextView.tintColor = [colors objectAtIndex:textColorIndex];
+        proxyTextView.text = currentText;
+        proxyTextView.textAlignment = alignment;
+    }
     
     if (isBold) {
         boldnessButton.selected = YES;
@@ -1055,43 +1067,44 @@ static PSSubmenuManager* __sharedInstance;
 #pragma mark - Textfield Delegates
 - (BOOL)textViewShouldBeginEditing:(UITextView *)aTextView
 {
-    
     if (aTextView == textView) {
         
-        proxyTextViewHolder = [[UIView alloc] initWithFrame:[self proxyTextViewHolderFrame]];
-        proxyTextViewHolder.backgroundColor = [UIColor clearColor];
-        proxyTextViewHolder.alpha = 0.0;
-        [submenuDelegate.view addSubview:proxyTextViewHolder];
-        [submenuDelegate addViewToUnwantedViews:proxyTextViewHolder];
-        
-        proxyTextView = [[PSSubmenuTextView alloc] initWithFrame:[self proxyTextViewFrame]];
-        proxyTextView.backgroundColor = [UIColor whiteColor];
-        proxyTextView.contentInset = UIEdgeInsetsMake(10.0, 0.0, 10.0, 0.0);
-        proxyTextView.textContainerInset = UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0);
-        proxyTextView.contentSize = CGSizeMake(proxyTextView.frame.size.width, 1000.0);
-        [proxyTextView setShowsHorizontalScrollIndicator:NO];
-        proxyTextView.layer.borderWidth = 1.0;
-        proxyTextView.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
-        proxyTextView.delegate = self;
-        [proxyTextViewHolder addSubview:proxyTextView];
-        
-        NSInteger fontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
-        bool isBold = [[labelSettings objectForKey:BOLDNESS_KEY] boolValue];
-        bool isItalic = [[labelSettings objectForKey:ITALICNESS_KEY] boolValue];
-        NSInteger alignment = [[labelSettings objectForKey:TEXT_ALIGNMENT_KEY] integerValue];
-        
-        NSString* fontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:fontIndex] andIsBold:isBold andIsItalic:isItalic];
-        proxyTextView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
-        
-        proxyTextView.textAlignment = alignment;
-        
-        NSInteger textColorIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
-        proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
-        proxyTextView.tintColor = [colors objectAtIndex:textColorIndex];
-        
-        proxyTextView.text = textView.text;
-        
-        [proxyTextView becomeFirstResponder];
+        if (proxyTextView == nil) {
+            proxyTextViewHolder = [[UIView alloc] initWithFrame:[self proxyTextViewHolderFrame]];
+            proxyTextViewHolder.backgroundColor = [UIColor clearColor];
+            proxyTextViewHolder.alpha = 0.0;
+            [submenuDelegate.view addSubview:proxyTextViewHolder];
+            [submenuDelegate addViewToUnwantedViews:proxyTextViewHolder];
+            
+            proxyTextView = [[PSSubmenuTextView alloc] initWithFrame:[self proxyTextViewFrame]];
+            proxyTextView.backgroundColor = [UIColor whiteColor];
+            proxyTextView.contentInset = UIEdgeInsetsMake(10.0, 0.0, 10.0, 0.0);
+            proxyTextView.textContainerInset = UIEdgeInsetsMake(10.0, 10.0, 10.0, 10.0);
+            proxyTextView.contentSize = CGSizeMake(proxyTextView.frame.size.width, 1000.0);
+            [proxyTextView setShowsHorizontalScrollIndicator:NO];
+            proxyTextView.layer.borderWidth = 1.0;
+            proxyTextView.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
+            proxyTextView.delegate = self;
+            [proxyTextViewHolder addSubview:proxyTextView];
+            
+            NSInteger fontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
+            bool isBold = [[labelSettings objectForKey:BOLDNESS_KEY] boolValue];
+            bool isItalic = [[labelSettings objectForKey:ITALICNESS_KEY] boolValue];
+            NSInteger alignment = [[labelSettings objectForKey:TEXT_ALIGNMENT_KEY] integerValue];
+            
+            NSString* fontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:fontIndex] andIsBold:isBold andIsItalic:isItalic];
+            proxyTextView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
+            
+            proxyTextView.textAlignment = alignment;
+            
+            NSInteger textColorIndex = [[labelSettings objectForKey:TEXT_COLOR_INDEX_KEY] integerValue];
+            proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
+            proxyTextView.tintColor = [colors objectAtIndex:textColorIndex];
+            
+            proxyTextView.text = textView.text;
+            
+            [proxyTextView becomeFirstResponder];
+        }
         
         return NO;
     } else if (aTextView == proxyTextView) {
@@ -1110,8 +1123,17 @@ static PSSubmenuManager* __sharedInstance;
         }
         [labelSettings setObject:currentText forKey:CURRENT_TEXT_KEY];
         [self configureTextSubmenuWithCurrentOptions];
+        if (currentText.length > 0) {
+            addNewLabelButton.enabled = YES;
+        } else {
+            addNewLabelButton.enabled = NO;
+        }
     }
 }
+//- (BOOL) textViewShouldEndEditing:(UITextView *)textView
+//{
+//    return YES;
+//}
 #pragma mark - Public Methods
 - (CGFloat) getCurrentOpacity
 {
@@ -1280,6 +1302,12 @@ static PSSubmenuManager* __sharedInstance;
 #pragma mark - Text actions
 - (void) addNewLabelClicked:(UIButton*)button
 {
+    
+    NSString* currentText = [labelSettings objectForKey:CURRENT_TEXT_KEY];
+    if (currentText == nil || [currentText isEqualToString:@""]) {
+        return;
+    }
+    
     CGPoint menuCenterPoint = [submenuDelegate getMenuCenterPoint];
     PSDesignLabel* newLabel = [[PSDesignLabel alloc] initWithCenter:menuCenterPoint];
     newLabel.labelSettings = [NSMutableDictionary dictionaryWithDictionary:labelSettings];
@@ -1741,11 +1769,14 @@ static PSSubmenuManager* __sharedInstance;
 - (void) animationFinished
 {
     [submenuDelegate removeViewFromUnwantedViews:proxyTextViewHolder];
+    proxyTextView.delegate = nil;
     [proxyTextView removeFromSuperview];
     proxyTextView = nil;
     
     [proxyTextViewHolder removeFromSuperview];
     proxyTextViewHolder = nil;
+    
+    [submenuDelegate keyboardHidingCompleted];
 }
 
 - (void) dealloc

@@ -554,6 +554,16 @@
     [self removeSelectionRelatedItems];
     [self addSelectionRelatedViewToItem:label];
 }
+- (void) keyboardHidingCompleted
+{
+    if ([selectedItem isKindOfClass:[PSDesignLabel class]]) {
+        NSString* text = ((PSDesignLabel*)selectedItem).text;
+        if (text == nil || text.length == 0) {
+            [self deleteALabel:(PSDesignLabel*)selectedItem];
+            [self removeSelectionRelatedItems];
+        }
+    }
+}
 #pragma mark - Deletion Operations
 - (void) deleteLastImage
 {

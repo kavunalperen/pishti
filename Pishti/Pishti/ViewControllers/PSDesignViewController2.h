@@ -34,5 +34,6 @@
 - (void) addDesignLabel:(PSDesignLabel*)label;
 - (void) imageSettingsChanged:(NSMutableDictionary*)settings;
 - (void) labelSettingsChanged:(NSMutableDictionary*)settings;
+- (void) keyboardHidingCompleted;
 
 @end
