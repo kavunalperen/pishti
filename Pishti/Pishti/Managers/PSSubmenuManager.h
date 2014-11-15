@@ -23,7 +23,12 @@
 
 #define IMAGE_OPACITY_KEY @"kImageOpacity"
 
+#define FABRIC_SIZE_INDEX_KEY @"kFabricSizeIndex"
+#define FABRIC_SHAPE_INDEX_KEY @"kFabricShapeIndex"
+#define FABRIC_TYPE_INDEX_KEY @"kFabricTypeIndex"
 #define FABRIC_COLOR_INDEX_KEY @"kFabricColorIndex"
+#define FABRIC_COLLAR_INDEX_KEY @"kFabricCollarIndex"
+#define FABRIC_SLEEVE_INDEX_KEY @"kFabricSleeveIndex"
 
 typedef enum PSSubmenuType
 {
@@ -35,7 +40,12 @@ typedef enum PSSubmenuType
 
 typedef enum PSSubmenuTableType
 {
+    SUBMENU_TABLE_TYPE_FABRIC_SIZE,
+    SUBMENU_TABLE_TYPE_FABRIC_SHAPE,
+    SUBMENU_TABLE_TYPE_FABRIC_TYPE,
     SUBMENU_TABLE_TYPE_FABRIC_COLOR,
+    SUBMENU_TABLE_TYPE_FABRIC_COLLAR,
+    SUBMENU_TABLE_TYPE_FABRIC_SLEEVE,
     SUBMENU_TABLE_TYPE_TEXT_FONT,
     SUBMENU_TABLE_TYPE_TEXT_COLOR
 } PSSubmenuTableType;
@@ -62,6 +72,8 @@ typedef enum PSSubmenuTableType
 
 - (void) designLabelSelected:(PSDesignLabel*)label;
 - (void) anImageSelected:(PSImageView*)image;
+
+- (void) updateTotalPrice;
 
 - (void) cleanups;
 

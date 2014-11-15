@@ -16,12 +16,12 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     
-    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Bookman Old Style"]);
-    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR McLean"]);
-    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Courier New"]);
-    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Eagles"]);
-    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Trebuchet MS"]);
-    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Rockwell"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Bookman Old Style"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR McLean"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Courier New"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Eagles"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Trebuchet MS"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Rockwell"]);
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.

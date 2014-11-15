@@ -29,6 +29,10 @@
             [self stylizeForGeneralColorCell];
         } else if ([reuseIdentifier isEqualToString:MAIN_CELL_IDENTIFIER]) {
             [self stylizeForMainCell];
+        } else if ([reuseIdentifier isEqualToString:FABRIC_COLLAR_CELL_IDENTIFIER]) {
+            [self stylizeForCollarCell];
+        } else if ([reuseIdentifier isEqualToString:FABRIC_SLEEVE_CELL_IDENTIFIER]) {
+            [self stylizeForSleeveCell];
         }
     }
     
@@ -89,6 +93,36 @@
     self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
     self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
     [self addSubview:self.mainLabel];
+}
+- (void) stylizeForCollarCell
+{
+    self.iconView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 56.0, 37.0)];
+    self.iconView.backgroundColor = [UIColor clearColor];
+    [self addSubview:self.iconView];
+    
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 210.0, 37.0)];
+    self.mainLabel.backgroundColor = [UIColor clearColor];
+    self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
+    self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
+    [self addSubview:self.mainLabel];
+}
+- (void) stylizeForSleeveCell
+{
+    self.iconView = [[UIImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 56.0, 37.0)];
+    self.iconView.backgroundColor = [UIColor clearColor];
+    [self addSubview:self.iconView];
+    
+    self.mainLabel = [[UILabel alloc] initWithFrame:CGRectMake(60.0, 3.0, 210.0, 37.0)];
+    self.mainLabel.backgroundColor = [UIColor clearColor];
+    self.mainLabel.font = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT;
+    self.mainLabel.textColor = DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR;
+    [self addSubview:self.mainLabel];
+}
+- (void) setIconWithName:(NSString*)iconName
+{
+    if (_iconView) {
+        _iconView.image = [UIImage imageNamed:iconName];
+    }
 }
 - (void) makeSelected
 {

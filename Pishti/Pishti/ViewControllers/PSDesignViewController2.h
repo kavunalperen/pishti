@@ -35,5 +35,7 @@
 - (void) imageSettingsChanged:(NSMutableDictionary*)settings;
 - (void) labelSettingsChanged:(NSMutableDictionary*)settings;
 - (void) keyboardHidingCompleted;
+- (NSArray*) getImageElementFrames;
+- (NSArray*) getLabelElementFrames;
 
 @end

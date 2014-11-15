@@ -408,7 +408,6 @@
         }];
     }];
 }
-
 - (void) hideMenu
 {
     [UIView animateWithDuration:0.32 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
@@ -452,19 +451,16 @@
         menuBackgroundView = nil;
     }];
 }
-
 - (void) showFabricSubmenu
 {
     NSLog(@"show fabric submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_FABRIC];
 }
-
 - (void) showImageSubmenu
 {
     NSLog(@"show image submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_IMAGE];
 }
-
 - (void) showTextSubmenu
 {
     NSLog(@"show text submenu");
@@ -473,6 +469,30 @@
 - (CGPoint) getMenuCenterPoint
 {
     return menuCenterPoint;
+}
+- (NSMutableArray*) getImageElementFrames
+{
+    NSMutableArray* imageFrames = @[].mutableCopy;
+    
+    for (PSImageView* image in modelCanvas.allImages) {
+        CGSize imageSize = image.frame.size;
+        CGFloat area = imageSize.width*imageSize.height;
+        [imageFrames addObject:[NSNumber numberWithFloat:area]];
+    }
+    
+    return imageFrames;
+}
+- (NSMutableArray*) getLabelElementFrames
+{
+    NSMutableArray* labelFrames = @[].mutableCopy;
+    
+    for (PSDesignLabel* label in modelCanvas.allLabels) {
+        CGSize labelSize = label.frame.size;
+        CGFloat area = labelSize.width*labelSize.height;
+        [labelFrames addObject:[NSNumber numberWithFloat:area]];
+    }
+    
+    return labelFrames;
 }
 #pragma mark - Image picker controller delegate methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
@@ -520,6 +540,7 @@
         [modelCanvas.allImages addObject:imageView];
         
         [modelCanvas addSubview:imageView];
+        [[PSSubmenuManager sharedInstance] updateTotalPrice];
     }
 }
 #pragma mark - Selected Item Settings
@@ -579,11 +600,14 @@
     }
     
     modelCanvas.allImages = @[].mutableCopy;
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 - (void) deleteAImage:(PSImageView*)image
 {
     [image removeFromSuperview];
+    [self removeSelectionRelatedItems];
     [modelCanvas.allImages removeObject:image];
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 - (void) deleteLastLabel
 {
@@ -595,7 +619,9 @@
 - (void) deleteALabel:(PSDesignLabel*)label
 {
     [label removeFromSuperview];
+    [self removeSelectionRelatedItems];
     [modelCanvas.allLabels removeObject:label];
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 - (void) deleteAllLabels
 {
@@ -604,6 +630,7 @@
     }
     
     modelCanvas.allLabels = @[].mutableCopy;
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 #pragma mark - Fabric Operations
 - (void) fabricColorSelected:(UIColor*)color
@@ -633,7 +660,6 @@
             } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
                 [self deleteAImage:(PSImageView*)selectedItem];
             }
-            [self removeSelectionRelatedItems];
         } else if (CGRectContainsPoint(currentScaleView.bounds, p2)) {
             isScaling = YES;
             scaleStartingPoint = [touch locationInView:modelCanvas];
@@ -812,6 +838,7 @@
         rotateStartingPoint = currentPoint;
         
         [self rearrangeSelectionRelatedViewsFrame];
+        [[PSSubmenuManager sharedInstance] updateTotalPrice];
         
         isRotating = NO;
     } else if (isScaling) {
@@ -857,6 +884,8 @@
                 [self rearrangeSelectionRelatedViewsFrame];
             }
         }
+        
+        [[PSSubmenuManager sharedInstance] updateTotalPrice];
         
         isScaling = NO;
     }
@@ -923,6 +952,11 @@
             [modelCanvas.allLabels removeObject:selectedItem];
         }
     }
+    
+    [self removeViewFromUnwantedViews:currentDeleteView];
+    [self removeViewFromUnwantedViews:currentScaleView];
+    [self removeViewFromUnwantedViews:currentRotateView];
+    [self removeViewFromUnwantedViews:currentMoveView];
     
     [currentDeleteView removeFromSuperview];
     currentDeleteView = nil;
@@ -1013,6 +1047,10 @@
         [[PSSubmenuManager sharedInstance] setImageSettings:((PSImageView*)selectedItem).imageSettings];
         [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_IMAGE];
     }
+    [self addViewToUnwantedViews:currentDeleteView];
+    [self addViewToUnwantedViews:currentScaleView];
+    [self addViewToUnwantedViews:currentRotateView];
+    [self addViewToUnwantedViews:currentMoveView];
     
 }
 #pragma mark - Memory warning

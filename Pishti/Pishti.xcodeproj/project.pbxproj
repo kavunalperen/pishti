@@ -16,6 +16,9 @@
 		050155241926CC35009FEE6D /* PSHelpPageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 050155231926CC35009FEE6D /* PSHelpPageViewController.m */; };
 		050194EF1927947B00464D23 /* PSModelCanvas.m in Sources */ = {isa = PBXBuildFile; fileRef = 050194EE1927947B00464D23 /* PSModelCanvas.m */; };
 		0509BA58191F9B7F00BA83EC /* PSDesignViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0509BA57191F9B7F00BA83EC /* PSDesignViewController.m */; };
+		052DA32A1A15F51700F79011 /* yaka1.png in Resources */ = {isa = PBXBuildFile; fileRef = 052DA3271A15F51700F79011 /* yaka1.png */; };
+		052DA32B1A15F51700F79011 /* yaka2.png in Resources */ = {isa = PBXBuildFile; fileRef = 052DA3281A15F51700F79011 /* yaka2.png */; };
+		052DA32C1A15F51700F79011 /* yaka3.png in Resources */ = {isa = PBXBuildFile; fileRef = 052DA3291A15F51700F79011 /* yaka3.png */; };
 		0531EBF719671B49000202E4 /* PSTextView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0531EBF619671B49000202E4 /* PSTextView.m */; };
 		0531EC0A19673C76000202E4 /* PSImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0531EC0919673C76000202E4 /* PSImageView.m */; };
 		0543C65218F460060049D846 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0543C65118F460060049D846 /* Foundation.framework */; };
@@ -67,6 +70,7 @@
 		05B827D819FD438C007765A9 /* PSSubmenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = 05B827D719FD438C007765A9 /* PSSubmenuView.m */; };
 		05C197BB1927C416000ABA01 /* PSMainNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 05C197BA1927C416000ABA01 /* PSMainNavigationController.m */; };
 		05C197BE1927D243000ABA01 /* PSSubmenuTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 05C197BD1927D243000ABA01 /* PSSubmenuTableViewCell.m */; };
+		05D4AE641A17D5D800CF393B /* PSPriceManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 05D4AE631A17D5D800CF393B /* PSPriceManager.m */; };
 		05EF172B19F8EB5100B87C1B /* PSLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EF172A19F8EB5100B87C1B /* PSLabel.m */; };
 		05EF17C019FABA5A00B87C1B /* color_mask@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 05EF17A019FABA5A00B87C1B /* color_mask@2x~ipad.png */; };
 		05EF17CF19FABA5A00B87C1B /* text_addnew_highlighted@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 05EF17B219FABA5A00B87C1B /* text_addnew_highlighted@2x~ipad.png */; };
@@ -163,6 +167,9 @@
 		050194EE1927947B00464D23 /* PSModelCanvas.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSModelCanvas.m; sourceTree = "<group>"; };
 		0509BA56191F9B7F00BA83EC /* PSDesignViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSDesignViewController.h; sourceTree = "<group>"; };
 		0509BA57191F9B7F00BA83EC /* PSDesignViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSDesignViewController.m; sourceTree = "<group>"; };
+		052DA3271A15F51700F79011 /* yaka1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = yaka1.png; sourceTree = "<group>"; };
+		052DA3281A15F51700F79011 /* yaka2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = yaka2.png; sourceTree = "<group>"; };
+		052DA3291A15F51700F79011 /* yaka3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = yaka3.png; sourceTree = "<group>"; };
 		0531EBF519671B49000202E4 /* PSTextView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSTextView.h; sourceTree = "<group>"; };
 		0531EBF619671B49000202E4 /* PSTextView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSTextView.m; sourceTree = "<group>"; };
 		0531EC0819673C76000202E4 /* PSImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSImageView.h; sourceTree = "<group>"; };
@@ -462,6 +469,8 @@
 		05C197BA1927C416000ABA01 /* PSMainNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSMainNavigationController.m; sourceTree = "<group>"; };
 		05C197BC1927D243000ABA01 /* PSSubmenuTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSSubmenuTableViewCell.h; sourceTree = "<group>"; };
 		05C197BD1927D243000ABA01 /* PSSubmenuTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSSubmenuTableViewCell.m; sourceTree = "<group>"; };
+		05D4AE621A17D5D800CF393B /* PSPriceManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSPriceManager.h; sourceTree = "<group>"; };
+		05D4AE631A17D5D800CF393B /* PSPriceManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSPriceManager.m; sourceTree = "<group>"; };
 		05EF172919F8EB5100B87C1B /* PSLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSLabel.h; sourceTree = "<group>"; };
 		05EF172A19F8EB5100B87C1B /* PSLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSLabel.m; sourceTree = "<group>"; };
 		05EF17A019FABA5A00B87C1B /* color_mask@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "color_mask@2x~ipad.png"; sourceTree = "<group>"; };
@@ -1135,6 +1144,8 @@
 			children = (
 				054BF33C19ED960E00685EBC /* PSSubmenuManager.h */,
 				054BF33D19ED960E00685EBC /* PSSubmenuManager.m */,
+				05D4AE621A17D5D800CF393B /* PSPriceManager.h */,
+				05D4AE631A17D5D800CF393B /* PSPriceManager.m */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -1177,6 +1188,9 @@
 			isa = PBXGroup;
 			children = (
 				05EF17A019FABA5A00B87C1B /* color_mask@2x~ipad.png */,
+				052DA3271A15F51700F79011 /* yaka1.png */,
+				052DA3281A15F51700F79011 /* yaka2.png */,
+				052DA3291A15F51700F79011 /* yaka3.png */,
 			);
 			path = fabric;
 			sourceTree = "<group>";
@@ -1400,6 +1414,7 @@
 				05F9EDAF1A02EAF000CEC51E /* trebuc.ttf in Resources */,
 				05F9EDA71A02EAF000CEC51E /* TRCourierNew.TTF in Resources */,
 				05F9EDA61A02EAF000CEC51E /* ROCKI.TTF in Resources */,
+				052DA32C1A15F51700F79011 /* yaka3.png in Resources */,
 				05EF17D619FABA5A00B87C1B /* text_italic_normal@2x~ipad.png in Resources */,
 				05EF17FB19FAE4F200B87C1B /* slider_bullet_normal@2x~ipad.png in Resources */,
 				05F9EDB61A02EAF000CEC51E /* TRMcLeanItalik.TTF in Resources */,
@@ -1442,12 +1457,14 @@
 				054BF33819ED8C4800685EBC /* menu_bg@2x~ipad.png in Resources */,
 				05F9EDB41A02EAF000CEC51E /* TRMcLeanBold.TTF in Resources */,
 				05F9ED9E1A02EAF000CEC51E /* BrannbollFet.ttf in Resources */,
+				052DA32B1A15F51700F79011 /* yaka2.png in Resources */,
 				05F9EDB21A02EAF000CEC51E /* trebucit.ttf in Resources */,
 				05F9EDAD1A02EAF000CEC51E /* TREaglesBoldItalik.TTF in Resources */,
 				054BF35319EDAC7700685EBC /* golge@2x~ipad.png in Resources */,
 				05EF180419FAE4F200B87C1B /* view_left@2x~ipad.png in Resources */,
 				05EF17D519FABA5A00B87C1B /* text_italic_active@2x~ipad.png in Resources */,
 				05EF17F519FAE4F200B87C1B /* container_shadow@2x~ipad.png in Resources */,
+				052DA32A1A15F51700F79011 /* yaka1.png in Resources */,
 				054BF33A19ED8C4800685EBC /* text_btn_normal@2x~ipad.png in Resources */,
 				05F9ED9F1A02EAF000CEC51E /* BrannbollSmal.ttf in Resources */,
 				05EF17D919FABA5A00B87C1B /* text_ltr_active@2x~ipad.png in Resources */,
@@ -1499,6 +1516,7 @@
 				0531EC0A19673C76000202E4 /* PSImageView.m in Sources */,
 				0543C7E118F4691F0049D846 /* PSMenuViewController.m in Sources */,
 				050194EF1927947B00464D23 /* PSModelCanvas.m in Sources */,
+				05D4AE641A17D5D800CF393B /* PSPriceManager.m in Sources */,
 				050155211926CBBA009FEE6D /* PSHelpContentViewController.m in Sources */,
 				054BF31319ED833900685EBC /* PSDesignViewController2.m in Sources */,
 				0589060A1A001B5400AFBA9A /* PSTableViewController.m in Sources */,

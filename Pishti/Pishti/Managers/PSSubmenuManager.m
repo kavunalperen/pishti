@@ -16,6 +16,7 @@
 #import "PSSubmenuView.h"
 #import "PSSubmenuTextView.h"
 #import "PSDesignLabel.h"
+#import "PSPriceManager.h"
 
 #define SUBMENU_HEIGHT 255.0
 
@@ -40,6 +41,35 @@ static PSSubmenuManager* __sharedInstance;
     
     NSArray* colors;
     NSArray* colorNames;
+    NSArray* sizes;
+    NSArray* sleeves;
+    NSArray* sleeveIcons;
+    NSArray* collars;
+    NSArray* collarIcons;
+    NSArray* fabricTypes;
+    NSArray* shapes;
+    
+    PSTableView* fabricSizeTableView;
+    UIView* fabricSizeTableViewHolder;
+    PSLabel* fabricSizeValue;
+    
+    PSTableView* fabricShapeTableView;
+    UIView* fabricShapeTableViewHolder;
+    PSLabel* fabricShapeValue;
+    
+    PSTableView* fabricTypeTableView;
+    UIView* fabricTypeTableViewHolder;
+    PSLabel* fabricTypeValue;
+    
+    PSTableView* fabricCollarTableView;
+    UIView* fabricCollarTableViewHolder;
+    UIImageView* fabricCollarIcon;
+    PSLabel* fabricCollarValue;
+    
+    PSTableView* fabricSleeveTableView;
+    UIView* fabricSleeveTableViewHolder;
+    UIImageView* fabricSleeveIcon;
+    PSLabel* fabricSleeveValue;
     
     PSTableView* fabricColorTableView;
     UIView* fabricColorTableViewHolder;
@@ -60,6 +90,7 @@ static PSSubmenuManager* __sharedInstance;
     NSMutableDictionary* labelSettings;
     NSMutableDictionary* fabricSettings;
     NSMutableDictionary* imageSettings;
+    NSMutableDictionary* priceSettings;
     
     UIButton* boldnessButton;
     UIButton* italicnessButton;
@@ -74,6 +105,8 @@ static PSSubmenuManager* __sharedInstance;
     
     PSSubmenuTextView* proxyTextView;
     UIView* proxyTextViewHolder;
+    
+    PSLabel* priceLabel;
     
     CGFloat heightChange;
 }
@@ -241,7 +274,7 @@ static PSSubmenuManager* __sharedInstance;
 {
     if (__sharedInstance == nil) {
         __sharedInstance = [[PSSubmenuManager alloc] init];
-        [__sharedInstance submenuSetups];
+//        [__sharedInstance submenuSetups];
         [[NSNotificationCenter defaultCenter] addObserver:__sharedInstance
                                                  selector:@selector(keyboardWillShow:)
                                                      name:UIKeyboardWillShowNotification
@@ -262,6 +295,57 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) submenuSetups
 {
+    
+    sizes = @[@"X-SMALL",
+              @"SMALL",
+              @"MEDIUM",
+              @"LARGE",
+              @"X-LARGE",
+              @"XX-LARGE"];
+    
+    shapes = @[@"SLİM-FİT",
+               @"REGULAR",
+               @"NORMAL",
+               @"NOT-SLİM-FİT",
+               @"BOL",
+               @"ÇUVAL-GİBİ"];
+    
+    fabricTypes = @[@"PENYE",
+                    @"MERSERİZE",
+                    @"KAŞMİR",
+                    @"GABARDİN",
+                    @"PATİSKA",
+                    @"BRANDA BEZİ",
+                    @"OPAL",
+                    @"ORGANİZE",
+                    @"POPLİN"];
+    
+    collars = @[@"V-YAKA",
+                @"KAYIK",
+                @"BİSİKLET",
+                @"SIFIR",
+                @"BİR",
+                @"İKİ"];
+    
+    collarIcons = @[@"yaka1.png",
+                    @"yaka2.png",
+                    @"yaka3.png",
+                    @"yaka1.png",
+                    @"yaka2.png",
+                    @"yaka3.png"];
+    
+    sleeves = @[@"V-KOL",
+                @"BÜZGÜLÜ",
+                @"SALAŞ",
+                @"DÜĞMELİ",
+                @"KOL DÜĞMELİ"];
+    
+    sleeveIcons = @[@"yaka1.png",
+                    @"yaka2.png",
+                    @"yaka3.png",
+                    @"yaka1.png",
+                    @"yaka2.png"];
+    
     colors = @[[UIColor colorWithRed:57.0/255.0 green:66.0/255.0 blue:100.0/255.0 alpha:1.0],
                [UIColor colorWithRed:17.0/255.0 green:168.0/255.0 blue:171.0/255.0 alpha:1.0],
                [UIColor colorWithRed:230.0/255.0 green:76.0/255.0 blue:101.0/255.0 alpha:1.0],
@@ -291,7 +375,12 @@ static PSSubmenuManager* __sharedInstance;
         return [obj1 compare:obj2];
     }];
     
-    fabricSettings = @{FABRIC_COLOR_INDEX_KEY:[NSNumber numberWithInteger:2]}.mutableCopy;
+    fabricSettings = @{FABRIC_SIZE_INDEX_KEY:[NSNumber numberWithInteger:0],
+                       FABRIC_COLOR_INDEX_KEY:[NSNumber numberWithInteger:2],
+                       FABRIC_SHAPE_INDEX_KEY:[NSNumber numberWithInteger:0],
+                       FABRIC_TYPE_INDEX_KEY:[NSNumber numberWithInteger:0],
+                       FABRIC_COLLAR_INDEX_KEY:[NSNumber numberWithInteger:0],
+                       FABRIC_SLEEVE_INDEX_KEY:[NSNumber numberWithInteger:0]}.mutableCopy;
     
     labelSettings = @{CURRENT_TEXT_KEY:@"",
                       TEXT_OPACITY_KEY:[NSNumber numberWithFloat:1.0],
@@ -304,11 +393,20 @@ static PSSubmenuManager* __sharedInstance;
     
     imageSettings = @{IMAGE_OPACITY_KEY:[NSNumber numberWithFloat:1.0]}.mutableCopy;
     
+    priceSettings = @{BASE_MODEL_KEY:@"general",
+                      SLEEVE_TYPE_KEY:[sleeves objectAtIndex:0],
+                      COLLAR_TYPE_KEY:[collars objectAtIndex:0],
+                      FABRIC_TYPE_KEY:[fabricTypes objectAtIndex:0],
+                      IMAGES_KEY:[submenuDelegate getImageElementFrames],
+                      LABELS_KEY:[submenuDelegate getLabelElementFrames],
+                      TOTAL_PRICE_KEY:[NSNumber numberWithFloat:0.0]}.mutableCopy;
+    
 }
 #pragma mark - Public methods
 - (void) setSubmenuDelegate:(PSDesignViewController2*)viewController
 {
     submenuDelegate = viewController;
+    [self submenuSetups];
 }
 - (void) showSubmenuWithType:(PSSubmenuType)submenuType
 {
@@ -362,209 +460,213 @@ static PSSubmenuManager* __sharedInstance;
     
     CGRect frame = [self firstItemHolderFrame];
     
-    UIView* firstHolder = [[UIView alloc] initWithFrame:frame];
-    firstHolder.backgroundColor = [UIColor clearColor];
-    [submenu addSubview:firstHolder];
-    [submenuItems addObject:firstHolder];
+    UIButton* fabricSizeHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricSizeHolder.frame = frame;
+    [fabricSizeHolder addTarget:self action:@selector(fabricSizeClicked:) forControlEvents:UIControlEventTouchUpInside];
+    fabricSizeHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:fabricSizeHolder];
+    [submenuItems addObject:fabricSizeHolder];
     
-    PSLabel* firstItemTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
-    firstItemTitle.backgroundColor = [UIColor clearColor];
-    firstItemTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    firstItemTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    firstItemTitle.text = @"Beden Seçimi";
-    [firstHolder addSubview:firstItemTitle];
+    PSLabel* fabricSizeTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    fabricSizeTitle.backgroundColor = [UIColor clearColor];
+    fabricSizeTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    fabricSizeTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    fabricSizeTitle.text = @"Beden Seçimi";
+    [fabricSizeHolder addSubview:fabricSizeTitle];
     
-    PSLabel* firstItemValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
-    firstItemValue.backgroundColor = [UIColor clearColor];
-    firstItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    firstItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    firstItemValue.text = @"XXLARGE";
-    [firstHolder addSubview:firstItemValue];
+    fabricSizeValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
+    fabricSizeValue.backgroundColor = [UIColor clearColor];
+    fabricSizeValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    fabricSizeValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [fabricSizeHolder addSubview:fabricSizeValue];
     
-    firstHolder.clipsToBounds = YES;
+    fabricSizeHolder.clipsToBounds = YES;
     CALayer *bottomBorder = [CALayer layer];
     bottomBorder.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
     bottomBorder.borderWidth = 1;
     bottomBorder.frame = CGRectMake(0.0, frame.size.height-1.0, frame.size.width, 1.0);
-    [firstHolder.layer addSublayer:bottomBorder];
+    [fabricSizeHolder.layer addSublayer:bottomBorder];
     
     // second item
     
     CGRect frame2 = [self secondItemHolderFrame];
     
-    UIView* secondHolder = [[UIView alloc] initWithFrame:frame2];
-    secondHolder.backgroundColor = [UIColor clearColor];
-    [submenu addSubview:secondHolder];
-    [submenuItems addObject:secondHolder];
+    UIButton* fabricShapeHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricShapeHolder.frame = frame2;
+    [fabricShapeHolder addTarget:self action:@selector(fabricShapeClicked:) forControlEvents:UIControlEventTouchUpInside];
+    fabricShapeHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:fabricShapeHolder];
+    [submenuItems addObject:fabricShapeHolder];
     
-    PSLabel* secondItemTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
-    secondItemTitle.backgroundColor = [UIColor clearColor];
-    secondItemTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    secondItemTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    secondItemTitle.text = @"Kalıp Seçimi";
-    [secondHolder addSubview:secondItemTitle];
+    PSLabel* fabricShapeTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    fabricShapeTitle.backgroundColor = [UIColor clearColor];
+    fabricShapeTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    fabricShapeTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    fabricShapeTitle.text = @"Kalıp Seçimi";
+    [fabricShapeHolder addSubview:fabricShapeTitle];
     
-    PSLabel* secondItemValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
-    secondItemValue.backgroundColor = [UIColor clearColor];
-    secondItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    secondItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    secondItemValue.text = @"NORMAL";
-    [secondHolder addSubview:secondItemValue];
+    fabricShapeValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
+    fabricShapeValue.backgroundColor = [UIColor clearColor];
+    fabricShapeValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    fabricShapeValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [fabricShapeHolder addSubview:fabricShapeValue];
     
-    secondHolder.clipsToBounds = YES;
+    fabricShapeHolder.clipsToBounds = YES;
     CALayer *bottomBorder2 = [CALayer layer];
     bottomBorder2.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
     bottomBorder2.borderWidth = 1;
     bottomBorder2.frame = CGRectMake(0.0, frame2.size.height-1.0, frame2.size.width, 1.0);
-    [secondHolder.layer addSublayer:bottomBorder2];
+    [fabricShapeHolder.layer addSublayer:bottomBorder2];
     
     // third item
     
     CGRect frame3 = [self thirdItemHolderFrame];
     
-    UIView* thirdHolder = [[UIView alloc] initWithFrame:frame3];
-    thirdHolder.backgroundColor = [UIColor clearColor];
-    [submenu addSubview:thirdHolder];
-    [submenuItems addObject:thirdHolder];
+    UIButton* fabricTypeHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricTypeHolder.frame = frame3;
+    [fabricTypeHolder addTarget:self action:@selector(fabricTypeClicked:) forControlEvents:UIControlEventTouchUpInside];
+    fabricTypeHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:fabricTypeHolder];
+    [submenuItems addObject:fabricTypeHolder];
     
-    PSLabel* thirdItemTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
-    thirdItemTitle.backgroundColor = [UIColor clearColor];
-    thirdItemTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    thirdItemTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    thirdItemTitle.text = @"Kumaş Cinsi";
-    [thirdHolder addSubview:thirdItemTitle];
+    PSLabel* fabricTypeTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    fabricTypeTitle.backgroundColor = [UIColor clearColor];
+    fabricTypeTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    fabricTypeTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    fabricTypeTitle.text = @"Kumaş Cinsi";
+    [fabricTypeHolder addSubview:fabricTypeTitle];
     
-    PSLabel* thirdItemValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
-    thirdItemValue.backgroundColor = [UIColor clearColor];
-    thirdItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    thirdItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    thirdItemValue.text = @"MERSERİZE";
-    [thirdHolder addSubview:thirdItemValue];
+    fabricTypeValue = [[PSLabel alloc] initWithFrame:[self valueFrame]];
+    fabricTypeValue.backgroundColor = [UIColor clearColor];
+    fabricTypeValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    fabricTypeValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    fabricTypeValue.text = @"MERSERİZE";
+    [fabricTypeHolder addSubview:fabricTypeValue];
     
-    thirdHolder.clipsToBounds = YES;
+    fabricTypeHolder.clipsToBounds = YES;
     CALayer *bottomBorder3 = [CALayer layer];
     bottomBorder3.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
     bottomBorder3.borderWidth = 1;
     bottomBorder3.frame = CGRectMake(0.0, frame3.size.height-1.0, frame3.size.width, 1.0);
-    [thirdHolder.layer addSublayer:bottomBorder3];
+    [fabricTypeHolder.layer addSublayer:bottomBorder3];
     
     // fourth item
     
     CGRect frame4 = [self fourthItemHolderFrame];
     
-    UIButton* fourthHolder = [UIButton buttonWithType:UIButtonTypeCustom];
-    fourthHolder.frame = frame4;
-    [fourthHolder addTarget:self action:@selector(fabricColorClicked:) forControlEvents:UIControlEventTouchUpInside];
-    fourthHolder.backgroundColor = [UIColor clearColor];
-    [submenu addSubview:fourthHolder];
-    [submenuItems addObject:fourthHolder];
+    UIButton* fabricColorHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricColorHolder.frame = frame4;
+    [fabricColorHolder addTarget:self action:@selector(fabricColorClicked:) forControlEvents:UIControlEventTouchUpInside];
+    fabricColorHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:fabricColorHolder];
+    [submenuItems addObject:fabricColorHolder];
     
-    PSLabel* fourthItemTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
-    fourthItemTitle.backgroundColor = [UIColor clearColor];
-    fourthItemTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    fourthItemTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    fourthItemTitle.text = @"Kumaş Renk Seçimi";
-    [fourthHolder addSubview:fourthItemTitle];
+    PSLabel* fabricColorTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    fabricColorTitle.backgroundColor = [UIColor clearColor];
+    fabricColorTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    fabricColorTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    fabricColorTitle.text = @"Kumaş Renk Seçimi";
+    [fabricColorHolder addSubview:fabricColorTitle];
     
     fabricColorView = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
     fabricColorView.backgroundColor = [UIColor clearColor];
-    [fourthHolder addSubview:fabricColorView];
+    [fabricColorHolder addSubview:fabricColorView];
     
-    UIImageView* fourthItemIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
-    fourthItemIcon.backgroundColor = [UIColor clearColor];
-    fourthItemIcon.image = [UIImage imageNamed:@"color_mask.png"];
-    fourthItemIcon.userInteractionEnabled = NO;
-    [fourthHolder addSubview:fourthItemIcon];
+    UIImageView* fabricColorIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
+    fabricColorIcon.backgroundColor = [UIColor clearColor];
+    fabricColorIcon.image = [UIImage imageNamed:@"color_mask.png"];
+    fabricColorIcon.userInteractionEnabled = NO;
+    [fabricColorHolder addSubview:fabricColorIcon];
     
     fabricColorValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
     fabricColorValue.backgroundColor = [UIColor clearColor];
     fabricColorValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    [fourthHolder addSubview:fabricColorValue];
+    [fabricColorHolder addSubview:fabricColorValue];
     
-    fourthHolder.clipsToBounds = YES;
+    fabricColorHolder.clipsToBounds = YES;
     CALayer* bottomBorder4 = [CALayer layer];
     bottomBorder4.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
     bottomBorder4.borderWidth = 1.0;
     bottomBorder4.frame = CGRectMake(0.0, frame4.size.height-1.0, frame4.size.width, 1.0);
-    [fourthHolder.layer addSublayer:bottomBorder4];
+    [fabricColorHolder.layer addSublayer:bottomBorder4];
     
     // fifth item
     
     CGRect frame5 = [self fifthItemHolderFrame];
     
-    UIView* fifthHolder = [[UIView alloc] initWithFrame:frame5];
-    fifthHolder.backgroundColor = [UIColor clearColor];
-    [submenu addSubview:fifthHolder];
-    [submenuItems addObject:fifthHolder];
+    UIButton* fabricCollarHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricCollarHolder.frame = frame5;
+    [fabricCollarHolder addTarget:self action:@selector(fabricCollarClicked:) forControlEvents:UIControlEventTouchUpInside];
+    fabricCollarHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:fabricCollarHolder];
+    [submenuItems addObject:fabricCollarHolder];
     
-    PSLabel* fifthItemTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
-    fifthItemTitle.backgroundColor = [UIColor clearColor];
-    fifthItemTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    fifthItemTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    fifthItemTitle.text = @"Yaka Seçimi";
-    [fifthHolder addSubview:fifthItemTitle];
+    PSLabel* fabricCollarTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    fabricCollarTitle.backgroundColor = [UIColor clearColor];
+    fabricCollarTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    fabricCollarTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    fabricCollarTitle.text = @"Yaka Seçimi";
+    [fabricCollarHolder addSubview:fabricCollarTitle];
     
     UIView* colorView2 = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
     colorView2.backgroundColor = [UIColor cyanColor];
-    [fifthHolder addSubview:colorView2];
+    [fabricCollarHolder addSubview:colorView2];
     
-    UIImageView* fifthItemIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
-    fifthItemIcon.backgroundColor = [UIColor clearColor];
-    fifthItemIcon.image = [UIImage imageNamed:@"color_mask.png"];
-    [fifthHolder addSubview:fifthItemIcon];
+    fabricCollarIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
+    fabricCollarIcon.backgroundColor = [UIColor clearColor];
+    [fabricCollarHolder addSubview:fabricCollarIcon];
     
-    PSLabel* fifthItemValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
-    fifthItemValue.backgroundColor = [UIColor clearColor];
-    fifthItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    fifthItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    fifthItemValue.text = @"KIRLANGIÇ";
-    [fifthHolder addSubview:fifthItemValue];
+    fabricCollarValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
+    fabricCollarValue.backgroundColor = [UIColor clearColor];
+    fabricCollarValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    fabricCollarValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [fabricCollarHolder addSubview:fabricCollarValue];
     
-    fifthHolder.clipsToBounds = YES;
+    fabricCollarHolder.clipsToBounds = YES;
     CALayer *bottomBorder5 = [CALayer layer];
     bottomBorder5.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
     bottomBorder5.borderWidth = 1;
     bottomBorder5.frame = CGRectMake(0.0, frame5.size.height-1.0, frame5.size.width, 1.0);
-    [fifthHolder.layer addSublayer:bottomBorder5];
+    [fabricCollarHolder.layer addSublayer:bottomBorder5];
     
     // sixth item
     
     CGRect frame6 = [self sixthItemHolderFrame];
     
-    UIView* sixthHolder = [[UIView alloc] initWithFrame:frame6];
-    sixthHolder.backgroundColor = [UIColor clearColor];
-    [submenu addSubview:sixthHolder];
-    [submenuItems addObject:sixthHolder];
+    UIButton* fabricSleeveHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    fabricSleeveHolder.frame = frame6;
+    [fabricSleeveHolder addTarget:self action:@selector(fabricSleeveClicked:) forControlEvents:UIControlEventTouchUpInside];
+    fabricSleeveHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:fabricSleeveHolder];
+    [submenuItems addObject:fabricSleeveHolder];
     
-    PSLabel* sixthItemTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
-    sixthItemTitle.backgroundColor = [UIColor clearColor];
-    sixthItemTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
-    sixthItemTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
-    sixthItemTitle.text = @"Kol Tipi Seçimi";
-    [sixthHolder addSubview:sixthItemTitle];
+    PSLabel* fabricSleeveTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    fabricSleeveTitle.backgroundColor = [UIColor clearColor];
+    fabricSleeveTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    fabricSleeveTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    fabricSleeveTitle.text = @"Kol Tipi Seçimi";
+    [fabricSleeveHolder addSubview:fabricSleeveTitle];
     
     UIView* colorView3 = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
     colorView3.backgroundColor = [UIColor cyanColor];
-    [sixthHolder addSubview:colorView3];
+    [fabricSleeveHolder addSubview:colorView3];
     
-    UIImageView* sixthItemIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
-    sixthItemIcon.backgroundColor = [UIColor clearColor];
-    sixthItemIcon.image = [UIImage imageNamed:@"color_mask.png"];
-    [sixthHolder addSubview:sixthItemIcon];
+    fabricSleeveIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
+    fabricSleeveIcon.backgroundColor = [UIColor clearColor];
+    [fabricSleeveHolder addSubview:fabricSleeveIcon];
     
-    PSLabel* sixthItemValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
-    sixthItemValue.backgroundColor = [UIColor clearColor];
-    sixthItemValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
-    sixthItemValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
-    sixthItemValue.text = @"BÜZGÜLÜ";
-    [sixthHolder addSubview:sixthItemValue];
+    fabricSleeveValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
+    fabricSleeveValue.backgroundColor = [UIColor clearColor];
+    fabricSleeveValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    fabricSleeveValue.textColor = DESIGN_MENU_SUBMENU_VALUES_COLOR;
+    [fabricSleeveHolder addSubview:fabricSleeveValue];
     
-    sixthHolder.clipsToBounds = YES;
+    fabricSleeveHolder.clipsToBounds = YES;
     CALayer *bottomBorder6 = [CALayer layer];
     bottomBorder6.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
     bottomBorder6.borderWidth = 1;
     bottomBorder6.frame = CGRectMake(0.0, frame6.size.height-1.0, frame6.size.width, 1.0);
-    [sixthHolder.layer addSublayer:bottomBorder6];
+    [fabricSleeveHolder.layer addSublayer:bottomBorder6];
     
     [self addViewOptionsSubviewsToSubmenu:submenu];
     
@@ -910,12 +1012,11 @@ static PSSubmenuManager* __sharedInstance;
     [submenu addSubview:priceHolder];
     [submenuItems addObject:priceHolder];
     
-    PSLabel* priceLabel = [[PSLabel alloc] initWithFrame:[self priceLabelFrame]];
+    priceLabel = [[PSLabel alloc] initWithFrame:[self priceLabelFrame]];
     priceLabel.backgroundColor = [UIColor clearColor];
     priceLabel.font = DESIGN_MENU_SUBMENU_PRICE_FONT;
     priceLabel.textColor = DESIGN_MENU_SUBMENU_PRICE_COLOR;
     priceLabel.textAlignment = NSTextAlignmentRight;
-    priceLabel.text = @"123,80";
     [priceHolder addSubview:priceLabel];
     
     UIButton* tlButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -924,20 +1025,38 @@ static PSSubmenuManager* __sharedInstance;
     [tlButton setBackgroundImage:[UIImage imageNamed:@"turkish_lira_normal.png"] forState:UIControlStateNormal];
     [tlButton setBackgroundImage:[UIImage imageNamed:@"turkish_lira_highlighted.png"] forState:UIControlStateHighlighted];
     [priceHolder addSubview:tlButton];
+    
+    [self updateTotalPrice];
 }
 #pragma mark - Configuring submenus
 - (void) configureFabricSubmenuWithCurrentOptions
 {
     NSInteger fabricColorIndex = [[fabricSettings objectForKey:FABRIC_COLOR_INDEX_KEY] integerValue];
-    
     fabricColorView.backgroundColor = [colors objectAtIndex:fabricColorIndex];
-    
     fabricColorValue.textColor = [colors objectAtIndex:fabricColorIndex];
     fabricColorValue.text = [colorNames objectAtIndex:fabricColorIndex];
+    
+    NSInteger fabricSizeIndex = [[fabricSettings objectForKey:FABRIC_SIZE_INDEX_KEY] integerValue];
+    fabricSizeValue.text = [sizes objectAtIndex:fabricSizeIndex];
+    
+    NSInteger fabricShapeIndex = [[fabricSettings objectForKey:FABRIC_SHAPE_INDEX_KEY] integerValue];
+    fabricShapeValue.text = [shapes objectAtIndex:fabricShapeIndex];
+    
+    NSInteger fabricTypeIndex = [[fabricSettings objectForKey:FABRIC_TYPE_INDEX_KEY] integerValue];
+    fabricTypeValue.text = [fabricTypes objectAtIndex:fabricTypeIndex];
+    
+    NSInteger fabricCollarIndex = [[fabricSettings objectForKey:FABRIC_COLLAR_INDEX_KEY] integerValue];
+    fabricCollarValue.text = [collars objectAtIndex:fabricCollarIndex];
+    fabricCollarIcon.image = [UIImage imageNamed:[collarIcons objectAtIndex:fabricCollarIndex]];
+    
+    NSInteger fabricSleeveIndex = [[fabricSettings objectForKey:FABRIC_SLEEVE_INDEX_KEY] integerValue];
+    fabricSleeveValue.text = [sleeves objectAtIndex:fabricSleeveIndex];
+    fabricSleeveIcon.image = [UIImage imageNamed:[sleeveIcons objectAtIndex:fabricSleeveIndex]];
 }
 - (void) configureTextSubmenuWithCurrentOptions
 {
     [submenuDelegate labelSettingsChanged:labelSettings];
+    [self updateTotalPrice];
     
     CGFloat opacity = [[labelSettings objectForKey:TEXT_OPACITY_KEY] floatValue];
     NSInteger textFontIndex = [[labelSettings objectForKey:TEXT_FONT_INDEX_KEY] integerValue];
@@ -959,8 +1078,14 @@ static PSSubmenuManager* __sharedInstance;
     textView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
     textView.textColor = [colors objectAtIndex:textColorIndex];
     textView.tintColor = [colors objectAtIndex:textColorIndex];
-    textView.text = currentText;
+    if ((currentText != nil) && (currentText.length > 0)) {
+        textView.text = currentText;
+        addNewLabelButton.enabled = YES;
+    } else {
+        addNewLabelButton.enabled = NO;
+    }
     textView.textAlignment = alignment;
+    
     
     textFontValue.text = [fontFamilyNames objectAtIndex:textFontIndex];
     NSString* valueFontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:textFontIndex] andIsBold:NO andIsItalic:NO];
@@ -1012,9 +1137,28 @@ static PSSubmenuManager* __sharedInstance;
 - (void) configureImageSubmenuWithCurrentOptions
 {
     [submenuDelegate imageSettingsChanged:imageSettings];
+    [self updateTotalPrice];
     
     CGFloat opacity = [[imageSettings objectForKey:IMAGE_OPACITY_KEY] floatValue];
     [imageOpacitySlider setSliderValue:opacity];
+}
+- (void) configurePriceSubviewsWithCurrentOptions
+{
+    CGFloat totalPrice = [[priceSettings objectForKey:TOTAL_PRICE_KEY] floatValue];
+    
+    NSString* priceText = [NSString stringWithFormat:@"%.2f",totalPrice];
+    priceText = [priceText stringByReplacingOccurrencesOfString:@"." withString:@","];
+    
+    priceLabel.text = priceText;
+}
+- (void) updateTotalPrice
+{
+    [priceSettings setObject:[submenuDelegate getImageElementFrames] forKey:IMAGES_KEY];
+    [priceSettings setObject:[submenuDelegate getLabelElementFrames] forKey:LABELS_KEY];
+    
+    [[PSPriceManager sharedInstance] computePriceWithDesignOptions:priceSettings];
+    
+    [self configurePriceSubviewsWithCurrentOptions];
 }
 #pragma mark - Displaying submenus
 - (void) showNextSubmenu
@@ -1123,17 +1267,13 @@ static PSSubmenuManager* __sharedInstance;
         }
         [labelSettings setObject:currentText forKey:CURRENT_TEXT_KEY];
         [self configureTextSubmenuWithCurrentOptions];
-        if (currentText.length > 0) {
-            addNewLabelButton.enabled = YES;
-        } else {
-            addNewLabelButton.enabled = NO;
-        }
+//        if (currentText.length > 0) {
+//            addNewLabelButton.enabled = YES;
+//        } else {
+//            addNewLabelButton.enabled = NO;
+//        }
     }
 }
-//- (BOOL) textViewShouldEndEditing:(UITextView *)textView
-//{
-//    return YES;
-//}
 #pragma mark - Public Methods
 - (CGFloat) getCurrentOpacity
 {
@@ -1196,8 +1336,18 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (tableView == fabricColorTableView) {
+    if (tableView == fabricSizeTableView) {
+        return sizes.count;
+    } else if (tableView == fabricShapeTableView) {
+        return shapes.count;
+    } else if (tableView == fabricTypeTableView) {
+        return fabricTypes.count;
+    } else if (tableView == fabricColorTableView) {
         return colors.count;
+    } else if (tableView == fabricCollarTableView) {
+        return collars.count;
+    } else if (tableView == fabricSleeveTableView) {
+        return sleeves.count;
     } else if (tableView == textFontTableView) {
         return fontFamilyNames.count;
     } else if (tableView == textColorTableView) {
@@ -1214,11 +1364,48 @@ static PSSubmenuManager* __sharedInstance;
 {
     PSTableViewCell* cell;
     
-    if (tableView == fabricColorTableView) {
+    if (tableView == fabricSizeTableView) {
+        NSInteger index = [[fabricSettings objectForKey:FABRIC_SIZE_INDEX_KEY] integerValue];
+        cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
+        cell.mainLabel.text = [sizes objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
+    } else if (tableView == fabricShapeTableView) {
+        NSInteger index = [[fabricSettings objectForKey:FABRIC_SHAPE_INDEX_KEY] integerValue];
+        cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
+        cell.mainLabel.text = [shapes objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
+    } else if (tableView == fabricTypeTableView) {
+        NSInteger index = [[fabricSettings objectForKey:FABRIC_TYPE_INDEX_KEY] integerValue];
+        cell = [tableView dequeueReusableCellWithIdentifier:MAIN_CELL_IDENTIFIER];
+        cell.mainLabel.text = [fabricTypes objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
+    } else if (tableView == fabricColorTableView) {
         NSInteger index = [[fabricSettings objectForKey:FABRIC_COLOR_INDEX_KEY] integerValue];
         cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_COLOR_CELL_IDENTIFIER];
         [cell setColorForColorView:[colors objectAtIndex:indexPath.row]];
         cell.mainLabel.text = [colorNames objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
+    } else if (tableView == fabricCollarTableView) {
+        NSInteger index = [[fabricSettings objectForKey:FABRIC_COLLAR_INDEX_KEY] integerValue];
+        cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_COLLAR_CELL_IDENTIFIER];
+        [cell setIconWithName:[collarIcons objectAtIndex:indexPath.row]];
+        cell.mainLabel.text = [collars objectAtIndex:indexPath.row];
+        if (indexPath.row == index) {
+            [cell makeSelected];
+        }
+    } else if (tableView == fabricSleeveTableView) {
+        NSInteger index = [[fabricSettings objectForKey:FABRIC_SLEEVE_INDEX_KEY] integerValue];
+        cell = [tableView dequeueReusableCellWithIdentifier:FABRIC_SLEEVE_CELL_IDENTIFIER];
+        [cell setIconWithName:[sleeveIcons objectAtIndex:indexPath.row]];
+        cell.mainLabel.text = [sleeves objectAtIndex:indexPath.row];
         if (indexPath.row == index) {
             [cell makeSelected];
         }
@@ -1247,7 +1434,50 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if (tableView == fabricColorTableView) {
+    if (tableView == fabricSizeTableView) {
+        NSInteger fabricSizeIndex = indexPath.row;
+        
+        NSInteger oldIndex = [[fabricSettings objectForKey:FABRIC_SIZE_INDEX_KEY] integerValue];
+        
+        if (fabricSizeIndex == oldIndex) {
+            [fabricSizeTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SIZE];
+        } else {
+            [fabricSettings setObject:[NSNumber numberWithInteger:fabricSizeIndex] forKey:FABRIC_SIZE_INDEX_KEY];
+            [self configureFabricSubmenuWithCurrentOptions];
+            [fabricSizeTableView reloadData];
+        }
+    } else if (tableView == fabricShapeTableView) {
+        NSInteger fabricShapeIndex = indexPath.row;
+        
+        NSInteger oldIndex = [[fabricSettings objectForKey:FABRIC_SHAPE_INDEX_KEY] integerValue];
+        
+        if (fabricShapeIndex == oldIndex) {
+            [fabricShapeTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SHAPE];
+        } else {
+            [fabricSettings setObject:[NSNumber numberWithInteger:fabricShapeIndex] forKey:FABRIC_SHAPE_INDEX_KEY];
+            [self configureFabricSubmenuWithCurrentOptions];
+            [fabricShapeTableView reloadData];
+        }
+    } else if (tableView == fabricTypeTableView) {
+        NSInteger fabricTypeIndex = indexPath.row;
+        
+        NSInteger oldIndex = [[fabricSettings objectForKey:FABRIC_TYPE_INDEX_KEY] integerValue];
+        
+        if (fabricTypeIndex == oldIndex) {
+            [fabricTypeTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_TYPE];
+        } else {
+            [fabricSettings setObject:[NSNumber numberWithInteger:fabricTypeIndex] forKey:FABRIC_TYPE_INDEX_KEY];
+            [self configureFabricSubmenuWithCurrentOptions];
+            
+            [fabricTypeTableView reloadData];
+            
+            [priceSettings setObject:[fabricTypes objectAtIndex:fabricTypeIndex] forKey:FABRIC_TYPE_KEY];
+            [self updateTotalPrice];
+        }
+    } else if (tableView == fabricColorTableView) {
         
         NSInteger fabricColorIndex = indexPath.row;
         
@@ -1263,6 +1493,44 @@ static PSSubmenuManager* __sharedInstance;
             [submenuDelegate fabricColorSelected:[colors objectAtIndex:fabricColorIndex]];
             [fabricColorTableView reloadData];
         }
+    } else if (tableView == fabricCollarTableView) {
+        
+        NSInteger fabricCollarIndex = indexPath.row;
+        
+        NSInteger oldIndex = [[fabricSettings objectForKey:FABRIC_COLLAR_INDEX_KEY] integerValue];
+        
+        if (fabricCollarIndex == oldIndex) {
+            [fabricCollarTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLLAR];
+        } else {
+            [fabricSettings setObject:[NSNumber numberWithInteger:fabricCollarIndex] forKey:FABRIC_COLLAR_INDEX_KEY];
+            [self configureFabricSubmenuWithCurrentOptions];
+            
+            [fabricCollarTableView reloadData];
+            
+            [priceSettings setObject:[collars objectAtIndex:fabricCollarIndex] forKey:COLLAR_TYPE_KEY];
+            [self updateTotalPrice];
+        }
+        
+    } else if (tableView == fabricSleeveTableView) {
+        
+        NSInteger fabricSleeveIndex = indexPath.row;
+        
+        NSInteger oldIndex = [[fabricSettings objectForKey:FABRIC_SLEEVE_INDEX_KEY] integerValue];
+        
+        if (fabricSleeveIndex == oldIndex) {
+            [fabricSleeveTableView reloadData];
+            [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SLEEVE];
+        } else {
+            [fabricSettings setObject:[NSNumber numberWithInteger:fabricSleeveIndex] forKey:FABRIC_SLEEVE_INDEX_KEY];
+            [self configureFabricSubmenuWithCurrentOptions];
+            
+            [fabricSleeveTableView reloadData];
+            
+            [priceSettings setObject:[sleeves objectAtIndex:fabricSleeveIndex] forKey:SLEEVE_TYPE_KEY];
+            [self updateTotalPrice];
+        }
+        
     } else if (tableView == textFontTableView) {
         NSInteger textFontIndex = indexPath.row;
         
@@ -1294,9 +1562,29 @@ static PSSubmenuManager* __sharedInstance;
 #pragma mark - Button actions
 
 #pragma mark - Fabric actions
+- (void) fabricSizeClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SIZE];
+}
+- (void) fabricShapeClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SHAPE];
+}
+- (void) fabricTypeClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_TYPE];
+}
 - (void) fabricColorClicked:(UIButton*)button
 {
     [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLOR];
+}
+- (void) fabricCollarClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLLAR];
+}
+- (void) fabricSleeveClicked:(UIButton*)button
+{
+    [self addTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SLEEVE];
 }
 
 #pragma mark - Text actions
@@ -1314,6 +1602,7 @@ static PSSubmenuManager* __sharedInstance;
     [newLabel configureLabelWithSettings];
     
     [submenuDelegate addDesignLabel:newLabel];
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 - (void) textFontClicked:(UIButton*)button
 {
@@ -1437,7 +1726,6 @@ static PSSubmenuManager* __sharedInstance;
 #pragma mark - General Buttons Actions
 - (void) deleteLastClicked:(UIButton*)button
 {
-    NSLog(@"delete last clicked");
     if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
         [self deleteLastImage];
     } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
@@ -1463,7 +1751,6 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) deleteAllImages
 {
-    NSLog(@"delete all images from submenu manager");
     [submenuDelegate deleteAllImages];
 }
 - (void) deleteAllLabels
@@ -1477,16 +1764,40 @@ static PSSubmenuManager* __sharedInstance;
     [self removeAnyTable];
     
     CGRect frame;
+    NSArray* cellIdentifiers;
     
     switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_SIZE:
+            frame = [self firstItemHolderFrame];
+            cellIdentifiers = @[MAIN_CELL_IDENTIFIER];
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SHAPE:
+            frame = [self secondItemHolderFrame];
+            cellIdentifiers = @[MAIN_CELL_IDENTIFIER];
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_TYPE:
+            frame = [self thirdItemHolderFrame];
+            cellIdentifiers = @[MAIN_CELL_IDENTIFIER];
+            break;
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
             frame = [self fourthItemHolderFrame];
+            cellIdentifiers = @[FABRIC_COLOR_CELL_IDENTIFIER];
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_COLLAR:
+            frame = [self fifthItemHolderFrame];
+            cellIdentifiers = @[FABRIC_COLLAR_CELL_IDENTIFIER];
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SLEEVE:
+            frame = [self sixthItemHolderFrame];
+            cellIdentifiers = @[FABRIC_SLEEVE_CELL_IDENTIFIER];
             break;
         case SUBMENU_TABLE_TYPE_TEXT_FONT:
             frame = [self fourthItemHolderFrame];
+            cellIdentifiers = @[MAIN_CELL_IDENTIFIER];
             break;
         case SUBMENU_TABLE_TYPE_TEXT_COLOR:
             frame = [self sixthItemHolderFrame];
+            cellIdentifiers = @[GENERAL_COLOR_CELL_IDENTIFIER];
             break;
             
         default:
@@ -1514,21 +1825,15 @@ static PSSubmenuManager* __sharedInstance;
     [submenuDelegate.view addSubview:tableViewHolder];
     [submenuDelegate addViewToUnwantedViews:tableViewHolder];
     
-//    tableViewHolder.layer.shadowColor = [UIColor blackColor].CGColor;
-//    tableViewHolder.layer.shadowOpacity = 0.55;
-//    tableViewHolder.layer.shadowRadius = 65.0;
-    
     PSTableView* tableView = [[PSTableView alloc] initWithFrame:tableFrame];
     
-    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:FABRIC_COLOR_CELL_IDENTIFIER];
-    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:GENERAL_COLOR_CELL_IDENTIFIER];
-    [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:MAIN_CELL_IDENTIFIER];
+    for (NSString* identifier in cellIdentifiers) {
+        [tableView registerClass:[PSTableViewCell class] forCellReuseIdentifier:identifier];
+    }
     
     tableView.delegate = self;
     tableView.dataSource = self;
     [tableViewHolder addSubview:tableView];
-    
-//    CGRect titleFrame = [self titleFrame];
     
     UIView* headerView = [[UIView alloc] initWithFrame:CGRectMake(37.0, 37.0, 230.0, 32.0)];
     headerView.backgroundColor = [UIColor clearColor];
@@ -1538,14 +1843,38 @@ static PSSubmenuManager* __sharedInstance;
     headerLabel.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
     headerLabel.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
     [headerView addSubview:headerLabel];
-//    tableView.tableHeaderView = headerView;
     [tableViewHolder addSubview:headerView];
     
     switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_SIZE:
+            headerLabel.text = @"Beden Seçimi";
+            fabricSizeTableViewHolder = tableViewHolder;
+            fabricSizeTableView = tableView;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SHAPE:
+            headerLabel.text = @"Kalıp Seçimi";
+            fabricShapeTableViewHolder = tableViewHolder;
+            fabricShapeTableView = tableView;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_TYPE:
+            headerLabel.text = @"Kumaş Cinsi";
+            fabricTypeTableViewHolder = tableViewHolder;
+            fabricTypeTableView = tableView;
+            break;
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
             headerLabel.text = @"Kumaş Renk Seçimi";
             fabricColorTableViewHolder = tableViewHolder;
             fabricColorTableView = tableView;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_COLLAR:
+            headerLabel.text = @"Yaka Seçimi";
+            fabricCollarTableViewHolder = tableViewHolder;
+            fabricCollarTableView = tableView;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SLEEVE:
+            headerLabel.text = @"Kol Tipi Seçimi";
+            fabricSleeveTableViewHolder = tableViewHolder;
+            fabricSleeveTableView = tableView;
             break;
         case SUBMENU_TABLE_TYPE_TEXT_FONT:
             headerLabel.text = @"Yazı Karakter Seçimi";
@@ -1569,8 +1898,23 @@ static PSSubmenuManager* __sharedInstance;
     UIView* view;
     
     switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_SIZE:
+            view = fabricSizeTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SHAPE:
+            view = fabricShapeTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_TYPE:
+            view = fabricTypeTableViewHolder;
+            break;
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
             view = fabricColorTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_COLLAR:
+            view = fabricCollarTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SLEEVE:
+            view = fabricSleeveTableViewHolder;
             break;
         case SUBMENU_TABLE_TYPE_TEXT_FONT:
             view = textFontTableViewHolder;
@@ -1591,8 +1935,23 @@ static PSSubmenuManager* __sharedInstance;
     UIView* holderView;
     
     switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_SIZE:
+            holderView = fabricSizeTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SHAPE:
+            holderView = fabricShapeTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_TYPE:
+            holderView = fabricTypeTableViewHolder;
+            break;
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
             holderView = fabricColorTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_COLLAR:
+            holderView = fabricCollarTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SLEEVE:
+            holderView = fabricSleeveTableViewHolder;
             break;
         case SUBMENU_TABLE_TYPE_TEXT_FONT:
             holderView = textFontTableViewHolder;
@@ -1620,12 +1979,6 @@ static PSSubmenuManager* __sharedInstance;
         } completion:^(BOOL finished) {
             holderView.layer.anchorPoint = CGPointMake(0.5, 0.5);
             holderView.frame = frame;
-            
-            if (fabricColorTableView.indexPathForSelectedRow != nil) {
-                NSLog(@"not nil");
-            } else {
-                NSLog(@"nil");
-            }
         }];
     }];
 }
@@ -1634,8 +1987,23 @@ static PSSubmenuManager* __sharedInstance;
     UIView* holderView;
     
     switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_SIZE:
+            holderView = fabricSizeTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SHAPE:
+            holderView = fabricShapeTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_TYPE:
+            holderView = fabricTypeTableViewHolder;
+            break;
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
             holderView = fabricColorTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_COLLAR:
+            holderView = fabricCollarTableViewHolder;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SLEEVE:
+            holderView = fabricSleeveTableViewHolder;
             break;
         case SUBMENU_TABLE_TYPE_TEXT_FONT:
             holderView = textFontTableViewHolder;
@@ -1666,12 +2034,47 @@ static PSSubmenuManager* __sharedInstance;
 {
     
     switch (tableType) {
+        case SUBMENU_TABLE_TYPE_FABRIC_SIZE:
+            [fabricSizeTableView removeFromSuperview];
+            fabricSizeTableView = nil;
+            
+            [fabricSizeTableViewHolder removeFromSuperview];
+            fabricSizeTableViewHolder = nil;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SHAPE:
+            [fabricShapeTableView removeFromSuperview];
+            fabricShapeTableView = nil;
+            
+            [fabricShapeTableViewHolder removeFromSuperview];
+            fabricShapeTableViewHolder = nil;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_TYPE:
+            [fabricTypeTableView removeFromSuperview];
+            fabricTypeTableView = nil;
+            
+            [fabricTypeTableViewHolder removeFromSuperview];
+            fabricTypeTableViewHolder = nil;
+            break;
         case SUBMENU_TABLE_TYPE_FABRIC_COLOR:
             [fabricColorTableView removeFromSuperview];
             fabricColorTableView = nil;
             
             [fabricColorTableViewHolder removeFromSuperview];
             fabricColorTableViewHolder = nil;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_COLLAR:
+            [fabricCollarTableView removeFromSuperview];
+            fabricCollarTableView = nil;
+            
+            [fabricCollarTableViewHolder removeFromSuperview];
+            fabricCollarTableViewHolder = nil;
+            break;
+        case SUBMENU_TABLE_TYPE_FABRIC_SLEEVE:
+            [fabricSleeveTableView removeFromSuperview];
+            fabricSleeveTableView = nil;
+            
+            [fabricSleeveTableViewHolder removeFromSuperview];
+            fabricSleeveTableViewHolder = nil;
             break;
         case SUBMENU_TABLE_TYPE_TEXT_FONT:
             [textFontTableView removeFromSuperview];
@@ -1694,8 +2097,23 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) removeAnyTable
 {
+    if (fabricSizeTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SIZE];
+    }
+    if (fabricShapeTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SHAPE];
+    }
+    if (fabricTypeTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_TYPE];
+    }
     if (fabricColorTableViewHolder) {
         [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLOR];
+    }
+    if (fabricCollarTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_COLLAR];
+    }
+    if (fabricSleeveTableViewHolder) {
+        [self removeTableWithType:SUBMENU_TABLE_TYPE_FABRIC_SLEEVE];
     }
     if (textFontTableViewHolder) {
         [self removeTableWithType:SUBMENU_TABLE_TYPE_TEXT_FONT];
