@@ -382,7 +382,12 @@ static PSSubmenuManager* __sharedInstance;
                        FABRIC_COLLAR_INDEX_KEY:[NSNumber numberWithInteger:0],
                        FABRIC_SLEEVE_INDEX_KEY:[NSNumber numberWithInteger:0]}.mutableCopy;
     
-    labelSettings = @{CURRENT_TEXT_KEY:@"",
+    NSString* shortVersion = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    if (shortVersion == nil) {
+        shortVersion = @"";
+    }
+    
+    labelSettings = @{CURRENT_TEXT_KEY:shortVersion,
                       TEXT_OPACITY_KEY:[NSNumber numberWithFloat:1.0],
                       BOLDNESS_KEY:[NSNumber numberWithBool:NO],
                       ITALICNESS_KEY:[NSNumber numberWithBool:NO],
