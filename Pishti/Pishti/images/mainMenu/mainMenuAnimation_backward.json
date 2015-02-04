@@ -1,0 +1,311 @@
+{
+    "buttons_fade_start" : 0.70,
+    "buttons_fade_duration" : 0.90,
+    "all_animations_end" : 1.50,
+	"items" : [
+		{
+			"id" : "item0",
+			"imageName" : "designboard.png",
+			"zIndex" : 1,
+			"delay" : 1.0,
+			"duration" : 0.50,
+			"end" : {
+				"center" : {
+					"x" : 1069,
+					"y" : 530
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 15.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item1",
+			"imageName" : "db_kalemmavi.png",
+			"zIndex" : 2,
+			"delay" : 0.95,
+			"duration" : 0.50,
+			"end" : {
+				"center" : {
+					"x" : 885,
+					"y" : 150
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 15.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item2",
+			"imageName" : "db_lacivert.png",
+			"zIndex" : 3,
+			"delay" : 0.90,
+			"duration" : 0.60,
+			"end" : {
+				"center" : {
+					"x" : 925,
+					"y" : 383
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 25.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item3",
+			"imageName" : "db_silgi.png",
+			"zIndex" : 4,
+			"delay" : 0.85,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 855,
+					"y" : 255
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 60.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item4",
+			"imageName" : "db_kalemtras.png",
+			"zIndex" : 5,
+			"delay" : 0.80,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 855,
+					"y" : 255
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 10.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item5",
+			"imageName" : "boya_yesil.png",
+			"zIndex" : 6,
+			"delay" : 0.75,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 905,
+					"y" : 710
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 13.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item6",
+			"imageName" : "boya_sari.png",
+			"zIndex" : 7,
+			"delay" : 0.70,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 905,
+					"y" : 710
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 13.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item7",
+			"imageName" : "boya_kirmizi.png",
+			"zIndex" : 8,
+			"delay" : 0.65,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 905,
+					"y" : 710
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 13.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item8",
+			"imageName" : "boya_siyah.png",
+			"zIndex" : 9,
+			"delay" : 0.60,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 905,
+					"y" : 710
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 20.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item9",
+			"imageName" : "intro_logo.png",
+			"zIndex" : 10,
+			"delay" : 0.55,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : -176,
+					"y" : -142
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 56.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item10",
+			"imageName" : "kartela_01.png",
+			"zIndex" : 11,
+			"delay" : 0.50,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : -63,
+					"y" : 1095
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 23.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item11",
+			"imageName" : "kartela_02.png",
+			"zIndex" : 12,
+			"delay" : 0.45,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 120,
+					"y" : 1145
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 23.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item12",
+			"imageName" : "kartela_03.png",
+			"zIndex" : 13,
+			"delay" : 0.40,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 50,
+					"y" : 1600
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 23.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item13",
+			"imageName" : "kartela_04.png",
+			"zIndex" : 14,
+			"delay" : 0.35,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 150,
+					"y" : 1600
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 13.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item14",
+			"imageName" : "kartela_05.png",
+			"zIndex" : 15,
+			"delay" : 0.30,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 350,
+					"y" : 1600
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 50.0,
+				"alpha" : 1.0
+			}
+		},
+		{
+			"id" : "item15",
+			"imageName" : "kartela_06.png",
+			"zIndex" : 16,
+			"delay" : 0.25,
+			"duration" : 0.25,
+			"end" : {
+				"center" : {
+					"x" : 500,
+					"y" : 1600
+				},
+				"scale" : {
+					"x" : 1.0,
+					"y" : 1.0
+				},
+				"rotation" : 50.0,
+				"alpha" : 1.0
+			}
+		}
+	]
+}
