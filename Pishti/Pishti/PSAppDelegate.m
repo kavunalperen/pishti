@@ -22,6 +22,10 @@
 //    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Eagles"]);
 //    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Trebuchet MS"]);
 //    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Rockwell"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"GoodDog Cool"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Times New Roman"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"Titillium"]);
+//    NSLog(@"%@",[UIFont fontNamesForFamilyName:@"TR Galleria"]);
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.

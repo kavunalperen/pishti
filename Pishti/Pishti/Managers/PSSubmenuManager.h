@@ -35,7 +35,8 @@ typedef enum PSSubmenuType
     SUBMENU_TYPE_NONE,
     SUBMENU_TYPE_FABRIC,
     SUBMENU_TYPE_IMAGE,
-    SUBMENU_TYPE_TEXT
+    SUBMENU_TYPE_TEXT,
+    SUBMENU_TYPE_TEMPLATE
 } PSSubmenuType;
 
 typedef enum PSSubmenuTableType
@@ -50,12 +51,13 @@ typedef enum PSSubmenuTableType
     SUBMENU_TABLE_TYPE_TEXT_COLOR
 } PSSubmenuTableType;
 
-@interface PSSubmenuManager : NSObject <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate>
+@interface PSSubmenuManager : NSObject <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UITextFieldDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
 + (PSSubmenuManager*) sharedInstance;
 
 - (void) setSubmenuDelegate:(PSDesignViewController2*)viewController;
 - (void) showSubmenuWithType:(PSSubmenuType)submenuType;
+- (void) showSubmenuForTheFirstTime;
 
 - (void) sliderValueChanged:(PSSlider*)slider;
 - (void) removeAnyTable;

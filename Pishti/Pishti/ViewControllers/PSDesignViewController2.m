@@ -8,11 +8,16 @@
 
 #define MENU_WIDTH 500.0
 #define MENU_HEIGHT 500.0
-#define BUTTON_RADIUS 80.0
-#define BUTTON_BOUNCE_RADIUS 95.0
+#define BUTTON_RADIUS 90.0
+#define BUTTON_BOUNCE_RADIUS 105.0
+#define STARTING_ANGLE 150.0
+#define ANGLE_DIFFERENCE 60.0
 #define BUTTON_SIZE_NORMAL 70.0
-#define BUTTON_SIZE_HIGHLIGHTED 87.0
+#define BUTTON_SIZE_HIGHLIGHTED 83.0
 #define MINIMUM_SCALE_FACTOR 0.25
+
+#define TOP_BUTTONS_WIDTH 46.0
+#define TOP_BUTTONS_HEIGHT 46.0
 
 #import "PSDesignViewController2.h"
 #import "PSSubmenuManager.h"
@@ -34,6 +39,7 @@
     UIButton* fabricSubmenuButton;
     UIButton* textSubmenuButton;
     UIButton* imageSubmenuButton;
+    UIButton* templateSubmenuButton;
     
     PSModelCanvas* modelCanvas;
     
@@ -85,7 +91,22 @@
 {
     return CGRectMake(frame.origin.x+frame.size.width, frame.origin.y+frame.size.height, 40.0, 40.0);
 }
-
+- (CGRect) topButtonsHolderFrame
+{
+    return CGRectMake(15.0, 15.0, TOP_BUTTONS_WIDTH*3, TOP_BUTTONS_HEIGHT);
+}
+- (CGRect) backButtonFrame
+{
+    return CGRectMake(0.0, 0.0, TOP_BUTTONS_WIDTH, TOP_BUTTONS_HEIGHT);
+}
+- (CGRect) profileButtonFrame
+{
+    return CGRectMake(TOP_BUTTONS_WIDTH, 0.0, TOP_BUTTONS_WIDTH, TOP_BUTTONS_HEIGHT);
+}
+- (CGRect) helpButtonFrame
+{
+    return CGRectMake(TOP_BUTTONS_WIDTH*2, 0.0, TOP_BUTTONS_WIDTH, TOP_BUTTONS_HEIGHT);
+}
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -107,13 +128,16 @@
     [self initialSetups];
     [self addModelCanvas];
     [self addLogo];
+    [self addTopButtons];
 }
 - (void) viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     
-    [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_FABRIC];
+//    [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_FABRIC];
+    [[PSSubmenuManager sharedInstance] showSubmenuForTheFirstTime];
 }
+
 #pragma mark - View Setup Methods
 - (void) initialSetups
 {
@@ -131,6 +155,45 @@
     
     currentZIndex = 0.0;
 }
+- (void) addTopButtons
+{
+    UIView* topButtonsHolder = [[UIView alloc] initWithFrame:[self topButtonsHolderFrame]];
+    topButtonsHolder.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:topButtonsHolder];
+    
+    UIButton* backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    backButton.backgroundColor = [UIColor clearColor];
+    backButton.frame = [self backButtonFrame];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"back_btn_normal.png"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"back_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    [backButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    backButton.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [topButtonsHolder addSubview:backButton];
+    [unwantedViews addObject:backButton];
+    
+    UIButton* profileButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    profileButton.backgroundColor = [UIColor clearColor];
+    profileButton.frame = [self profileButtonFrame];
+    [profileButton setBackgroundImage:[UIImage imageNamed:@"profile_btn_normal.png"] forState:UIControlStateNormal];
+    [profileButton setBackgroundImage:[UIImage imageNamed:@"profile_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    profileButton.enabled = NO;
+    profileButton.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [topButtonsHolder addSubview:profileButton];
+    [unwantedViews addObject:profileButton];
+    
+    UIButton* helpButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    helpButton.backgroundColor = [UIColor clearColor];
+    helpButton.frame = [self helpButtonFrame];
+    [helpButton setBackgroundImage:[UIImage imageNamed:@"help_btn_normal.png"] forState:UIControlStateNormal];
+    [helpButton setBackgroundImage:[UIImage imageNamed:@"help_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    helpButton.enabled = NO;
+    helpButton.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [topButtonsHolder addSubview:helpButton];
+    [unwantedViews addObject:helpButton];
+}
 - (void) addLogo
 {
     UIButton* logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -138,7 +201,7 @@
     logoButton.frame = [self logoFrame];
     [logoButton setBackgroundImage:[UIImage imageNamed:@"mainscreen_logo.png"] forState:UIControlStateNormal];
     [logoButton setBackgroundImage:[UIImage imageNamed:@"mainscreen_logo.png"] forState:UIControlStateHighlighted];
-    [logoButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+//    [logoButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
     logoButton.layer.zPosition = currentZIndex;
     currentZIndex += 1.0;
     [self.view addSubview:logoButton];
@@ -189,10 +252,12 @@
     CGPoint fabricTouch;
     CGPoint imageTouch;
     CGPoint textTouch;
+    CGPoint templateTouch;
     if (menuBackgroundView != nil) {
         fabricTouch = [longPress locationInView:fabricSubmenuButton];
         imageTouch = [longPress locationInView:imageSubmenuButton];
         textTouch = [longPress locationInView:textSubmenuButton];
+        templateTouch = [longPress locationInView:templateSubmenuButton];
     }
     
     if (longPress.state == UIGestureRecognizerStateBegan) {
@@ -269,6 +334,29 @@
                 }];
             }
         }
+        
+        if (currentType != SUBMENU_TYPE_TEMPLATE) {
+            if ([templateSubmenuButton.layer containsPoint:templateTouch]) {
+                [templateSubmenuButton setHighlighted:YES];
+                CGPoint oldCenter = templateSubmenuButton.center;
+                [UIView animateWithDuration:0.12 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    templateSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+                    templateSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            } else {
+                [templateSubmenuButton setHighlighted:NO];
+                CGPoint oldCenter = templateSubmenuButton.center;
+                [UIView animateWithDuration:0.2 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    templateSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
+                    templateSubmenuButton.center = oldCenter;
+                } completion:^(BOOL finished) {
+                    ;
+                }];
+            }
+        }
+        
     } else if (longPress.state == UIGestureRecognizerStateEnded){
         NSLog(@"long press ended");
         
@@ -282,6 +370,10 @@
         
         if ([textSubmenuButton.layer containsPoint:textTouch]) {
             [self showTextSubmenu];
+        }
+        
+        if ([templateSubmenuButton.layer containsPoint:templateTouch]) {
+            [self showTemplateSubmenu];
         }
         
         [self hideMenu];
@@ -341,6 +433,16 @@
     [textSubmenuButton setBackgroundImage:[UIImage imageNamed:@"text_btn_highlighted.png"] forState:UIControlStateHighlighted];
     [menuBackgroundView addSubview:textSubmenuButton];
     
+    templateSubmenuButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    templateSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_NORMAL, BUTTON_SIZE_NORMAL);
+    templateSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5, MENU_HEIGHT*0.5);
+    templateSubmenuButton.alpha = 0.0;
+    templateSubmenuButton.backgroundColor = [UIColor clearColor];
+    [templateSubmenuButton setContentMode:UIViewContentModeScaleAspectFit];
+    [templateSubmenuButton setBackgroundImage:[UIImage imageNamed:@"template_btn_normal.png"] forState:UIControlStateNormal];
+    [templateSubmenuButton setBackgroundImage:[UIImage imageNamed:@"template_btn_highlighted.png"] forState:UIControlStateHighlighted];
+    [menuBackgroundView addSubview:templateSubmenuButton];
+    
     PSSubmenuType currentType = [[PSSubmenuManager sharedInstance] getCurrentSubmenuType];
     
     CGPoint oldCenter;
@@ -364,45 +466,61 @@
             imageSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
             imageSubmenuButton.center = oldCenter;
             break;
+        case SUBMENU_TYPE_TEMPLATE:
+            templateSubmenuButton.highlighted = YES;
+            oldCenter = templateSubmenuButton.center;
+            templateSubmenuButton.frame = CGRectMake(0.0, 0.0, BUTTON_SIZE_HIGHLIGHTED, BUTTON_SIZE_HIGHLIGHTED);
+            templateSubmenuButton.center = oldCenter;
             
         default:
             break;
     }
     
-    [UIView animateWithDuration:0.44 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+    [UIView animateWithDuration:0.49 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
         menuBackgroundImageView.alpha = 1.0;
     } completion:^(BOOL finished) {
         ;
     }];
     
     [UIView animateWithDuration:0.17 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_BOUNCE_RADIUS, MENU_HEIGHT*0.5);
+        fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE)), MENU_HEIGHT*0.5+BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE)));
         fabricSubmenuButton.alpha = 1.0;
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_RADIUS, MENU_HEIGHT*0.5);
+            fabricSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE)), MENU_HEIGHT*0.5+BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE)));
         } completion:^(BOOL finished) {
             ;
         }];
     }];
     
     [UIView animateWithDuration:0.17 delay:0.07 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(75.0)), MENU_HEIGHT*0.5-BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(75.0)));
+        textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE+ANGLE_DIFFERENCE)), MENU_HEIGHT*0.5+BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE+ANGLE_DIFFERENCE)));
         textSubmenuButton.alpha = 1.0;
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5-BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(75.0)), MENU_HEIGHT*0.5-BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(75.0)));
+            textSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE+ANGLE_DIFFERENCE)), MENU_HEIGHT*0.5+BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE+ANGLE_DIFFERENCE)));
         } completion:^(BOOL finished) {
             ;
         }];
     }];
     
     [UIView animateWithDuration:0.17 delay:0.12 options:UIViewAnimationOptionCurveEaseOut animations:^{
-        imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(30.0)), MENU_HEIGHT*0.5-BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(30.0)));
+        imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE+2*ANGLE_DIFFERENCE)), MENU_HEIGHT*0.5+BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE+2*ANGLE_DIFFERENCE)));
         imageSubmenuButton.alpha = 1.0;
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(30.0)), MENU_HEIGHT*0.5-BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(30.0)));
+            imageSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE+2*ANGLE_DIFFERENCE)), MENU_HEIGHT*0.5+BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE+2*ANGLE_DIFFERENCE)));
+        } completion:^(BOOL finished) {
+            ;
+        }];
+    }];
+    
+    [UIView animateWithDuration:0.17 delay:0.17 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        templateSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_BOUNCE_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE+3*ANGLE_DIFFERENCE)), MENU_HEIGHT*0.5+BUTTON_BOUNCE_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE+3*ANGLE_DIFFERENCE)));
+        templateSubmenuButton.alpha = 1.0;
+    } completion:^(BOOL finished) {
+        [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            templateSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5+BUTTON_RADIUS*cosf(DEGREES_TO_RADIANS(STARTING_ANGLE+3*ANGLE_DIFFERENCE)), MENU_HEIGHT*0.5+BUTTON_RADIUS*sinf(DEGREES_TO_RADIANS(STARTING_ANGLE+3*ANGLE_DIFFERENCE)));
         } completion:^(BOOL finished) {
             ;
         }];
@@ -435,6 +553,12 @@
         textSubmenuButton.alpha = 0.0;
     } completion:^(BOOL finished) {
         
+    }];
+    
+    [UIView animateWithDuration:0.2 delay:0.17 options:UIViewAnimationOptionCurveEaseOut animations:^{
+        templateSubmenuButton.center = CGPointMake(MENU_WIDTH*0.5, MENU_HEIGHT*0.5);
+        templateSubmenuButton.alpha = 0.0;
+    } completion:^(BOOL finished) {
         [fabricSubmenuButton removeFromSuperview];
         fabricSubmenuButton = nil;
         
@@ -443,6 +567,9 @@
         
         [textSubmenuButton removeFromSuperview];
         textSubmenuButton = nil;
+        
+        [templateSubmenuButton removeFromSuperview];
+        templateSubmenuButton = nil;
         
         [menuBackgroundImageView removeFromSuperview];
         menuBackgroundImageView = nil;
@@ -463,8 +590,11 @@
 }
 - (void) showTextSubmenu
 {
-    NSLog(@"show text submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEXT];
+}
+- (void) showTemplateSubmenu
+{
+    [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEMPLATE];
 }
 - (CGPoint) getMenuCenterPoint
 {
@@ -499,14 +629,16 @@
 {
     [self imageSelected:[info objectForKey:UIImagePickerControllerOriginalImage]];
     
-    [picker.view removeFromSuperview];
-    [picker removeFromParentViewController];
+//    [picker.view removeFromSuperview];
+//    [picker removeFromParentViewController];
+    [picker dismissViewControllerAnimated:YES completion:nil];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
 }
 - (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-    [picker.view removeFromSuperview];
-    [picker removeFromParentViewController];
+//    [picker.view removeFromSuperview];
+//    [picker removeFromParentViewController];
+    [picker dismissViewControllerAnimated:YES completion:nil];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
 }
 - (void) imageSelected:(UIImage*)image

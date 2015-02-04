@@ -17,6 +17,8 @@
 #import "PSSubmenuTextView.h"
 #import "PSDesignLabel.h"
 #import "PSPriceManager.h"
+#import "PSCollectionViewCell.h"
+#import "PSTemplateTextField.h"
 
 #define SUBMENU_HEIGHT 255.0
 
@@ -38,9 +40,12 @@ static PSSubmenuManager* __sharedInstance;
     
     PSSlider* imageOpacitySlider;
     PSSlider* textOpacitySlider;
+    PSSlider* templateOpacitySlider;
     
     NSArray* colors;
     NSArray* colorNames;
+    NSArray* textColors;
+    NSArray* textColorNames;
     NSArray* sizes;
     NSArray* sleeves;
     NSArray* sleeveIcons;
@@ -85,11 +90,17 @@ static PSSubmenuManager* __sharedInstance;
     UIView* textFontTableViewHolder;
     PSLabel* textFontValue;
     
+    PSTableView* templateTextColorTableView;
+    UIView* templateTextColorTableViewHolder;
+    UIView* templateTextColorView;
+    PSLabel* templateTextColorValue;
+    
     NSArray* fontFamilyNames;
     
     NSMutableDictionary* labelSettings;
     NSMutableDictionary* fabricSettings;
     NSMutableDictionary* imageSettings;
+    NSMutableDictionary* templateSettings;
     NSMutableDictionary* priceSettings;
     
     UIButton* boldnessButton;
@@ -105,6 +116,12 @@ static PSSubmenuManager* __sharedInstance;
     
     PSSubmenuTextView* proxyTextView;
     UIView* proxyTextViewHolder;
+    
+    PSTemplateTextField* templateTextField;
+    UIView* templateTextFieldHolder;
+    
+    PSTemplateTextField* proxyTemplateTextField;
+    UIView* proxyTemplateTextFieldHolder;
     
     PSLabel* priceLabel;
     
@@ -223,6 +240,15 @@ static PSSubmenuManager* __sharedInstance;
     return CGRectMake(65.0, 0.0, 65.0, 55.0);
 }
 
+#pragma mark - Template Frames
+- (CGRect) templateCollectionViewHolderFrame
+{
+    return CGRectMake(30.0, 30.0, 230.0, 195.0);
+}
+- (CGRect) templateCollectionViewFrame
+{
+    return CGRectMake(0.0, 0.0, 230.0, 195.0);
+}
 #pragma mark - General Frames
 - (CGRect) viewOptionsHolderFrame
 {
@@ -274,7 +300,6 @@ static PSSubmenuManager* __sharedInstance;
 {
     if (__sharedInstance == nil) {
         __sharedInstance = [[PSSubmenuManager alloc] init];
-//        [__sharedInstance submenuSetups];
         [[NSNotificationCenter defaultCenter] addObserver:__sharedInstance
                                                  selector:@selector(keyboardWillShow:)
                                                      name:UIKeyboardWillShowNotification
@@ -354,6 +379,18 @@ static PSSubmenuManager* __sharedInstance;
                [UIColor colorWithRed:123.0/255.0 green:91.0/255.0 blue:162.0/255.0 alpha:1.0],
                [UIColor colorWithRed:111.0/255.0 green:104.0/255.0 blue:119.0/255.0 alpha:1.0]];
     
+    textColors = @[[UIColor colorWithRed:57.0/255.0 green:66.0/255.0 blue:100.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:17.0/255.0 green:168.0/255.0 blue:171.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:230.0/255.0 green:76.0/255.0 blue:101.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:252.0/255.0 green:177.0/255.0 blue:80.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:185.0/255.0 green:190.0/255.0 blue:60.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:123.0/255.0 green:91.0/255.0 blue:162.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:111.0/255.0 green:104.0/255.0 blue:119.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:255.0/255.0 green:255.0/255.0 blue:255.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:153.0/255.0 green:109.0/255.0 blue:0.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:0.0/255.0 green:172.0/255.0 blue:169.0/255.0 alpha:1.0],
+                   [UIColor colorWithRed:255.0/255.0 green:120.0/255.0 blue:107.0/255.0 alpha:1.0]];
+    
     colorNames = @[@"KOYU MOR",
                    @"TURKUAZ",
                    @"SOFT PEMBE",
@@ -361,6 +398,18 @@ static PSSubmenuManager* __sharedInstance;
                    @"ÇİM YEŞİL",
                    @"MOR",
                    @"FÜME"];
+    
+    textColorNames = @[@"KOYU MOR",
+                       @"TURKUAZ",
+                       @"SOFT PEMBE",
+                       @"HARDAL SARI",
+                       @"ÇİM YEŞİL",
+                       @"MOR",
+                       @"FÜME",
+                       @"BEYAZ",
+                       @"KOYU HARDALIMSI",
+                       @"TURKUAZ 2",
+                       @"YAVRUAĞZI"];
     
     fontFamilyNames = @[@"Arial",
                         @"Bookman Old Style",
@@ -413,6 +462,12 @@ static PSSubmenuManager* __sharedInstance;
     submenuDelegate = viewController;
     [self submenuSetups];
 }
+- (void) showSubmenuForTheFirstTime
+{
+    if (currentSubmenuType == SUBMENU_TYPE_NONE) {
+        [self showSubmenuWithType:SUBMENU_TYPE_FABRIC];
+    }
+}
 - (void) showSubmenuWithType:(PSSubmenuType)submenuType
 {
     nextSubmenuType = submenuType;
@@ -451,6 +506,8 @@ static PSSubmenuManager* __sharedInstance;
         case SUBMENU_TYPE_IMAGE:
             [self addSubviewsToImageSubmenu:submenu];
             break;
+        case SUBMENU_TYPE_TEMPLATE:
+            [self addSubviewsToTemplateSubmenu:submenu];
         case SUBMENU_TYPE_NONE:
             break;
         default:
@@ -673,7 +730,7 @@ static PSSubmenuManager* __sharedInstance;
     bottomBorder6.frame = CGRectMake(0.0, frame6.size.height-1.0, frame6.size.width, 1.0);
     [fabricSleeveHolder.layer addSublayer:bottomBorder6];
     
-    [self addViewOptionsSubviewsToSubmenu:submenu];
+//    [self addViewOptionsSubviewsToSubmenu:submenu];
     
     [self addPriceSubviewsToSubmenu:submenu];
     
@@ -881,7 +938,7 @@ static PSSubmenuManager* __sharedInstance;
     bottomBorder4.frame = CGRectMake(0.0, frame4.size.height-1.0, frame4.size.width, 1.0);
     [fourthHolder.layer addSublayer:bottomBorder4];
     
-    [self addViewOptionsSubviewsToSubmenu:submenu];
+//    [self addViewOptionsSubviewsToSubmenu:submenu];
     
     [self addDeleteSubviewsToSubmenu:submenu];
     
@@ -903,7 +960,7 @@ static PSSubmenuManager* __sharedInstance;
     imageGallery.layer.borderColor = DESIGN_MENU_SUBMENU_IMAGE_GALLERY_BORDER_COLOR.CGColor;
     imageGallery.layer.borderWidth = 1.0;
     [imageGalleryHolder addSubview:imageGallery];
-    [submenuItems addObject:imageGallery];
+//    [submenuItems addObject:imageGallery];
     
     CGRect frame = [self thirdItemHolderFrame];
     
@@ -952,13 +1009,127 @@ static PSSubmenuManager* __sharedInstance;
     bottomBorder.frame = CGRectMake(0.0, frame2.size.height-1.0, frame2.size.width, 1.0);
     [secondHolder.layer addSublayer:bottomBorder];
     
-    [self addViewOptionsSubviewsToSubmenu:submenu];
+//    [self addViewOptionsSubviewsToSubmenu:submenu];
     
     [self addDeleteSubviewsToSubmenu:submenu];
     
     [self addPriceSubviewsToSubmenu:submenu];
     
     [self configureImageSubmenuWithCurrentOptions];
+}
+- (void) addSubviewsToTemplateSubmenu:(UIView*)submenu
+{
+    submenuItems = @[].mutableCopy;
+    
+    UIView* templateCollectionHolder = [[UIView alloc] initWithFrame:[self templateCollectionViewHolderFrame]];
+    templateCollectionHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:templateCollectionHolder];
+    [submenuItems addObject:templateCollectionHolder];
+    
+    UICollectionViewFlowLayout* flowLayout = [[UICollectionViewFlowLayout alloc] init];
+    [flowLayout setScrollDirection:UICollectionViewScrollDirectionVertical];
+    [flowLayout setItemSize:CGSizeMake(110.0, 93.0)];
+    [flowLayout setMinimumInteritemSpacing:9.0];
+    [flowLayout setMinimumLineSpacing:9.0];
+    [flowLayout setSectionInset:UIEdgeInsetsMake(0.0, 0.0, 0.0, 0.0)];
+    
+    UICollectionView* templateCollection = [[UICollectionView alloc] initWithFrame:[self templateCollectionViewFrame] collectionViewLayout:flowLayout];
+    templateCollection.backgroundColor = [UIColor clearColor];
+    templateCollection.showsHorizontalScrollIndicator = NO;
+    templateCollection.showsVerticalScrollIndicator = NO;
+    templateCollection.delegate = self;
+    templateCollection.dataSource = self;
+    [templateCollection registerClass:[PSCollectionViewCell class] forCellWithReuseIdentifier:TEMPLATE_CELL_IDENTIFIER];
+    [templateCollectionHolder addSubview:templateCollection];
+    [submenuItems addObject:templateCollection];
+    
+    CGRect frame = [self fourthItemHolderFrame];
+    
+    templateTextFieldHolder = [[UIView alloc] initWithFrame:frame];
+    templateTextFieldHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:templateTextFieldHolder];
+    [submenuItems addObject:templateTextFieldHolder];
+    
+    templateTextField = [[PSTemplateTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, frame.size.height)];
+    templateTextField.backgroundColor = [UIColor whiteColor];
+    templateTextField.layer.borderWidth = 1.0;
+    templateTextField.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
+    templateTextField.delegate = self;
+    templateTextField.placeholder = @"şablon yazısı";
+    templateTextField.font = [UIFont fontWithName:@"GoodDogCool" size:20.0];
+    templateTextField.currentFont = [UIFont fontWithName:@"GoodDogCool" size:20.0];
+    templateTextField.textColor = [colors objectAtIndex:6];
+    [templateTextFieldHolder addSubview:templateTextField];
+    
+    // opacity slider
+    CGRect frame2 = [self fifthItemHolderFrame];
+    
+    UIView* opacityHolder = [[UIView alloc] initWithFrame:frame2];
+    opacityHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:opacityHolder];
+    [submenuItems addObject:opacityHolder];
+    
+    PSLabel* textOpacityTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    textOpacityTitle.backgroundColor = [UIColor clearColor];
+    textOpacityTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    textOpacityTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    textOpacityTitle.text = @"Şablon Opaklığı";
+    [opacityHolder addSubview:textOpacityTitle];
+    
+    templateOpacitySlider = [[PSSlider alloc] initWithFrame:[self opacitySliderFrame]];
+    [opacityHolder addSubview:templateOpacitySlider];
+    
+    opacityHolder.clipsToBounds = YES;
+    CALayer *bottomBorder = [CALayer layer];
+    bottomBorder.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
+    bottomBorder.borderWidth = 1;
+    bottomBorder.frame = CGRectMake(0.0, frame.size.height-1.0, frame.size.width, 1.0);
+    [opacityHolder.layer addSublayer:bottomBorder];
+    
+    // text color
+    
+    CGRect frame3 = [self sixthItemHolderFrame];
+    
+    UIButton* colorHolder = [UIButton buttonWithType:UIButtonTypeCustom];
+    colorHolder.frame = frame3;
+//    [colorHolder addTarget:self action:@selector(textColorClicked:) forControlEvents:UIControlEventTouchUpInside];
+    colorHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:colorHolder];
+    [submenuItems addObject:colorHolder];
+    
+    PSLabel* textColorTitle = [[PSLabel alloc] initWithFrame:[self titleFrame]];
+    textColorTitle.backgroundColor = [UIColor clearColor];
+    textColorTitle.font = DESIGN_MENU_SUBMENU_TITLES_FONT;
+    textColorTitle.textColor = DESIGN_MENU_SUBMENU_TITLES_COLOR;
+    textColorTitle.text = @"Yazı Renk Seçimi";
+    [colorHolder addSubview:textColorTitle];
+    
+    templateTextColorView = [[UIView alloc] initWithFrame:[self indentedValueIconFrame]];
+    templateTextColorView.backgroundColor = [UIColor clearColor];
+    [colorHolder addSubview:templateTextColorView];
+    
+    UIImageView* textColorIcon = [[UIImageView alloc] initWithFrame:[self indentedValueIconFrame]];
+    textColorIcon.backgroundColor = [UIColor clearColor];
+    textColorIcon.image = [UIImage imageNamed:@"color_mask_main.png"];
+    [colorHolder addSubview:textColorIcon];
+    
+    templateTextColorValue = [[PSLabel alloc] initWithFrame:[self indentedValueFrame]];
+    templateTextColorValue.backgroundColor = [UIColor clearColor];
+    templateTextColorValue.font = DESIGN_MENU_SUBMENU_VALUES_FONT;
+    [colorHolder addSubview:templateTextColorValue];
+    
+    colorHolder.clipsToBounds = YES;
+    CALayer *bottomBorder2 = [CALayer layer];
+    bottomBorder2.borderColor = DESIGN_MENU_SUBMENU_BORDER_BOTTOM_COLOR.CGColor;
+    bottomBorder2.borderWidth = 1;
+    bottomBorder2.frame = CGRectMake(0.0, frame3.size.height-1.0, frame3.size.width, 1.0);
+    [colorHolder.layer addSublayer:bottomBorder2];
+    
+//    [self addViewOptionsSubviewsToSubmenu:submenu];
+    
+    [self addDeleteSubviewsToSubmenu:submenu];
+    
+    [self addPriceSubviewsToSubmenu:submenu];
 }
 - (void) addViewOptionsSubviewsToSubmenu:(UIView*)submenu
 {
@@ -1146,6 +1317,10 @@ static PSSubmenuManager* __sharedInstance;
     
     CGFloat opacity = [[imageSettings objectForKey:IMAGE_OPACITY_KEY] floatValue];
     [imageOpacitySlider setSliderValue:opacity];
+}
+- (void) configureTemplateSubmenuWithCurrentOptions
+{
+    
 }
 - (void) configurePriceSubviewsWithCurrentOptions
 {
@@ -1564,6 +1739,42 @@ static PSSubmenuManager* __sharedInstance;
         }
     }
 }
+
+#pragma mark - Collectionview Delegates
+- (NSInteger) numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
+    return 1;
+}
+- (NSInteger) collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    return 13;
+}
+- (UICollectionViewCell*) collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    PSCollectionViewCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:TEMPLATE_CELL_IDENTIFIER forIndexPath:indexPath];
+    
+    if (indexPath.row % 5 == 0) {
+        cell.imageView.image = [UIImage imageNamed:@"temp01.png"];
+    } else if (indexPath.row % 5 == 1) {
+        cell.imageView.image = [UIImage imageNamed:@"temp02.png"];
+    } else if (indexPath.row % 5 == 2) {
+        cell.imageView.image = [UIImage imageNamed:@"temp03.png"];
+    } else if (indexPath.row % 5 == 3) {
+        cell.imageView.image = [UIImage imageNamed:@"temp04.png"];
+    } else if (indexPath.row % 5 == 4) {
+        cell.imageView.image = [UIImage imageNamed:@"temp05.png"];
+    }
+    
+    return cell;
+}
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    NSLog(@"item selected");
+}
+- (CGSize) collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    return CGSizeMake(110.0, 93.0);
+}
 #pragma mark - Button actions
 
 #pragma mark - Fabric actions
@@ -1715,12 +1926,13 @@ static PSSubmenuManager* __sharedInstance;
 - (void) presentImagePicker
 {
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
+    [submenuDelegate presentViewController:imagePicker animated:YES completion:nil];
     
-    [submenuDelegate addChildViewController:imagePicker];
-    [submenuDelegate.view addSubview:imagePicker.view];
-    imagePicker.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    imagePicker.view.frame = submenuDelegate.view.bounds;
-    [imagePicker didMoveToParentViewController:submenuDelegate];
+//    [submenuDelegate addChildViewController:imagePicker];
+//    [submenuDelegate.view addSubview:imagePicker.view];
+//    imagePicker.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+//    imagePicker.view.frame = submenuDelegate.view.bounds;
+//    [imagePicker didMoveToParentViewController:submenuDelegate];
 }
 - (void) imageOpacityChanged
 {
