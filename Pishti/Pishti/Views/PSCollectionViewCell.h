@@ -14,4 +14,6 @@
 
 @property UIImageView* imageView;
 
+- (void) makeSelected:(BOOL)selected;
+
 @end
