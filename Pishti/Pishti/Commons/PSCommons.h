@@ -25,6 +25,7 @@
 #define DESIGN_MENU_SUBMENU_PRICE_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-ThCn" size:30.0]
 #define DESIGN_MENU_SUBMENU_SLIDER_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-ThCn" size:11.0]
 #define DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-HvCn" size:30.0]
+#define DESIGN_MENU_SUBMENU_TEMPLATE_TEXT_FIELD_FONT [UIFont fontWithName:@"" size:20.0]
 
 // design menu colors
 #define DESIGN_MENU_SUBMENU_TITLES_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
@@ -38,5 +39,7 @@
 #define DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_NORMAL_TEXT_COLOR [UIColor colorWithRed:152.0/255.0 green:157.0/255.0 blue:195.0/255.0 alpha:1.0]
 #define DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_HIGHLIGHTED_TEXT_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
 #define DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_SELECTED_TEXT_COLOR [UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0]
+
+#define DESIGN_MENU_SUBMENU_TEMPLATE_TEXT_FIELD_PLACEHOLDER_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.4]
 
 #define SUBMENU_BACKGROUND_COLOR [UIColor colorWithRed:240.0/255.0 green:240.0/255.0 blue:240.0/255.0 alpha:1.0]
