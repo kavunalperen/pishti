@@ -30,6 +30,9 @@
 #define FABRIC_COLLAR_INDEX_KEY @"kFabricCollarIndex"
 #define FABRIC_SLEEVE_INDEX_KEY @"kFabricSleeveIndex"
 
+#define TEMPLATE_OPACITY_KEY @"kTemplateOpacity"
+#define TEMPLATE_TEXT_COLOR_INDEX_KEY @"kTemplateTextColor"
+
 typedef enum PSSubmenuType
 {
     SUBMENU_TYPE_NONE,
@@ -48,7 +51,8 @@ typedef enum PSSubmenuTableType
     SUBMENU_TABLE_TYPE_FABRIC_COLLAR,
     SUBMENU_TABLE_TYPE_FABRIC_SLEEVE,
     SUBMENU_TABLE_TYPE_TEXT_FONT,
-    SUBMENU_TABLE_TYPE_TEXT_COLOR
+    SUBMENU_TABLE_TYPE_TEXT_COLOR,
+    SUBMENU_TABLE_TYPE_TEMPLATE_TEXT_COLOR
 } PSSubmenuTableType;
 
 @interface PSSubmenuManager : NSObject <UITableViewDelegate, UITableViewDataSource, UITextViewDelegate, UITextFieldDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
