@@ -18,18 +18,24 @@
     // Drawing code
 }
 */
-- (CGRect)textRectForBounds:(CGRect)bounds {
-    int leftMargin = 15.0;
-    CGRect inset = CGRectMake(bounds.origin.x + leftMargin, bounds.origin.y, bounds.size.width - leftMargin, bounds.size.height);
-    return inset;
-}
-
-- (CGRect)editingRectForBounds:(CGRect)bounds {
-    int leftMargin = 15.0;
-    CGRect inset = CGRectMake(bounds.origin.x + leftMargin, bounds.origin.y, bounds.size.width - leftMargin, bounds.size.height);
-    return inset;
-}
-- (void) drawPlaceholderInRect:(CGRect)rect
+//-(CGRect)textRectForBounds:(CGRect)bounds{
+//    
+//    CGRect rect = bounds;
+//    rect.size.width = rect.size.width;
+//    return rect;
+//}
+//- (CGRect)textRectForBounds:(CGRect)bounds {
+//    int leftMargin = 0.0;
+//    CGRect inset = CGRectMake(bounds.origin.x + leftMargin, bounds.origin.y, bounds.size.width - leftMargin, bounds.size.height);
+//    return inset;
+//}
+//
+//- (CGRect)editingRectForBounds:(CGRect)bounds {
+//    int leftMargin = 0.0;
+//    CGRect inset = CGRectMake(bounds.origin.x + leftMargin, bounds.origin.y, bounds.size.width - leftMargin, bounds.size.height);
+//    return inset;
+//}
+- (void) drawTextInRect:(CGRect)rect
 {
     NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
     /// Set line break mode
@@ -38,11 +44,9 @@
     paragraphStyle.alignment = self.textAlignment;
     
     NSMutableDictionary* attrs = @{NSParagraphStyleAttributeName:paragraphStyle,
-                                   NSForegroundColorAttributeName:DESIGN_MENU_SUBMENU_TEMPLATE_TEXT_FIELD_PLACEHOLDER_COLOR}.mutableCopy;
-    if (self.currentFont != nil) {
-        [attrs setObject:self.currentFont forKey:NSFontAttributeName];
-    }
+                                   NSFontAttributeName:self.font,
+                                   NSForegroundColorAttributeName:self.textColor}.mutableCopy;
     
-    [[self placeholder] drawInRect:CGRectMake(rect.origin.x, rect.origin.y+15.0, rect.size.width, rect.size.height-30.0) withAttributes:attrs];
+    [[self text] drawInRect:rect withAttributes:attrs];
 }
 @end

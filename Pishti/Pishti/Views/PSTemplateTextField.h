@@ -10,6 +10,4 @@
 
 @interface PSTemplateTextField : UITextField
 
-@property UIFont* currentFont;
-
 @end
