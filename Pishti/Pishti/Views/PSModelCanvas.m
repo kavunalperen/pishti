@@ -31,6 +31,7 @@
         self.brushes = [NSMutableArray new];
         self.allLabels = [NSMutableArray new];
         self.allImages = [NSMutableArray new];
+        self.allTemplates = [NSMutableArray new];
         
         isBrushing = NO;
         brushIndex = 0;

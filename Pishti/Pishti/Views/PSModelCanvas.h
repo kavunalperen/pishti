@@ -32,6 +32,7 @@ typedef enum BRUSH_TYPE
 @property NSMutableArray* brushes;
 @property NSMutableArray* allLabels;
 @property NSMutableArray* allImages;
+@property NSMutableArray* allTemplates;
 
 @property PSTextView* selectedTextView;
 
