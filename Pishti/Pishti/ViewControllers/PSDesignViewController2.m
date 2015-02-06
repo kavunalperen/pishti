@@ -580,12 +580,10 @@
 }
 - (void) showFabricSubmenu
 {
-    NSLog(@"show fabric submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_FABRIC];
 }
 - (void) showImageSubmenu
 {
-    NSLog(@"show image submenu");
     [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_IMAGE];
 }
 - (void) showTextSubmenu
@@ -624,20 +622,22 @@
     
     return labelFrames;
 }
+- (NSMutableArray*) getTemplateElementFrames
+{
+    NSMutableArray* templateFrames = @[].mutableCopy;
+    
+    return templateFrames;
+}
 #pragma mark - Image picker controller delegate methods
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     [self imageSelected:[info objectForKey:UIImagePickerControllerOriginalImage]];
     
-//    [picker.view removeFromSuperview];
-//    [picker removeFromParentViewController];
     [picker dismissViewControllerAnimated:YES completion:nil];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
 }
 - (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
-//    [picker.view removeFromSuperview];
-//    [picker removeFromParentViewController];
     [picker dismissViewControllerAnimated:YES completion:nil];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
 }
@@ -696,6 +696,16 @@
         }
     }
 }
+- (void) templateSettingsChanged:(NSMutableDictionary *)settings
+{
+    if (selectedItem) {
+        if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+            ((PSTemplateView*)selectedItem).templateSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+            [((PSTemplateView*)selectedItem) configureTemplateWithSettings];
+            [self rearrangeSelectionRelatedViewsFrame];
+        }
+    }
+}
 #pragma mark - Adding Labels
 - (void) addDesignLabel:(PSDesignLabel*)label
 {
@@ -717,17 +727,39 @@
         }
     }
 }
+#pragma mark - Adding Templates
+- (void) addTemplate:(PSTemplateView*)template
+{
+    template.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [modelCanvas.allTemplates addObject:template];
+    [modelCanvas addSubview:template];
+    
+    [self removeSelectionRelatedItems];
+    [self addSelectionRelatedViewToItem:template];
+}
+- (void) showKeyboard
+{
+    if (selectedItem) {
+        if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+            [((PSTemplateView*)selectedItem).textField becomeFirstResponder];
+        }
+    }
+}
 #pragma mark - Deletion Operations
 - (void) deleteLastImage
 {
     if (modelCanvas.allImages.count > 0) {
-        PSImageView* lastImage = [modelCanvas.allImages objectAtIndex:modelCanvas.allImages.count-1];
+        PSImageView* lastImage = [modelCanvas.allImages lastObject];
         [self deleteAImage:lastImage];
     }
 }
 - (void) deleteAllImages
 {
     for (PSImageView* view in modelCanvas.allImages) {
+        if (selectedItem == view) {
+            [self removeSelectionRelatedItems];
+        }
         [view removeFromSuperview];
     }
     
@@ -736,6 +768,9 @@
 }
 - (void) deleteAImage:(PSImageView*)image
 {
+    if (selectedItem == image) {
+        [self removeSelectionRelatedItems];
+    }
     [image removeFromSuperview];
     [self removeSelectionRelatedItems];
     [modelCanvas.allImages removeObject:image];
@@ -744,12 +779,15 @@
 - (void) deleteLastLabel
 {
     if (modelCanvas.allLabels.count > 0) {
-        PSDesignLabel* lastLabel = [modelCanvas.allLabels objectAtIndex:modelCanvas.allLabels.count-1];
+        PSDesignLabel* lastLabel = [modelCanvas.allLabels lastObject];
         [self deleteALabel:lastLabel];
     }
 }
 - (void) deleteALabel:(PSDesignLabel*)label
 {
+    if (selectedItem == label) {
+        [self removeSelectionRelatedItems];
+    }
     [label removeFromSuperview];
     [self removeSelectionRelatedItems];
     [modelCanvas.allLabels removeObject:label];
@@ -758,10 +796,41 @@
 - (void) deleteAllLabels
 {
     for (PSDesignLabel* view in modelCanvas.allLabels) {
+        if (selectedItem == view) {
+            [self removeSelectionRelatedItems];
+        }
         [view removeFromSuperview];
     }
     
     modelCanvas.allLabels = @[].mutableCopy;
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
+}
+- (void) deleteLastTemplate
+{
+    if (modelCanvas.allTemplates.count > 0) {
+        PSTemplateView* lastTemplate = [modelCanvas.allTemplates lastObject];
+        [self deleteATemplate:lastTemplate];
+    }
+}
+- (void) deleteAllTemplates
+{
+    for (PSTemplateView* view in modelCanvas.allTemplates) {
+        if (selectedItem == view) {
+            [self removeSelectionRelatedItems];
+        }
+        [view removeFromSuperview];
+    }
+    modelCanvas.allTemplates = @[].mutableCopy;
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
+}
+- (void) deleteATemplate:(PSTemplateView*)template
+{
+    if (selectedItem == template) {
+        [self removeSelectionRelatedItems];
+    }
+    [template removeFromSuperview];
+    [self removeSelectionRelatedItems];
+    [modelCanvas.allTemplates removeObject:template];
     [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 #pragma mark - Fabric Operations
@@ -791,6 +860,8 @@
                 
             } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
                 [self deleteAImage:(PSImageView*)selectedItem];
+            } else if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+                [self deleteATemplate:(PSTemplateView*)selectedItem];
             }
         } else if (CGRectContainsPoint(currentScaleView.bounds, p2)) {
             isScaling = YES;
@@ -844,6 +915,21 @@
         }
     }
     
+    for (PSTemplateView* templateView in modelCanvas.allTemplates) {
+        UITouch* touch = [touches anyObject];
+        CGPoint p = [touch locationInView:templateView];
+        
+        if (CGRectContainsPoint(templateView.bounds, p)) {
+            if (newlySelectedItem) {
+                if (templateView.layer.zPosition > newlySelectedItem.layer.zPosition) {
+                    newlySelectedItem = templateView;
+                }
+            } else {
+                newlySelectedItem = templateView;
+            }
+        }
+    }
+    
     if (newlySelectedItem) {
         if (newlySelectedItem == selectedItem) {
             UITouch* touch = [touches anyObject];
@@ -852,12 +938,14 @@
         } else {
             [self removeSelectionRelatedItems];
             [self addSelectionRelatedViewToItem:newlySelectedItem];
+            [[PSSubmenuManager sharedInstance] dissmissKeyboard];
         }
         
     } else {
         if (selectedItem) {
             [self removeSelectionRelatedItems];
         }
+        [[PSSubmenuManager sharedInstance] dissmissKeyboard];
     }
     
     [super touchesBegan:touches withEvent:event];
@@ -926,6 +1014,17 @@
         } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
             if ((newSize.width/((PSImageView*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
                 (newSize.height/((PSImageView*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
+                sx < 0 || sy < 0) {
+                selectedItem.transform = oldTransform;
+            } else {
+                selectedItem.center = center;
+                scaleStartingPoint = currentPoint;
+                
+                [self rearrangeSelectionRelatedViewsFrame];
+            }
+        } else if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+            if ((newSize.width/((PSTemplateView*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
+                (newSize.height/((PSTemplateView*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
                 sx < 0 || sy < 0) {
                 selectedItem.transform = oldTransform;
             } else {
@@ -1015,6 +1114,17 @@
                 
                 [self rearrangeSelectionRelatedViewsFrame];
             }
+        } else if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+            if ((newSize.width/((PSTemplateView*)selectedItem).originalSize.width < MINIMUM_SCALE_FACTOR) ||
+                (newSize.height/((PSTemplateView*)selectedItem).originalSize.height) < MINIMUM_SCALE_FACTOR ||
+                sx < 0 || sy < 0) {
+                selectedItem.transform = oldTransform;
+            } else {
+                selectedItem.center = center;
+                scaleStartingPoint = currentPoint;
+                
+                [self rearrangeSelectionRelatedViewsFrame];
+            }
         }
         
         [[PSSubmenuManager sharedInstance] updateTotalPrice];
@@ -1083,6 +1193,9 @@
             [selectedItem removeFromSuperview];
             [modelCanvas.allLabels removeObject:selectedItem];
         }
+    } else if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+        [((PSTemplateView*)selectedItem).textField resignFirstResponder];
+        [[PSSubmenuManager sharedInstance] aTemplateDeselected:((PSTemplateView*)selectedItem)];
     }
     
     [self removeViewFromUnwantedViews:currentDeleteView];
@@ -1178,6 +1291,11 @@
     } else if ([selectedItem isKindOfClass:[PSImageView class]]) {
         [[PSSubmenuManager sharedInstance] setImageSettings:((PSImageView*)selectedItem).imageSettings];
         [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_IMAGE];
+    } else if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+        [[PSSubmenuManager sharedInstance] setTemplateSettings:((PSTemplateView*)selectedItem).templateSettings];
+        [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEMPLATE];
+        [((PSTemplateView*)selectedItem).textField becomeFirstResponder];
+        [[PSSubmenuManager sharedInstance] aTemplateSelected:((PSTemplateView*)selectedItem)];
     }
     [self addViewToUnwantedViews:currentDeleteView];
     [self addViewToUnwantedViews:currentScaleView];

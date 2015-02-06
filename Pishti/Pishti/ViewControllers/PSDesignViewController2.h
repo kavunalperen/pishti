@@ -11,6 +11,7 @@
 #import "Util.h"
 #import "PSModelCanvas.h"
 #import "PSDesignLabel.h"
+#import "PSTemplateView.h"
 
 #define RADIANS_TO_DEGREES(radians) ((radians) * (180.0 / M_PI))
 #define DEGREES_TO_RADIANS(angle) ((angle) / 180.0 * M_PI)
@@ -27,13 +28,19 @@
 - (void) deleteAllImages;
 - (void) deleteLastLabel;
 - (void) deleteAllLabels;
+- (void) deleteLastTemplate;
+- (void) deleteAllTemplates;
+
+- (void) showKeyboard;
 
 - (void) addViewToUnwantedViews:(UIView*)view;
 - (void) removeViewFromUnwantedViews:(UIView*)view;
 - (CGPoint) getMenuCenterPoint;
 - (void) addDesignLabel:(PSDesignLabel*)label;
+- (void) addTemplate:(PSTemplateView*)template;
 - (void) imageSettingsChanged:(NSMutableDictionary*)settings;
 - (void) labelSettingsChanged:(NSMutableDictionary*)settings;
+- (void) templateSettingsChanged:(NSMutableDictionary*)settings;
 - (void) keyboardHidingCompleted;
 - (NSArray*) getImageElementFrames;
 - (NSArray*) getLabelElementFrames;
