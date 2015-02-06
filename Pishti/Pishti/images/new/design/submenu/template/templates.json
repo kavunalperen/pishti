@@ -1,0 +1,60 @@
+{
+	"templates" : [
+		{
+			"id" : "template1",
+			"image_name" : "temp01.png",
+			"image_width" : 316,
+			"image_height" : 301,
+			"font_name" : "TRGalleria",
+			"font_size" : 65,
+			"text_width" : 106,
+			"text_height" : 83,
+			"text_left" : 103,
+			"text_top" : 22,
+			"character_limit" : 2,
+			"default_text" : "PS"
+		},
+		{
+			"id" : "template2",
+			"image_name" : "temp02.png",
+			"image_width" : 326,
+			"image_height" : 263,
+			"font_name" : "TimesNewRomanPS-BoldMT",
+			"font_size" : 50,
+			"text_width" : 172,
+			"text_height" : 60,
+			"text_left" : 75,
+			"text_top" : 90,
+			"character_limit" : 5,
+			"default_text" : "Pişti"
+		},
+		{
+			"id" : "template3",
+			"image_name" : "temp03.png",
+			"image_width" : 315,
+			"image_height" : 294,
+			"font_name" : "GoodDogCool",
+			"font_size" : 38,
+			"text_width" : 115,
+			"text_height" : 35,
+			"text_left" : 100,
+			"text_top" : 240,
+			"character_limit" : 8,
+			"default_text" : "Pisicik"
+		},
+		{
+			"id" : "template4",
+			"image_name" : "temp04.png",
+			"image_width" : 272,
+			"image_height" : 313,
+			"font_name" : "Titillium-ThinUpright",
+			"font_size" : 50,
+			"text_width" : 270,
+			"text_height" : 55,
+			"text_left" : 0,
+			"text_top" : 128,
+			"character_limit" : 12,
+			"default_text" : "Ebuzer Ege"
+		}
+	]
+}
