@@ -19,6 +19,7 @@
 #import "PSPriceManager.h"
 #import "PSCollectionViewCell.h"
 #import "PSTemplateTextField.h"
+#import "PSTemplateView.h"
 
 #define SUBMENU_HEIGHT 255.0
 
@@ -129,6 +130,8 @@ static PSSubmenuManager* __sharedInstance;
     
     NSIndexPath* selectedTemplate;
     UIButton* addNewTemplateButton;
+    NSArray* allTemplates;
+    UIButton* showKeyboardButton;
 }
 #pragma mark - Frames
 #pragma mark - Fabric Frames
@@ -257,6 +260,14 @@ static PSSubmenuManager* __sharedInstance;
     return CGRectMake(10.0, 10.0, 460.0, 105.0);
 }
 #pragma mark - General Frames
+- (CGRect) keyboardOptionsHolderFrame
+{
+    return CGRectMake(526.0, 30.0, 212.0, 55.0);
+}
+- (CGRect) showKeyboardButtonFrame
+{
+    return CGRectMake(157.0, 0.0, 55.0, 55.0);
+}
 - (CGRect) viewOptionsHolderFrame
 {
     return CGRectMake(526.0, 30.0, 212.0, 55.0);
@@ -428,6 +439,8 @@ static PSSubmenuManager* __sharedInstance;
                         @"Courier New",
                         @"Trebuchet MS",
                         @"Helvetica"];
+    
+    allTemplates = [PSTemplateView getAllTemplates];
     
     fontFamilyNames = [fontFamilyNames sortedArrayUsingComparator:^NSComparisonResult(NSString* obj1, NSString* obj2) {
         return [obj1 compare:obj2];
@@ -1035,9 +1048,6 @@ static PSSubmenuManager* __sharedInstance;
     
     UIView* templateCollectionHolder = [[UIView alloc] initWithFrame:[self templateCollectionViewHolderFrame]];
     templateCollectionHolder.backgroundColor = [UIColor whiteColor];
-//    templateCollectionHolder.layer.borderWidth = 1.0;
-//    templateCollectionHolder.layer.borderColor = DESIGN_MENU_SUBMENU_TEMPLATE_COLLECTION_VIEW_HOLDER_BORDER_COLOR.CGColor;
-//    templateCollectionHolder.layer.borderColor = [UIColor redColor].CGColor;
     templateCollectionHolder.clipsToBounds = NO;
     [submenu addSubview:templateCollectionHolder];
     [submenuItems addObject:templateCollectionHolder];
@@ -1057,35 +1067,17 @@ static PSSubmenuManager* __sharedInstance;
     templateCollection.dataSource = self;
     [templateCollection registerClass:[PSCollectionViewCell class] forCellWithReuseIdentifier:TEMPLATE_CELL_IDENTIFIER];
     [templateCollectionHolder addSubview:templateCollection];
-//    [submenuItems addObject:templateCollection];
     
     addNewTemplateButton = [UIButton buttonWithType:UIButtonTypeCustom];
     addNewTemplateButton.frame = [self addNewtextButtonFrame];
-    addNewTemplateButton.center = CGPointMake(480.0, 0.0);
+    addNewTemplateButton.center = CGPointMake(510.0, 30.0);
     addNewTemplateButton.backgroundColor = [UIColor clearColor];
     [addNewTemplateButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_normal.png"] forState:UIControlStateNormal];
     [addNewTemplateButton setBackgroundImage:[UIImage imageNamed:@"text_addnew_highlighted.png"] forState:UIControlStateHighlighted];
     [addNewTemplateButton addTarget:self action:@selector(addNewTemplateClicked:) forControlEvents:UIControlEventTouchUpInside];
     addNewTemplateButton.enabled = NO;
-    [templateCollectionHolder addSubview:addNewTemplateButton];
-    
-//    CGRect frame = [self fourthItemHolderFrame];
-//    
-//    templateTextFieldHolder = [[UIView alloc] initWithFrame:frame];
-//    templateTextFieldHolder.backgroundColor = [UIColor clearColor];
-//    [submenu addSubview:templateTextFieldHolder];
-//    [submenuItems addObject:templateTextFieldHolder];
-//    
-//    templateTextField = [[PSTemplateTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, frame.size.width, frame.size.height)];
-//    templateTextField.backgroundColor = [UIColor whiteColor];
-//    templateTextField.layer.borderWidth = 1.0;
-//    templateTextField.layer.borderColor = DESIGN_MENU_SUBMENU_TEXTVIEW_BORDER_COLOR.CGColor;
-//    templateTextField.delegate = self;
-//    templateTextField.placeholder = @"şablon yazısı";
-//    templateTextField.font = [UIFont fontWithName:@"GoodDogCool" size:20.0];
-//    templateTextField.currentFont = [UIFont fontWithName:@"GoodDogCool" size:20.0];
-//    templateTextField.textColor = [colors objectAtIndex:6];
-//    [templateTextFieldHolder addSubview:templateTextField];
+    [submenu addSubview:addNewTemplateButton];
+    [submenuItems addObject:addNewTemplateButton];
     
     // opacity slider
     CGRect frame2 = [self thirdItemHolderFrame];
@@ -1153,11 +1145,28 @@ static PSSubmenuManager* __sharedInstance;
     
 //    [self addViewOptionsSubviewsToSubmenu:submenu];
     
+    [self addKeyboardOptionsSubviewsToSubmenu:submenu];
+    
     [self addDeleteSubviewsToSubmenu:submenu];
     
     [self addPriceSubviewsToSubmenu:submenu];
     
     [self configureTemplateSubmenuWithCurrentOptions];
+}
+- (void) addKeyboardOptionsSubviewsToSubmenu:(UIView*)submenu
+{
+    UIView* keyboardOptionsHolder = [[UIView alloc] initWithFrame:[self keyboardOptionsHolderFrame]];
+    keyboardOptionsHolder.backgroundColor = [UIColor clearColor];
+    [submenu addSubview:keyboardOptionsHolder];
+    [submenuItems addObject:keyboardOptionsHolder];
+    
+    showKeyboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    showKeyboardButton.backgroundColor = [UIColor clearColor];
+    showKeyboardButton.frame = [self showKeyboardButtonFrame];
+    [showKeyboardButton setImage:[UIImage imageNamed:@"keyboard.png"] forState:UIControlStateNormal];
+    [showKeyboardButton addTarget:self action:@selector(showKeyboard) forControlEvents:UIControlEventTouchUpInside];
+    showKeyboardButton.enabled = NO;
+    [keyboardOptionsHolder addSubview:showKeyboardButton];
 }
 - (void) addViewOptionsSubviewsToSubmenu:(UIView*)submenu
 {
@@ -1295,13 +1304,13 @@ static PSSubmenuManager* __sharedInstance;
     NSString* valueFontName = [[Util sharedInstance] getFontNameForFamily:[fontFamilyNames objectAtIndex:textFontIndex] andIsBold:NO andIsItalic:NO];
     textFontValue.font = [UIFont fontWithName:valueFontName size:DEFAULT_FONT_HEIGHT];
     
-    if (proxyTextView != nil) {
-        proxyTextView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
-        proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
-        proxyTextView.tintColor = [colors objectAtIndex:textColorIndex];
-        proxyTextView.text = currentText;
-        proxyTextView.textAlignment = alignment;
-    }
+//    if (proxyTextView != nil) {
+//        proxyTextView.font = [UIFont fontWithName:fontName size:DEFAULT_FONT_HEIGHT];
+//        proxyTextView.textColor = [colors objectAtIndex:textColorIndex];
+//        proxyTextView.tintColor = [colors objectAtIndex:textColorIndex];
+//        proxyTextView.text = currentText;
+//        proxyTextView.textAlignment = alignment;
+//    }
     
     if (isBold) {
         boldnessButton.selected = YES;
@@ -1348,6 +1357,7 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (void) configureTemplateSubmenuWithCurrentOptions
 {
+    [submenuDelegate templateSettingsChanged:templateSettings];
     [self updateTotalPrice];
     
     CGFloat templateOpacity = [[templateSettings objectForKey:TEMPLATE_OPACITY_KEY] floatValue];
@@ -1359,6 +1369,10 @@ static PSSubmenuManager* __sharedInstance;
     
     templateTextColorValue.textColor = [colors objectAtIndex:templateTextColorIndex];
     templateTextColorValue.text = [colorNames objectAtIndex:templateTextColorIndex];
+    
+    if (selectedTemplate) {
+        addNewTemplateButton.enabled = YES;
+    }
     
 }
 - (void) configurePriceSubviewsWithCurrentOptions
@@ -1500,6 +1514,8 @@ static PSSubmenuManager* __sharedInstance;
         return imageOpacitySlider.value;
     } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
         return textOpacitySlider.value;
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEMPLATE) {
+        return templateOpacitySlider.value;
     } else {
         return 0.0;
     }
@@ -1517,6 +1533,11 @@ static PSSubmenuManager* __sharedInstance;
 {
     labelSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
     [self configureTextSubmenuWithCurrentOptions];
+}
+- (void) setTemplateSettings:(NSMutableDictionary*)settings
+{
+    templateSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+    [self configureTemplateSubmenuWithCurrentOptions];
 }
 - (void) sliderValueChanged:(PSSlider *)slider
 {
@@ -1548,6 +1569,11 @@ static PSSubmenuManager* __sharedInstance;
 - (void) anImageSelected:(PSImageView*)image
 {
     
+}
+
+- (void) dissmissKeyboard
+{
+    [proxyTextView resignFirstResponder];
 }
 
 #pragma mark - Tableview Delegates
@@ -1811,23 +1837,15 @@ static PSSubmenuManager* __sharedInstance;
 }
 - (NSInteger) collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return 13;
+    return [allTemplates count];
 }
 - (UICollectionViewCell*) collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     PSCollectionViewCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:TEMPLATE_CELL_IDENTIFIER forIndexPath:indexPath];
     
-    if (indexPath.row % 5 == 0) {
-        cell.imageView.image = [UIImage imageNamed:@"temp01.png"];
-    } else if (indexPath.row % 5 == 1) {
-        cell.imageView.image = [UIImage imageNamed:@"temp02.png"];
-    } else if (indexPath.row % 5 == 2) {
-        cell.imageView.image = [UIImage imageNamed:@"temp03.png"];
-    } else if (indexPath.row % 5 == 3) {
-        cell.imageView.image = [UIImage imageNamed:@"temp04.png"];
-    } else if (indexPath.row % 5 == 4) {
-        cell.imageView.image = [UIImage imageNamed:@"temp05.png"];
-    }
+    NSDictionary* currentTemplate = [allTemplates objectAtIndex:indexPath.row];
+    
+    cell.imageView.image = [UIImage imageNamed:[currentTemplate objectForKey:@"image_name"]];
     
     if (selectedTemplate) {
         if (indexPath.row == selectedTemplate.row) {
@@ -2030,12 +2048,6 @@ static PSSubmenuManager* __sharedInstance;
 {
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
     [submenuDelegate presentViewController:imagePicker animated:YES completion:nil];
-    
-//    [submenuDelegate addChildViewController:imagePicker];
-//    [submenuDelegate.view addSubview:imagePicker.view];
-//    imagePicker.view.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-//    imagePicker.view.frame = submenuDelegate.view.bounds;
-//    [imagePicker didMoveToParentViewController:submenuDelegate];
 }
 - (void) imageOpacityChanged
 {
@@ -2046,6 +2058,16 @@ static PSSubmenuManager* __sharedInstance;
 - (void) addNewTemplateClicked:(UIButton*)button
 {
     // template will be added
+    
+    CGPoint menuCenterPoint = [submenuDelegate getMenuCenterPoint];
+    PSTemplateView* newTemplate = [[PSTemplateView alloc] initWithTemplateId:[[allTemplates objectAtIndex:selectedTemplate.row] objectForKey:@"id"]];
+    newTemplate.center = menuCenterPoint;
+    
+    newTemplate.templateSettings = templateSettings;
+    [newTemplate configureTemplateWithSettings];
+    
+    [submenuDelegate addTemplate:newTemplate];
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
 }
 - (void) templateOpacityChanged
 {
@@ -2056,6 +2078,18 @@ static PSSubmenuManager* __sharedInstance;
 {
     [self addTableWithType:SUBMENU_TABLE_TYPE_TEMPLATE_TEXT_COLOR];
 }
+- (void) showKeyboard
+{
+    [submenuDelegate showKeyboard];
+}
+- (void) aTemplateSelected:(PSTemplateView*)templateView
+{
+    showKeyboardButton.enabled = YES;
+}
+- (void) aTemplateDeselected:(PSTemplateView*)templateView
+{
+    showKeyboardButton.enabled = NO;
+}
 #pragma mark - General Buttons Actions
 - (void) deleteLastClicked:(UIButton*)button
 {
@@ -2063,15 +2097,18 @@ static PSSubmenuManager* __sharedInstance;
         [self deleteLastImage];
     } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
         [self deleteLastLabel];
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEMPLATE) {
+        [self deleteLastTemplate];
     }
 }
 - (void) deleteAllClicked:(UIButton*)button
 {
-    NSLog(@"delete all clicked");
     if (currentSubmenuType == SUBMENU_TYPE_IMAGE) {
         [self deleteAllImages];
     } else if (currentSubmenuType == SUBMENU_TYPE_TEXT) {
         [self deleteAllLabels];
+    } else if (currentSubmenuType == SUBMENU_TYPE_TEMPLATE) {
+        [self deleteAllTemplates];
     }
 }
 - (void) deleteLastImage
@@ -2090,7 +2127,14 @@ static PSSubmenuManager* __sharedInstance;
 {
     [submenuDelegate deleteAllLabels];
 }
-
+- (void) deleteLastTemplate
+{
+    [submenuDelegate deleteLastTemplate];
+}
+- (void) deleteAllTemplates
+{
+    [submenuDelegate deleteAllTemplates];
+}
 #pragma mark - Table Openings - Closings
 - (void) addTableWithType:(PSSubmenuTableType)tableType
 {

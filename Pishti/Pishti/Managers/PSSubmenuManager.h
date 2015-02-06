@@ -72,12 +72,16 @@ typedef enum PSSubmenuTableType
 
 - (void) setImageSettings:(NSMutableDictionary*)settings;
 - (void) setTextSettings:(NSMutableDictionary*)settings;
+- (void) setTemplateSettings:(NSMutableDictionary*)settings;
 
 - (UIColor*) getColorWithColorIndex:(NSInteger)colorIndex;
 - (NSString*) getFontFamilyWithFontIndex:(NSInteger)fontIndex;
 
 - (void) designLabelSelected:(PSDesignLabel*)label;
 - (void) anImageSelected:(PSImageView*)image;
+- (void) aTemplateSelected:(PSTemplateView*)templateView;
+- (void) aTemplateDeselected:(PSTemplateView*)templateView;
+- (void) dissmissKeyboard;
 
 - (void) updateTotalPrice;
 
