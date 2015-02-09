@@ -9,6 +9,7 @@
 #import "PSTemplateView.h"
 #import "SBJson.h"
 #import "PSSubmenuManager.h"
+#import "PSDesignViewController2.h"
 
 static NSArray* __allTemplates;
 
@@ -36,6 +37,7 @@ static NSArray* __allTemplates;
         self.image = [UIImage imageNamed:imageName];
         
         self.textField = [[PSTemplateTextField alloc] initWithFrame:CGRectMake(textLeft, textTop, textWidth, textHeight)];
+//        self.textField.backgroundColor = [UIColor greenColor];
         self.textField.font = [UIFont fontWithName:fontName size:fontSize];
         self.textField.textAlignment = NSTextAlignmentCenter;
         self.textField.delegate = self;
@@ -46,6 +48,7 @@ static NSArray* __allTemplates;
         
         self.originalSize = CGSizeZero;
     }
+    self.userInteractionEnabled = YES;
     
     return self;
 }
@@ -80,6 +83,11 @@ static NSArray* __allTemplates;
     } else {
         return YES;
     }
+}
+- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
+{
+    [self.designView makeTemplateSelected:self];
+    return YES;
 }
 + (NSDictionary*) getTemplateWithTemplateId:(NSString*)templateId
 {

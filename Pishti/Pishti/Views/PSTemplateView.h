@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "PSTemplateTextField.h"
 
+@class PSDesignViewController2;
+
 @interface PSTemplateView : UIImageView <UITextFieldDelegate>
 
 @property NSString* templateId;
@@ -17,6 +19,7 @@
 @property CGSize originalSize;
 @property NSInteger characterLimit;
 @property NSString* defaultText;
+@property PSDesignViewController2* designView;
 
 + (NSMutableArray*) getAllTemplates;
 - (id) initWithTemplateId:(NSString*)templateId;
