@@ -27,8 +27,11 @@ static PSPriceManager* __sharedInstance = nil;
 {
     unitPrices = @{}.mutableCopy;
     
+    // kol tipi kalkabilir
+    
     [unitPrices setObject:[NSNumber numberWithFloat:0.01] forKey:LABEL_UNIT_PRICE_KEY];
     [unitPrices setObject:[NSNumber numberWithFloat:0.02] forKey:IMAGE_UNIT_PRICE_KEY];
+    [unitPrices setObject:[NSNumber numberWithFloat:0.025] forKey:TEMPLATE_UNIT_PRICE_KEY];
     [unitPrices setObject:[NSNumber numberWithFloat:5.0] forKey:GENERAL_COLLAR_PRICE_KEY];
     [unitPrices setObject:[NSNumber numberWithFloat:5.0] forKey:GENERAL_SLEEVE_PRICE_KEY];
     [unitPrices setObject:[NSNumber numberWithFloat:5.0] forKey:GENERAL_FABRIC_PRICE_KEY];
@@ -53,6 +56,7 @@ static PSPriceManager* __sharedInstance = nil;
     
     NSArray* imageElements = [designOptions objectForKey:IMAGES_KEY];
     NSArray* labelElements = [designOptions objectForKey:LABELS_KEY];
+    NSArray* templateElements = [designOptions objectForKey:TEMPLATES_KEY];
     
     for (NSNumber* area in imageElements) {
         CGFloat areaInFloat = [area floatValue];
@@ -63,6 +67,12 @@ static PSPriceManager* __sharedInstance = nil;
     for (NSNumber* area in labelElements) {
         CGFloat areaInFloat = [area floatValue];
         CGFloat currentItemPrice = [self computePriceWithArea:areaInFloat andType:VIEW_TYPE_LABEL];
+        totalPrice += currentItemPrice;
+    }
+    
+    for (NSNumber* area in templateElements) {
+        CGFloat areaInFloat = [area floatValue];
+        CGFloat currentItemPrice = [self computePriceWithArea:areaInFloat andType:VIEW_TYPE_TEMPLATE];
         totalPrice += currentItemPrice;
     }
     
@@ -94,6 +104,8 @@ static PSPriceManager* __sharedInstance = nil;
         unitPrice = [[unitPrices objectForKey:IMAGE_UNIT_PRICE_KEY] floatValue];
     } else if (type == VIEW_TYPE_LABEL) {
         unitPrice = [[unitPrices objectForKey:LABEL_UNIT_PRICE_KEY] floatValue];
+    } else if (type == VIEW_TYPE_TEMPLATE) {
+        unitPrice = [[unitPrices objectForKey:TEMPLATE_UNIT_PRICE_KEY] floatValue];
     }
     
     CGFloat actualPrice = area*POINT_TO_INCHES*INCHES_TO_CM*unitPrice;

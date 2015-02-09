@@ -17,9 +17,11 @@
 #define FABRIC_TYPE_KEY @"kFabricType"
 #define IMAGES_KEY @"kImages"
 #define LABELS_KEY @"kLabels"
+#define TEMPLATES_KEY @"kTemplates"
 
 #define IMAGE_UNIT_PRICE_KEY @"kImageUnitPrice"
 #define LABEL_UNIT_PRICE_KEY @"kLabelUnitPrice"
+#define TEMPLATE_UNIT_PRICE_KEY @"kTemplateUnitPrice"
 #define GENERAL_COLLAR_PRICE_KEY @"kGeneralCollarPrice"
 #define GENERAL_SLEEVE_PRICE_KEY @"kGeneralSleevePrice"
 #define GENERAL_FABRIC_PRICE_KEY @"kGeneralFabricPrice"
@@ -29,7 +31,8 @@
 typedef enum VIEW_TYPE
 {
     VIEW_TYPE_IMAGE,
-    VIEW_TYPE_LABEL
+    VIEW_TYPE_LABEL,
+    VIEW_TYPE_TEMPLATE
 } VIEW_TYPE;
 
 @interface PSPriceManager : NSObject
