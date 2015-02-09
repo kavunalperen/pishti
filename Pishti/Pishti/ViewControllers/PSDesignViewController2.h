@@ -37,12 +37,14 @@
 - (void) removeViewFromUnwantedViews:(UIView*)view;
 - (CGPoint) getMenuCenterPoint;
 - (void) addDesignLabel:(PSDesignLabel*)label;
-- (void) addTemplate:(PSTemplateView*)template;
+- (void) addTemplate:(PSTemplateView*)templateView;
+- (void) makeTemplateSelected:(PSTemplateView*)templateView;
 - (void) imageSettingsChanged:(NSMutableDictionary*)settings;
 - (void) labelSettingsChanged:(NSMutableDictionary*)settings;
 - (void) templateSettingsChanged:(NSMutableDictionary*)settings;
 - (void) keyboardHidingCompleted;
 - (NSArray*) getImageElementFrames;
 - (NSArray*) getLabelElementFrames;
+- (NSMutableArray*) getTemplateElementFrames;
 
 @end

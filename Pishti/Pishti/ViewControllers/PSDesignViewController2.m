@@ -240,7 +240,9 @@
     for (UIView* view in unwantedViews) {
         CGPoint point = [touch locationInView:view];
         if (CGRectContainsPoint(view.bounds, point)) {
-            return NO;
+            if (gestureRecognizer == menuGesture) {
+                return NO;
+            }
         }
     }
     
@@ -626,6 +628,12 @@
 {
     NSMutableArray* templateFrames = @[].mutableCopy;
     
+    for (PSTemplateView* temp in modelCanvas.allTemplates) {
+        CGSize templateSize = temp.frame.size;
+        CGFloat area = templateSize.width*templateSize.height;
+        [templateFrames addObject:[NSNumber numberWithFloat:area]];
+    }
+    
     return templateFrames;
 }
 #pragma mark - Image picker controller delegate methods
@@ -728,15 +736,25 @@
     }
 }
 #pragma mark - Adding Templates
-- (void) addTemplate:(PSTemplateView*)template
+- (void) addTemplate:(PSTemplateView*)templateView
 {
-    template.layer.zPosition = currentZIndex;
+    templateView.designView = self;
+    templateView.layer.zPosition = currentZIndex;
     currentZIndex += 1.0;
-    [modelCanvas.allTemplates addObject:template];
-    [modelCanvas addSubview:template];
+    [modelCanvas.allTemplates addObject:templateView];
+    [modelCanvas addSubview:templateView];
+    
+    [self addViewToUnwantedViews:templateView.textField];
     
     [self removeSelectionRelatedItems];
-    [self addSelectionRelatedViewToItem:template];
+    [self addSelectionRelatedViewToItem:templateView];
+}
+- (void) makeTemplateSelected:(PSTemplateView*)templateView
+{
+    if (selectedItem) {
+        [self removeSelectionRelatedItems];
+    }
+    [self addSelectionRelatedViewToItem:templateView];
 }
 - (void) showKeyboard
 {
@@ -818,6 +836,7 @@
         if (selectedItem == view) {
             [self removeSelectionRelatedItems];
         }
+        [self removeViewFromUnwantedViews:view.textField];
         [view removeFromSuperview];
     }
     modelCanvas.allTemplates = @[].mutableCopy;
@@ -828,6 +847,7 @@
     if (selectedItem == template) {
         [self removeSelectionRelatedItems];
     }
+    [self removeViewFromUnwantedViews:template.textField];
     [template removeFromSuperview];
     [self removeSelectionRelatedItems];
     [modelCanvas.allTemplates removeObject:template];
@@ -933,6 +953,11 @@
     if (newlySelectedItem) {
         if (newlySelectedItem == selectedItem) {
             UITouch* touch = [touches anyObject];
+//            if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
+//                if (((PSTemplateView*)selectedItem).textField.isFirstResponder) {
+//                    return;
+//                }
+//            }
             isMoving = YES;
             moveStartingPoint = [touch locationInView:modelCanvas];
         } else {
@@ -1035,6 +1060,7 @@
             }
         }
     }
+    [super touchesMoved:touches withEvent:event];
 }
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -1294,7 +1320,7 @@
     } else if ([selectedItem isKindOfClass:[PSTemplateView class]]) {
         [[PSSubmenuManager sharedInstance] setTemplateSettings:((PSTemplateView*)selectedItem).templateSettings];
         [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_TEMPLATE];
-        [((PSTemplateView*)selectedItem).textField becomeFirstResponder];
+//        [((PSTemplateView*)selectedItem).textField becomeFirstResponder];
         [[PSSubmenuManager sharedInstance] aTemplateSelected:((PSTemplateView*)selectedItem)];
     }
     [self addViewToUnwantedViews:currentDeleteView];

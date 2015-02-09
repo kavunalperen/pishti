@@ -1388,6 +1388,7 @@ static PSSubmenuManager* __sharedInstance;
 {
     [priceSettings setObject:[submenuDelegate getImageElementFrames] forKey:IMAGES_KEY];
     [priceSettings setObject:[submenuDelegate getLabelElementFrames] forKey:LABELS_KEY];
+    [priceSettings setObject:[submenuDelegate getTemplateElementFrames] forKey:TEMPLATES_KEY];
     
     [[PSPriceManager sharedInstance] computePriceWithDesignOptions:priceSettings];
     
@@ -1939,7 +1940,7 @@ static PSSubmenuManager* __sharedInstance;
     [newLabel configureLabelWithSettings];
     
     [submenuDelegate addDesignLabel:newLabel];
-    [[PSSubmenuManager sharedInstance] updateTotalPrice];
+    [self updateTotalPrice];
 }
 - (void) textFontClicked:(UIButton*)button
 {
@@ -2039,10 +2040,10 @@ static PSSubmenuManager* __sharedInstance;
 {
     if (imagePicker == nil) {
         imagePicker = [[UIImagePickerController alloc] init];
-        imagePicker.delegate = submenuDelegate;
-        imagePicker.navigationBar.translucent = NO;
-        imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;
     }
+    imagePicker.delegate = submenuDelegate;
+    imagePicker.navigationBar.translucent = NO;
+    imagePicker.modalPresentationStyle = UIModalPresentationFullScreen;
 }
 - (void) presentImagePicker
 {
@@ -2067,7 +2068,7 @@ static PSSubmenuManager* __sharedInstance;
     [newTemplate configureTemplateWithSettings];
     
     [submenuDelegate addTemplate:newTemplate];
-    [[PSSubmenuManager sharedInstance] updateTotalPrice];
+    [self updateTotalPrice];
 }
 - (void) templateOpacityChanged
 {
