@@ -1549,7 +1549,7 @@
 				ORGANIZATIONNAME = pishti;
 				TargetAttributes = {
 					0543C64D18F460060049D846 = {
-						DevelopmentTeam = 367564HJMT;
+						DevelopmentTeam = M24G94FNNC;
 					};
 					0543C66818F460060049D846 = {
 						TestTargetID = 0543C64D18F460060049D846;
