@@ -10,6 +10,7 @@
 #import "PSDesignViewController.h"
 #import "PSDesignViewController2.h"
 #import "SBJson.h"
+#import "PSStateManager.h"
 
 #define HALF_BACKGROUND_WIDTH 512.0
 #define HALF_BACKGROUND_HEIGHT 768.0
@@ -198,7 +199,7 @@
     designButton.backgroundColor = [UIColor clearColor];
     [designButton setImage:[UIImage imageNamed:@"brush_btn_normal.png"] forState:UIControlStateNormal];
     [designButton setImage:[UIImage imageNamed:@"brush_btn_highlighted.png"] forState:UIControlStateHighlighted];
-    [designButton addTarget:self action:@selector(openDesignScreen) forControlEvents:UIControlEventTouchUpInside];
+    [designButton addTarget:self action:@selector(openDesignScreenApprove) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:designButton];
     
     // buy button
@@ -244,12 +245,39 @@
     [self presentViewController:howToUse animated:NO completion:nil];
     
 }
-- (void) openDesignScreen
+- (void) openDesignScreenApprove
+{
+    BOOL isAvailable = [[PSStateManager sharedInstance] isSavedDesignAvailable];
+    
+    if (isAvailable) {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Kayıt"
+                                                            message:@"Daha önceden yarım kalmış tasarımınıza devam etmek ister misiniz?"
+                                                           delegate:self
+                                                  cancelButtonTitle:@"Baştan Başla"
+                                                  otherButtonTitles:@"Devam et", nil];
+        [alertView show];
+    } else {
+        [self openDesignScreenWithRecordAvailable:NO];
+    }
+}
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    if (buttonIndex == alertView.cancelButtonIndex) {
+        [[PSStateManager sharedInstance] clearSavedDesign];
+        [self openDesignScreenWithRecordAvailable:NO];
+    } else {
+        [self openDesignScreenWithRecordAvailable:YES];
+    }
+}
+- (void) openDesignScreenWithRecordAvailable:(BOOL)recordAvailable
 {
     [self performBackwardAnimations];
     CGFloat animsEnd = [[backwardAnimations objectForKey:@"all_animations_end"] floatValue];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(animsEnd * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         PSDesignViewController2* designVC = [[PSDesignViewController2 alloc] init];
+        if (recordAvailable) {
+            designVC.savedDesignData = [[PSStateManager sharedInstance] getSavedDesign];
+        }
         designVC.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
         [self presentViewController:designVC animated:YES completion:^{
             ;

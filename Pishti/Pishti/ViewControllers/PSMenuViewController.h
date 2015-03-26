@@ -12,6 +12,6 @@
 #import "Util.h"
 #import "PSHelpPageViewController.h"
 
-@interface PSMenuViewController : UIViewController <UINavigationControllerDelegate>
+@interface PSMenuViewController : UIViewController <UINavigationControllerDelegate, UIAlertViewDelegate>
 
 @end
