@@ -487,6 +487,10 @@ static PSSubmenuManager* __sharedInstance;
     submenuDelegate = viewController;
     [self submenuSetups];
 }
+- (PSDesignViewController2*) getSubmenuDelegate
+{
+    return submenuDelegate;
+}
 - (void) showSubmenuForTheFirstTime
 {
     if (currentSubmenuType == SUBMENU_TYPE_NONE) {
@@ -500,6 +504,7 @@ static PSSubmenuManager* __sharedInstance;
     if (currentSubmenuType == nextSubmenuType) {
         return;
     } else {
+//        currentSubmenuType = nextSubmenuType;
         [self removeAnyTable];
         nextSubmenu = [self generateSubmenuWithType:nextSubmenuType];
         [submenuDelegate.view addSubview:nextSubmenu];
@@ -1248,6 +1253,7 @@ static PSSubmenuManager* __sharedInstance;
     fabricColorView.backgroundColor = [colors objectAtIndex:fabricColorIndex];
     fabricColorValue.textColor = [colors objectAtIndex:fabricColorIndex];
     fabricColorValue.text = [colorNames objectAtIndex:fabricColorIndex];
+    [submenuDelegate fabricColorSelected:[colors objectAtIndex:fabricColorIndex]];
     
     NSInteger fabricSizeIndex = [[fabricSettings objectForKey:FABRIC_SIZE_INDEX_KEY] integerValue];
     fabricSizeValue.text = [sizes objectAtIndex:fabricSizeIndex];
@@ -1403,25 +1409,28 @@ static PSSubmenuManager* __sharedInstance;
         UIView* holder = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, currentSubmenu.frame.size.width, currentSubmenu.frame.size.height)];
         holder.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.0];
         [currentSubmenu addSubview:holder];
-        
+        UIView* _current = currentSubmenu;
         [UIView animateWithDuration:0.45 delay:0.0 options:UIViewAnimationOptionCurveEaseIn animations:^{
             CGRect frame = currentSubmenu.frame;
             frame.origin.y += SUBMENU_HEIGHT;
             currentSubmenu.frame = frame;
             
             holder.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.4];
-        } completion:nil];
+        } completion:^(BOOL finished) {
+            [_current removeFromSuperview];
+        }];
     }
-    
+    currentSubmenu = nextSubmenu;
+    currentSubmenuType = nextSubmenuType;
+    [submenuDelegate removeViewFromUnwantedViews:currentSubmenu];
     [UIView animateWithDuration:0.5 delay:delay options:UIViewAnimationOptionCurveEaseOut animations:^{
         CGRect frame = nextSubmenu.frame;
         frame.origin.y -= SUBMENU_HEIGHT;
         nextSubmenu.frame = frame;
     } completion:^(BOOL finished) {
-        [submenuDelegate removeViewFromUnwantedViews:currentSubmenu];
-        [currentSubmenu removeFromSuperview];
-        currentSubmenuType = nextSubmenuType;
-        currentSubmenu = nextSubmenu;
+//        [currentSubmenu removeFromSuperview];
+
+//        currentSubmenu = nextSubmenu;
         nextSubmenu = nil;
         nextSubmenuType = SUBMENU_TYPE_NONE;
     }];
@@ -1521,9 +1530,26 @@ static PSSubmenuManager* __sharedInstance;
         return 0.0;
     }
 }
-- (NSDictionary*) getImageSettings
+- (NSMutableDictionary*) getFabricSettings
+{
+    return fabricSettings;
+}
+- (NSMutableDictionary*) getImageSettings
 {
     return imageSettings;
+}
+- (NSMutableDictionary*) getTextSettings
+{
+    return labelSettings;
+}
+- (NSMutableDictionary*) getTemplateSettings
+{
+    return templateSettings;
+}
+- (void) setFabricSettings:(NSMutableDictionary*)settings
+{
+    fabricSettings = [NSMutableDictionary dictionaryWithDictionary:settings];
+    [self configureFabricSubmenuWithCurrentOptions];
 }
 - (void) setImageSettings:(NSMutableDictionary*)settings
 {
@@ -1939,7 +1965,7 @@ static PSSubmenuManager* __sharedInstance;
     newLabel.labelSettings = [NSMutableDictionary dictionaryWithDictionary:labelSettings];
     [newLabel configureLabelWithSettings];
     
-    [submenuDelegate addDesignLabel:newLabel];
+    [submenuDelegate addDesignLabel:newLabel shouldShowSubmenu:YES];
     [self updateTotalPrice];
 }
 - (void) textFontClicked:(UIButton*)button
@@ -2063,11 +2089,12 @@ static PSSubmenuManager* __sharedInstance;
     CGPoint menuCenterPoint = [submenuDelegate getMenuCenterPoint];
     PSTemplateView* newTemplate = [[PSTemplateView alloc] initWithTemplateId:[[allTemplates objectAtIndex:selectedTemplate.row] objectForKey:@"id"]];
     newTemplate.center = menuCenterPoint;
+    newTemplate.originalCenter = menuCenterPoint;
     
     newTemplate.templateSettings = templateSettings;
     [newTemplate configureTemplateWithSettings];
     
-    [submenuDelegate addTemplate:newTemplate];
+    [submenuDelegate addTemplate:newTemplate shouldShowSubmenu:YES];
     [self updateTotalPrice];
 }
 - (void) templateOpacityChanged

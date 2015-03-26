@@ -60,6 +60,7 @@ typedef enum PSSubmenuTableType
 + (PSSubmenuManager*) sharedInstance;
 
 - (void) setSubmenuDelegate:(PSDesignViewController2*)viewController;
+- (PSDesignViewController2*) getSubmenuDelegate;
 - (void) showSubmenuWithType:(PSSubmenuType)submenuType;
 - (void) showSubmenuForTheFirstTime;
 
@@ -68,11 +69,14 @@ typedef enum PSSubmenuTableType
 
 - (CGFloat) getCurrentOpacity;
 - (NSMutableDictionary*) getImageSettings;
-- (PSSubmenuType)getCurrentSubmenuType;
-
+- (NSMutableDictionary*) getFabricSettings;
+- (NSMutableDictionary*) getTextSettings;
+- (NSMutableDictionary*) getTemplateSettings;
+- (void) setFabricSettings:(NSMutableDictionary*)settings;
 - (void) setImageSettings:(NSMutableDictionary*)settings;
 - (void) setTextSettings:(NSMutableDictionary*)settings;
 - (void) setTemplateSettings:(NSMutableDictionary*)settings;
+- (PSSubmenuType)getCurrentSubmenuType;
 
 - (UIColor*) getColorWithColorIndex:(NSInteger)colorIndex;
 - (NSString*) getFontFamilyWithFontIndex:(NSInteger)fontIndex;
