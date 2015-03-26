@@ -193,6 +193,7 @@
 		05F9EDB61A02EAF000CEC51E /* TRMcLeanItalik.TTF in Resources */ = {isa = PBXBuildFile; fileRef = 05F9ED971A02EAF000CEC51E /* TRMcLeanItalik.TTF */; };
 		05FEB4D01A1C8E8C00DD40E2 /* template_btn_highlighted@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 05FEB4CE1A1C8E8C00DD40E2 /* template_btn_highlighted@2x~ipad.png */; };
 		05FEB4D11A1C8E8C00DD40E2 /* template_btn_normal@2x~ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 05FEB4CF1A1C8E8C00DD40E2 /* template_btn_normal@2x~ipad.png */; };
+		846F632F1AC3EE6C0070FC53 /* PSStateManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 846F632E1AC3EE6C0070FC53 /* PSStateManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -664,6 +665,8 @@
 		05F9ED971A02EAF000CEC51E /* TRMcLeanItalik.TTF */ = {isa = PBXFileReference; lastKnownFileType = file; path = TRMcLeanItalik.TTF; sourceTree = "<group>"; };
 		05FEB4CE1A1C8E8C00DD40E2 /* template_btn_highlighted@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "template_btn_highlighted@2x~ipad.png"; sourceTree = "<group>"; };
 		05FEB4CF1A1C8E8C00DD40E2 /* template_btn_normal@2x~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "template_btn_normal@2x~ipad.png"; sourceTree = "<group>"; };
+		846F632D1AC3EE6C0070FC53 /* PSStateManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSStateManager.h; sourceTree = "<group>"; };
+		846F632E1AC3EE6C0070FC53 /* PSStateManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSStateManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1281,6 +1284,8 @@
 				054BF33D19ED960E00685EBC /* PSSubmenuManager.m */,
 				05D4AE621A17D5D800CF393B /* PSPriceManager.h */,
 				05D4AE631A17D5D800CF393B /* PSPriceManager.m */,
+				846F632D1AC3EE6C0070FC53 /* PSStateManager.h */,
+				846F632E1AC3EE6C0070FC53 /* PSStateManager.m */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -1765,6 +1770,7 @@
 				050155211926CBBA009FEE6D /* PSHelpContentViewController.m in Sources */,
 				054BF31319ED833900685EBC /* PSDesignViewController2.m in Sources */,
 				0567BB691A7F6D1F00C9377E /* SBJsonUTF8Stream.m in Sources */,
+				846F632F1AC3EE6C0070FC53 /* PSStateManager.m in Sources */,
 				0589060A1A001B5400AFBA9A /* PSTableViewController.m in Sources */,
 				0509BA58191F9B7F00BA83EC /* PSDesignViewController.m in Sources */,
 				0567BB631A7F6D1F00C9377E /* SBJsonStreamParserAdapter.m in Sources */,
