@@ -23,6 +23,8 @@
 
 @interface PSDesignViewController2 : UIViewController <UIGestureRecognizerDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
+@property NSMutableDictionary* savedDesignData;
+
 - (void) fabricColorSelected:(UIColor*)color;
 - (void) deleteLastImage;
 - (void) deleteAllImages;
@@ -36,8 +38,8 @@
 - (void) addViewToUnwantedViews:(UIView*)view;
 - (void) removeViewFromUnwantedViews:(UIView*)view;
 - (CGPoint) getMenuCenterPoint;
-- (void) addDesignLabel:(PSDesignLabel*)label;
-- (void) addTemplate:(PSTemplateView*)templateView;
+- (void) addDesignLabel:(PSDesignLabel*)label shouldShowSubmenu:(BOOL)shouldShowSubmenu;
+- (void) addTemplate:(PSTemplateView*)templateView shouldShowSubmenu:(BOOL)shouldShowSubmenu;
 - (void) makeTemplateSelected:(PSTemplateView*)templateView;
 - (void) imageSettingsChanged:(NSMutableDictionary*)settings;
 - (void) labelSettingsChanged:(NSMutableDictionary*)settings;
@@ -46,5 +48,13 @@
 - (NSArray*) getImageElementFrames;
 - (NSArray*) getLabelElementFrames;
 - (NSMutableArray*) getTemplateElementFrames;
+- (NSMutableArray*) getAllLabels;
+- (void) setAllLabels:(NSMutableArray*)allLabels;
+- (NSMutableArray*) getAllTemplates;
+- (void) setAllTemplates:(NSMutableArray*)allTemplates;
+- (NSMutableArray*) getAllImages;
+- (void) setAllImages:(NSMutableArray*)allImages;
+
+- (void) setupSavedDesign:(NSMutableDictionary*)savedDesign;
 
 @end

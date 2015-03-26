@@ -23,6 +23,7 @@
 #import "PSSubmenuManager.h"
 #import <QuartzCore/QuartzCore.h>
 #import "PSImageView.h"
+#import "PSStateManager.h"
 
 @interface PSDesignViewController2 ()
 
@@ -129,6 +130,20 @@
     [self addModelCanvas];
     [self addLogo];
     [self addTopButtons];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(applicationWillResignActive:)
+                                                 name:UIApplicationWillResignActiveNotification
+                                               object:nil];
+}
+- (void) viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    if (self.savedDesignData) {
+        [self setupSavedDesign:self.savedDesignData];
+        self.savedDesignData = nil;
+    }
 }
 - (void) viewDidAppear:(BOOL)animated
 {
@@ -137,7 +152,164 @@
 //    [[PSSubmenuManager sharedInstance] showSubmenuWithType:SUBMENU_TYPE_FABRIC];
     [[PSSubmenuManager sharedInstance] showSubmenuForTheFirstTime];
 }
+- (void)applicationWillResignActive:(NSNotification *)notification {
+    [[PSStateManager sharedInstance] saveDesign];
+}
+#pragma mark - Design Saving & Restoring Operations
+- (NSMutableArray*) getAllLabels
+{
+    NSMutableArray* labels = modelCanvas.allLabels;
+    NSMutableArray* labelsData = @[].mutableCopy;
+    for (PSDesignLabel* label in labels) {
+        NSMutableDictionary* data = @{}.mutableCopy;
+        [data setObject:label.labelSettings forKey:@"labelSettings"];
+        [data setObject:label.originalText forKey:@"originalText"];
+        [data setObject:[NSNumber numberWithBool:label.isVerticalSized] forKey:@"isVerticalSized"];
+        [data setObject:[NSValue valueWithCGPoint:label.originalCenter] forKey:@"originalCenter"];
+        [data setObject:[NSValue valueWithCGPoint:label.center] forKey:@"center"];
+        [data setObject:[NSValue valueWithCGAffineTransform:label.transform] forKey:@"transform"];
+        [labelsData addObject:data];
+    }
+    return labelsData;
+}
+- (void) setAllLabels:(NSMutableArray*)allLabels
+{
+    for (NSMutableDictionary* data in allLabels) {
+        CGPoint originalCenter = [[data objectForKey:@"originalCenter"] CGPointValue];
+        CGPoint center = [[data objectForKey:@"center"] CGPointValue];
+        BOOL isVerticalSized = [[data objectForKey:@"isVerticalSize"] boolValue];
+        NSMutableDictionary* labelSettings = [data objectForKey:@"labelSettings"];
+        NSString* originalText = [data objectForKey:@"originalText"];
+        CGAffineTransform transform = [[data objectForKey:@"transform"] CGAffineTransformValue];
+        PSDesignLabel* label = [[PSDesignLabel alloc] initWithCenter:originalCenter];
+        label.isVerticalSized = isVerticalSized;
+        label.originalText = originalText;
+        label.labelSettings = [NSMutableDictionary dictionaryWithDictionary:labelSettings];
+        [label configureLabelWithSettings];
+        label.transform = transform;
+        label.center = center;
+        [self addDesignLabel:label shouldShowSubmenu:NO];
+    }
+}
+- (NSMutableArray*) getAllTemplates
+{
+    NSMutableArray* templates = modelCanvas.allTemplates;
+    NSMutableArray* templatesData = @[].mutableCopy;
+    
+    for (PSTemplateView* template in templates) {
+        NSMutableDictionary* data = @{}.mutableCopy;
+        [data setObject:template.templateSettings forKey:@"templateSettings"];
+        [data setObject:template.templateId forKey:@"templateId"];
+        [data setObject:template.textField.text forKey:@"templateText"];
+        [data setObject:[NSValue valueWithCGPoint:template.originalCenter] forKey:@"originalCenter"];
+        [data setObject:[NSValue valueWithCGPoint:template.center] forKey:@"center"];
+        [data setObject:[NSValue valueWithCGAffineTransform:template.transform] forKey:@"transform"];
+        [templatesData addObject:data];
+    }
+    
+    return templatesData;
+}
+- (void) setAllTemplates:(NSMutableArray*)allTemplates
+{
+    for (NSMutableDictionary* data in allTemplates) {
+        CGPoint originalCenter = [[data objectForKey:@"originalCenter"] CGPointValue];
+        CGPoint center = [[data objectForKey:@"center"] CGPointValue];
+        CGAffineTransform transform = [[data objectForKey:@"transform"] CGAffineTransformValue];
+        NSMutableDictionary* templateSettings = [data objectForKey:@"templateSettings"];
+        NSString* templateId = [data objectForKey:@"templateId"];
+        NSString* text = [data objectForKey:@"templateText"];
+        PSTemplateView* template = [[PSTemplateView alloc] initWithTemplateId:templateId];
+        template.textField.text = text;
+        template.originalCenter = originalCenter;
+        template.templateSettings = [NSMutableDictionary dictionaryWithDictionary:templateSettings];
+        [template configureTemplateWithSettings];
+        template.transform = transform;
+        template.center = center;
+        [self addTemplate:template shouldShowSubmenu:NO];
+    }
+}
+- (NSMutableArray*) getAllImages
+{
+    NSMutableArray* images = modelCanvas.allImages;
+    NSMutableArray* imagesData = @[].mutableCopy;
+    
+    for (PSImageView* imageV in images) {
+        NSMutableDictionary* data = @{}.mutableCopy;
+        [data setObject:imageV.imageSettings forKey:@"imageSettings"];
+        [data setObject:[NSValue valueWithCGPoint:imageV.originalCenter] forKey:@"originalCenter"];
+        [data setObject:[NSValue valueWithCGPoint:imageV.center] forKey:@"center"];
+        [data setObject:[NSValue valueWithCGAffineTransform:imageV.transform] forKey:@"transform"];
+        
+        NSData *writtenData = UIImageJPEGRepresentation(imageV.image, 1);
+        
+        // Get image path in user's folder and store file with name image_CurrentTimestamp.jpg (see documentsPathForFileName below)
+        NSString *imagePath = [self documentsPathForFileName:[NSString stringWithFormat:@"image_%f.jpg", [NSDate timeIntervalSinceReferenceDate]]];
+        
+        // Write image data to user's folder
+        [writtenData writeToFile:imagePath atomically:YES];
+        
+        [data setObject:imagePath forKey:@"imagePath"];
+        
+        [imagesData addObject:data];
+    }
+    
+    return imagesData;
+}
+- (void) setAllImages:(NSMutableArray*)allImages
+{
+    for (NSMutableDictionary* data in allImages) {
+        CGPoint originalCenter = [[data objectForKey:@"originalCenter"] CGPointValue];
+        CGPoint center = [[data objectForKey:@"center"] CGPointValue];
+        CGAffineTransform transform = [[data objectForKey:@"transform"] CGAffineTransformValue];
+        NSMutableDictionary* imageSettings = [data objectForKey:@"imageSettings"];
+        NSString* imagePath = [data objectForKey:@"imagePath"];
+        UIImage* image = [UIImage imageWithData:[NSData dataWithContentsOfFile:imagePath]];
+        CGSize imageSize = image.size;
+        
+        PSImageView* imageView = [[PSImageView alloc] initWithCenter:originalCenter];
+        imageView.image = image;
+        
+        imageView.frame = CGRectMake(0.0, 0.0, imageSize.width, imageSize.height);
+        imageView.center = originalCenter;
+        imageView.imageSettings = imageSettings;
+        [imageView configureImageWithSettings];
+        imageView.transform = transform;
+        imageView.center = center;
+        
+        [self addImageView:imageView shouldShowSubmenu:NO];
+    }
+}
+- (NSString *)documentsPathForFileName:(NSString *)name {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0];
+    
+    return [documentsPath stringByAppendingPathComponent:name];
+}
 
+- (void) setupSavedDesign:(NSMutableDictionary*)savedDesign
+{
+    NSMutableDictionary* fabricSettings = [savedDesign objectForKey:@"fabricSettings"];
+    NSMutableDictionary* textSettings = [savedDesign objectForKey:@"textSettings"];
+    NSMutableDictionary* imageSettings = [savedDesign objectForKey:@"imageSettings"];
+    NSMutableDictionary* templateSettings = [savedDesign objectForKey:@"templateSettings"];
+    NSMutableArray* allLabels = [savedDesign objectForKey:@"allLabels"];
+    NSMutableArray* allTemplates = [savedDesign objectForKey:@"allTemplates"];
+    NSMutableArray* allImages = [savedDesign objectForKey:@"allImages"];
+    PSSubmenuType submenuType = [[savedDesign objectForKey:@"submenuType"] integerValue];
+    
+    [self setAllLabels:allLabels];
+    [self setAllTemplates:allTemplates];
+    [self setAllImages:allImages];
+    [[PSSubmenuManager sharedInstance] setFabricSettings:fabricSettings];
+    [[PSSubmenuManager sharedInstance] setTextSettings:textSettings];
+    [[PSSubmenuManager sharedInstance] setImageSettings:imageSettings];
+    [[PSSubmenuManager sharedInstance] setTemplateSettings:templateSettings];
+    
+    [[PSSubmenuManager sharedInstance] updateTotalPrice];
+    
+    [[PSSubmenuManager sharedInstance] showSubmenuWithType:submenuType];
+    
+}
 #pragma mark - View Setup Methods
 - (void) initialSetups
 {
@@ -201,7 +373,6 @@
     logoButton.frame = [self logoFrame];
     [logoButton setBackgroundImage:[UIImage imageNamed:@"mainscreen_logo.png"] forState:UIControlStateNormal];
     [logoButton setBackgroundImage:[UIImage imageNamed:@"mainscreen_logo.png"] forState:UIControlStateHighlighted];
-//    [logoButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
     logoButton.layer.zPosition = currentZIndex;
     currentZIndex += 1.0;
     [self.view addSubview:logoButton];
@@ -209,6 +380,7 @@
 }
 - (void) goBack
 {
+    [[PSStateManager sharedInstance] saveDesign];
     [[PSSubmenuManager sharedInstance] cleanups];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
@@ -674,13 +846,21 @@
         imageView.imageSettings = [NSMutableDictionary dictionaryWithDictionary:imageSettings];
         [imageView configureImageWithSettings];
         
-        imageView.layer.zPosition = currentZIndex;
-        currentZIndex += 1.0;
+        [self addImageView:imageView shouldShowSubmenu:YES];
         
-        [modelCanvas.allImages addObject:imageView];
-        
-        [modelCanvas addSubview:imageView];
         [[PSSubmenuManager sharedInstance] updateTotalPrice];
+    }
+}
+- (void) addImageView:(PSImageView*)imageView shouldShowSubmenu:(BOOL)shouldShowSubmenu
+{
+    imageView.layer.zPosition = currentZIndex;
+    currentZIndex += 1.0;
+    [modelCanvas.allImages addObject:imageView];
+    [modelCanvas addSubview:imageView];
+    
+    if (shouldShowSubmenu) {
+        [self removeSelectionRelatedItems];
+        [self addSelectionRelatedViewToItem:imageView];
     }
 }
 #pragma mark - Selected Item Settings
@@ -715,15 +895,17 @@
     }
 }
 #pragma mark - Adding Labels
-- (void) addDesignLabel:(PSDesignLabel*)label
+- (void) addDesignLabel:(PSDesignLabel*)label shouldShowSubmenu:(BOOL)shouldShowSubmenu
 {
     label.layer.zPosition = currentZIndex;
     currentZIndex += 1.0;
     [modelCanvas.allLabels addObject:label];
     [modelCanvas addSubview:label];
     
-    [self removeSelectionRelatedItems];
-    [self addSelectionRelatedViewToItem:label];
+    if (shouldShowSubmenu) {
+        [self removeSelectionRelatedItems];
+        [self addSelectionRelatedViewToItem:label];
+    }
 }
 - (void) keyboardHidingCompleted
 {
@@ -736,7 +918,7 @@
     }
 }
 #pragma mark - Adding Templates
-- (void) addTemplate:(PSTemplateView*)templateView
+- (void) addTemplate:(PSTemplateView*)templateView shouldShowSubmenu:(BOOL)shouldShowSubmenu
 {
     templateView.designView = self;
     templateView.layer.zPosition = currentZIndex;
@@ -746,8 +928,10 @@
     
     [self addViewToUnwantedViews:templateView.textField];
     
-    [self removeSelectionRelatedItems];
-    [self addSelectionRelatedViewToItem:templateView];
+    if (shouldShowSubmenu) {
+        [self removeSelectionRelatedItems];
+        [self addSelectionRelatedViewToItem:templateView];
+    }
 }
 - (void) makeTemplateSelected:(PSTemplateView*)templateView
 {
