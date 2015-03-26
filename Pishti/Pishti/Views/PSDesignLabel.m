@@ -19,6 +19,7 @@
         self.backgroundColor = [UIColor clearColor];
         self.center = center;
         self.isVerticalSized = NO;
+        self.originalCenter = center;
     }
     return self;
 }

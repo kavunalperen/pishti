@@ -19,6 +19,7 @@
 @property CGSize originalSize;
 @property NSInteger characterLimit;
 @property NSString* defaultText;
+@property CGPoint originalCenter;
 @property PSDesignViewController2* designView;
 
 + (NSMutableArray*) getAllTemplates;

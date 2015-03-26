@@ -14,6 +14,7 @@
 @property NSString* originalText;
 @property bool isVerticalSized;
 @property CGSize originalSize;
+@property CGPoint originalCenter;
 
 - (id) initWithCenter:(CGPoint)center;
 - (void) configureLabelWithSettings;

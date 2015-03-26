@@ -12,6 +12,7 @@
 
 @property NSMutableDictionary* imageSettings;
 @property CGSize originalSize;
+@property CGPoint originalCenter;
 
 - (id) initWithCenter:(CGPoint)center;
 

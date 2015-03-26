@@ -18,6 +18,7 @@
         self.backgroundColor = [UIColor clearColor];
         self.center = center;
         self.originalSize = CGSizeZero;
+        self.originalCenter = center;
     }
     
     return self;
