@@ -19,12 +19,14 @@
 #define SCREEN_FRAME [UIScreen mainScreen].bounds
 #define SCREEN_SCALE [UIScreen mainScreen].scale
 
+// cn => HelveticaNeue
+
 // design menu fonts
-#define DESIGN_MENU_SUBMENU_TITLES_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-Cn" size:15.0]
-#define DESIGN_MENU_SUBMENU_VALUES_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-HvCn" size:30.0]
-#define DESIGN_MENU_SUBMENU_PRICE_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-ThCn" size:30.0]
-#define DESIGN_MENU_SUBMENU_SLIDER_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-ThCn" size:11.0]
-#define DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT [UIFont fontWithName:@"HelveticaNeueLTPro-HvCn" size:30.0]
+#define DESIGN_MENU_SUBMENU_TITLES_FONT [UIFont fontWithName:@"HelveticaNeue" size:15.0]
+#define DESIGN_MENU_SUBMENU_VALUES_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:30.0]
+#define DESIGN_MENU_SUBMENU_PRICE_FONT [UIFont fontWithName:@"HelveticaNeue-Light" size:30.0]
+#define DESIGN_MENU_SUBMENU_SLIDER_FONT [UIFont fontWithName:@"HelveticaNeue-Light" size:11.0]
+#define DESIGN_MENU_SUBMENU_TABLEVIEW_CELL_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:30.0]
 #define DESIGN_MENU_SUBMENU_TEMPLATE_TEXT_FIELD_FONT [UIFont fontWithName:@"" size:20.0]
 
 // design menu colors
@@ -44,3 +46,42 @@
 #define DESIGN_MENU_SUBMENU_TEMPLATE_TEXT_FIELD_PLACEHOLDER_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.4]
 
 #define SUBMENU_BACKGROUND_COLOR [UIColor colorWithRed:240.0/255.0 green:240.0/255.0 blue:240.0/255.0 alpha:1.0]
+
+// login view fonts
+#define LOGIN_VIEW_TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:30.0]
+#define LOGIN_VIEW_TITLE_INFORMATION_FONT [UIFont fontWithName:@"HelveticaNeue" size:11.0]
+#define LOGIN_VIEW_SWITCH_BUTTON_FONT [UIFont fontWithName:@"HelveticaNeue" size:15.0]
+#define LOGIN_VIEW_FORGOT_PASSWORD_BUTTON_FONT [UIFont fontWithName:@"HelveticaNeue" size:13.0]
+#define LOGIN_VIEW_SIGNIN_BUTTON_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:30.0]
+#define LOGIN_VIEW_TEXT_FIELDS_FONT [UIFont fontWithName:@"HelveticaNeue" size:30.0]
+#define LOGIN_VIEW_TEXT_FIELDS_PLACEHOLDER_FONT [UIFont fontWithName:@"HelveticaNeue" size:30.0]
+
+// login view colors
+#define LOGIN_VIEW_OVERLAY_COLOR [UIColor colorWithRed:20.0/255.0 green:26.0/255.0 blue:72.0/255.0 alpha:0.85]
+#define LOGIN_VIEW_TITLE_COLOR [UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_TITLE_INFORMATION_COLOR [UIColor colorWithRed:173.0/255.0 green:173.0/255.0 blue:173.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_SWITCH_BUTTON_NORMAL_COLOR [UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_SWITCH_BUTTON_HIGHLIGHTED_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_FORGOT_PASSWORD_BUTTON_NORMAL_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.5]
+#define LOGIN_VIEW_FORGOT_PASSWORD_BUTTON_HIGHLIGHTED_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_SIGNIN_BUTTON_NORMAL_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.13]
+#define LOGIN_VIEW_SIGNIN_BUTTON_HIGHLIGHTED_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_SIGNIN_BUTTON_TITLE_NORMAL_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_SIGNIN_BUTTON_TITLE_HIGHLIGHTED_COLOR [UIColor whiteColor]
+#define LOGIN_VIEW_TEXT_FIELDS_TEXT_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define LOGIN_VIEW_TEXT_FIELDS_PLACEHOLDER_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.35]
+#define LOGIN_VIEW_TEXT_FIELDS_BORDER_COLOR [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.13]
+
+// design overview fonts
+#define ORDER_DETAILS_TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:24.0]
+#define ORDER_DETAILS_DETAILS_TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Light" size:24.0]
+#define ORDER_DETAILS_DETAILS_VALUE_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:24.0]
+
+// design overview colors
+#define DESIGN_OVERVIEW_BORDERS_COLOR [UIColor colorWithRed:215.0/255.0 green:188.0/255.0 blue:156.0/255.0 alpha:1.0]
+#define ORDER_DETAILS_TITLE_TEXT_COLOR [UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0]
+#define ORDER_DETAILS_GENERAL_PRICE_BACKGROUND_COLOR [UIColor colorWithRed:215.0/255.0 green:188.0/255.0 blue:156.0/255.0 alpha:0.3]
+#define ORDER_DETAILS_DETAILS_TITLE_TEXT_COLOR [UIColor colorWithRed:0.0/255.0 green:62.0/255.0 blue:100.0/255.0 alpha:1.0]
+
+
+
