@@ -88,6 +88,7 @@ typedef enum PSSubmenuTableType
 - (void) dissmissKeyboard;
 
 - (void) updateTotalPrice;
+- (NSString*) getTotalPrice;
 
 - (void) cleanups;
 

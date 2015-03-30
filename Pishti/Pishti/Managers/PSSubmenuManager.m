@@ -132,6 +132,8 @@ static PSSubmenuManager* __sharedInstance;
     UIButton* addNewTemplateButton;
     NSArray* allTemplates;
     UIButton* showKeyboardButton;
+    
+    UIButton* tlButton;
 }
 #pragma mark - Frames
 #pragma mark - Fabric Frames
@@ -1237,11 +1239,12 @@ static PSSubmenuManager* __sharedInstance;
     priceLabel.textAlignment = NSTextAlignmentRight;
     [priceHolder addSubview:priceLabel];
     
-    UIButton* tlButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    tlButton = [UIButton buttonWithType:UIButtonTypeCustom];
     tlButton.frame = [self tlButtonFrame];
     tlButton.backgroundColor = [UIColor clearColor];
     [tlButton setBackgroundImage:[UIImage imageNamed:@"turkish_lira_normal.png"] forState:UIControlStateNormal];
     [tlButton setBackgroundImage:[UIImage imageNamed:@"turkish_lira_highlighted.png"] forState:UIControlStateHighlighted];
+    [tlButton addTarget:submenuDelegate action:@selector(openDesignOverview) forControlEvents:UIControlEventTouchUpInside];
     [priceHolder addSubview:tlButton];
     
     [self updateTotalPrice];
@@ -1399,6 +1402,15 @@ static PSSubmenuManager* __sharedInstance;
     [[PSPriceManager sharedInstance] computePriceWithDesignOptions:priceSettings];
     
     [self configurePriceSubviewsWithCurrentOptions];
+}
+- (NSString*) getTotalPrice
+{
+    CGFloat totalPrice = [[priceSettings objectForKey:TOTAL_PRICE_KEY] floatValue];
+    
+    NSString* priceText = [NSString stringWithFormat:@"%.2f",totalPrice];
+    priceText = [priceText stringByReplacingOccurrencesOfString:@"." withString:@","];
+    
+    return priceText;
 }
 #pragma mark - Displaying submenus
 - (void) showNextSubmenu
