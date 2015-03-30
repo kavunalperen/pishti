@@ -24,6 +24,9 @@
 #import <QuartzCore/QuartzCore.h>
 #import "PSImageView.h"
 #import "PSStateManager.h"
+#import "PSAuthenticationManager.h"
+#import "User.h"
+#import "PSDesignOverviewViewController.h"
 
 @interface PSDesignViewController2 ()
 
@@ -295,7 +298,7 @@
     NSMutableArray* allLabels = [savedDesign objectForKey:@"allLabels"];
     NSMutableArray* allTemplates = [savedDesign objectForKey:@"allTemplates"];
     NSMutableArray* allImages = [savedDesign objectForKey:@"allImages"];
-    PSSubmenuType submenuType = [[savedDesign objectForKey:@"submenuType"] integerValue];
+    PSSubmenuType submenuType = (PSSubmenuType)[[savedDesign objectForKey:@"submenuType"] integerValue];
     
     [self setAllLabels:allLabels];
     [self setAllTemplates:allTemplates];
@@ -349,7 +352,7 @@
     profileButton.frame = [self profileButtonFrame];
     [profileButton setBackgroundImage:[UIImage imageNamed:@"profile_btn_normal.png"] forState:UIControlStateNormal];
     [profileButton setBackgroundImage:[UIImage imageNamed:@"profile_btn_highlighted.png"] forState:UIControlStateHighlighted];
-    profileButton.enabled = NO;
+    [profileButton addTarget:self action:@selector(openProfile) forControlEvents:UIControlEventTouchUpInside];
     profileButton.layer.zPosition = currentZIndex;
     currentZIndex += 1.0;
     [topButtonsHolder addSubview:profileButton];
@@ -383,6 +386,38 @@
     [[PSStateManager sharedInstance] saveDesign];
     [[PSSubmenuManager sharedInstance] cleanups];
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+- (void) openProfile
+{
+    [[PSAuthenticationManager sharedInstance] checkAuthentication];
+    if ([PSAuthenticationManager sharedInstance].isAuthenticated) {
+        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Not Yet!"
+                                                            message:@"Profil ekranı kodlaması tamamlanınca profilinizi görüntüleyebilirsiniz."
+                                                           delegate:nil
+                                                  cancelButtonTitle:@"Tamam"
+                                                  otherButtonTitles:nil, nil];
+        [alertView show];
+    }
+}
+- (void) openDesignOverview
+{
+    [[PSAuthenticationManager sharedInstance] checkAuthentication];
+    if ([PSAuthenticationManager sharedInstance].isAuthenticated) {
+        PSDesignOverviewViewController* overViewVC = [[PSDesignOverviewViewController alloc] init];
+        overViewVC.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+        
+        UIGraphicsBeginImageContext(CGSizeMake(747,768));
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        [modelCanvas.layer renderInContext:context];
+        UIImage *screenShot = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        
+        
+        overViewVC.designOverview = screenShot;
+        overViewVC.totalPrice = [[PSSubmenuManager sharedInstance] getTotalPrice];
+        
+        [self presentViewController:overViewVC animated:YES completion:nil];
+    }
 }
 - (void) addModelCanvas
 {

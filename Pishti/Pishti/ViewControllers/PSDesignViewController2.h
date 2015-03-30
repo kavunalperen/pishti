@@ -57,4 +57,6 @@
 
 - (void) setupSavedDesign:(NSMutableDictionary*)savedDesign;
 
+- (void) openDesignOverview;
+
 @end
