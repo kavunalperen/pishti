@@ -7,7 +7,6 @@
 //
 
 #import "PSMenuViewController.h"
-#import "PSDesignViewController.h"
 #import "PSDesignViewController2.h"
 #import "SBJson.h"
 #import "PSStateManager.h"
