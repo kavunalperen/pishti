@@ -76,12 +76,14 @@
 #define ORDER_DETAILS_TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:24.0]
 #define ORDER_DETAILS_DETAILS_TITLE_FONT [UIFont fontWithName:@"HelveticaNeue-Light" size:24.0]
 #define ORDER_DETAILS_DETAILS_VALUE_FONT [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:24.0]
+#define DESIGN_OVERVIEW_BOTTOM_INFO_FONT [UIFont fontWithName:@"HelveticaNeue-Light" size:13.0]
 
 // design overview colors
 #define DESIGN_OVERVIEW_BORDERS_COLOR [UIColor colorWithRed:215.0/255.0 green:188.0/255.0 blue:156.0/255.0 alpha:1.0]
 #define ORDER_DETAILS_TITLE_TEXT_COLOR [UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0]
 #define ORDER_DETAILS_GENERAL_PRICE_BACKGROUND_COLOR [UIColor colorWithRed:215.0/255.0 green:188.0/255.0 blue:156.0/255.0 alpha:0.3]
 #define ORDER_DETAILS_DETAILS_TITLE_TEXT_COLOR [UIColor colorWithRed:0.0/255.0 green:62.0/255.0 blue:100.0/255.0 alpha:1.0]
+#define DESIGN_OVERVIEW_BOTTOM_INFO_COLOR [UIColor colorWithRed:182.0/255.0 green:149.0/255.0 blue:108.0/255.0 alpha:1.0]
 
 
 
