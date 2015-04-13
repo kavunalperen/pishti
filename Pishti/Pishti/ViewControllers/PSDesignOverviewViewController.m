@@ -22,26 +22,9 @@
 {
     return CGRectMake(0.0, 0.0, SCREEN_SIZE.width, SCREEN_SIZE.height);
 }
-
 - (CGRect) logoFrame
 {
     return CGRectMake(SCREEN_SIZE.width-84.0, 18.0, 84.0, 94.0);
-}
-- (CGRect) topButtonsHolderFrame
-{
-    return CGRectMake(15.0, 15.0, TOP_BUTTONS_WIDTH*3, TOP_BUTTONS_HEIGHT);
-}
-- (CGRect) backButtonFrame
-{
-    return CGRectMake(0.0, 0.0, TOP_BUTTONS_WIDTH, TOP_BUTTONS_HEIGHT);
-}
-- (CGRect) profileButtonFrame
-{
-    return CGRectMake(TOP_BUTTONS_WIDTH, 0.0, TOP_BUTTONS_WIDTH, TOP_BUTTONS_HEIGHT);
-}
-- (CGRect) helpButtonFrame
-{
-    return CGRectMake(TOP_BUTTONS_WIDTH*2, 0.0, TOP_BUTTONS_WIDTH, TOP_BUTTONS_HEIGHT);
 }
 - (CGRect) overviewHolderFrame
 {
@@ -265,6 +248,14 @@
     [approveButton addTarget:self action:@selector(approveDesign) forControlEvents:UIControlEventTouchUpInside];
     [buttonsHolder addSubview:approveButton];
     
+    UILabel* bottomInfoLabel = [[UILabel alloc] initWithFrame:[self bottomInfoFrame]];
+    bottomInfoLabel.backgroundColor = [UIColor clearColor];
+    bottomInfoLabel.font = DESIGN_OVERVIEW_BOTTOM_INFO_FONT;
+    bottomInfoLabel.textColor = DESIGN_OVERVIEW_BOTTOM_INFO_COLOR;
+    bottomInfoLabel.text = @"Bir sonraki adımda kredi kartı bilgisi istenecektir.";
+    bottomInfoLabel.textAlignment = NSTextAlignmentCenter;
+    [overviewHolder addSubview:bottomInfoLabel];
+    
 }
 - (void) addBottomBorder:(UIView*)view
 {
@@ -301,28 +292,6 @@
     backgroundView.frame = [self backgroundViewFrame];
     [self.view addSubview:backgroundView];
 }
-//- (void) addTopButtons
-//{
-//    UIView* topButtonsHolder = [[UIView alloc] initWithFrame:[self topButtonsHolderFrame]];
-//    topButtonsHolder.backgroundColor = [UIColor clearColor];
-//    [self.view addSubview:topButtonsHolder];
-//    
-//    UIButton* backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-//    backButton.backgroundColor = [UIColor clearColor];
-//    backButton.frame = [self backButtonFrame];
-//    [backButton setBackgroundImage:[UIImage imageNamed:@"back_btn_normal.png"] forState:UIControlStateNormal];
-//    [backButton setBackgroundImage:[UIImage imageNamed:@"back_btn_highlighted.png"] forState:UIControlStateHighlighted];
-//    [backButton addTarget:self action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
-//    [topButtonsHolder addSubview:backButton];
-//    
-//    UIButton* profileButton = [UIButton buttonWithType:UIButtonTypeCustom];
-//    profileButton.backgroundColor = [UIColor clearColor];
-//    profileButton.frame = [self profileButtonFrame];
-//    [profileButton setBackgroundImage:[UIImage imageNamed:@"profile_btn_normal.png"] forState:UIControlStateNormal];
-//    [profileButton setBackgroundImage:[UIImage imageNamed:@"profile_btn_highlighted.png"] forState:UIControlStateHighlighted];
-//    [profileButton addTarget:self action:@selector(openProfile) forControlEvents:UIControlEventTouchUpInside];
-//    [topButtonsHolder addSubview:profileButton];
-//}
 - (void) addLogo
 {
     UIButton* logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
