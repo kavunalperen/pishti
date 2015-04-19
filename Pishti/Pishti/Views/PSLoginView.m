@@ -427,12 +427,7 @@
                                                                                  andFullName:fullName];
                     if (success) {
                         [[PSAuthenticationManager sharedInstance] closeLoginView];
-                        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Done"
-                                                                            message:@"Üye kaydınız başarıyla oluşturulmuştur. Profil ekranı kodlaması tamamlanınca profilinizi görüntüleyebilirsiniz."
-                                                                           delegate:nil
-                                                                  cancelButtonTitle:@"Tamam"
-                                                                  otherButtonTitles:nil, nil];
-                        [alertView show];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:AUTHENTICATION_COMPLETED_NOTIFICATION object:nil];
                     } else {
                         UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Hata"
                                                                             message:@"Üye kaydınız oluşturulurken bir hata oluştu, lütfen daha sonra tekrar deneyiniz."
