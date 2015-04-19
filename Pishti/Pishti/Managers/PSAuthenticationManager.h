@@ -10,6 +10,7 @@
 
 #define AUTHENTICATED_USER_DICTIONARY_KEY @"kAuthenticatedUserDictionary"
 #define AUTHENTICATION_TOKEN_KEY @"kAuthenticationToken"
+#define AUTHENTICATION_COMPLETED_NOTIFICATION @"AuthenticationCompletedNotification"
 
 @class User;
 

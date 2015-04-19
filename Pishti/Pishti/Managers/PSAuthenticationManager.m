@@ -12,6 +12,8 @@
 #import "PSCommons.h"
 #import "PSAppDelegate.h"
 #import <CommonCrypto/CommonDigest.h>
+#import "PSAddressView.h"
+#import "PSProfileInfoView.h"
 
 static PSAuthenticationManager* __sharedInstance = nil;
 
@@ -27,6 +29,8 @@ static PSAuthenticationManager* __sharedInstance = nil;
     if (__sharedInstance == nil) {
         __sharedInstance = [[PSAuthenticationManager alloc] init];
         __sharedInstance.isAuthenticated = NO;
+        [[NSNotificationCenter defaultCenter] addObserver:__sharedInstance selector:@selector(addressUpdateCompleted) name:AddressOperationCompletedNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:__sharedInstance selector:@selector(profileUpdateCompleted) name:ProfileInfoUpdateCompletedNotification object:nil];
     }
     
     return __sharedInstance;
@@ -39,7 +43,7 @@ static PSAuthenticationManager* __sharedInstance = nil;
     NSString* token = [self getTokenForAuthenticatedUser];
     if (token != nil && ![token isEqualToString:@""]) {
         self.isAuthenticated = YES;
-        
+        [self getAuthenticatedUser];
         return;
     } else {
         // facebook login dialog etc..
@@ -47,7 +51,18 @@ static PSAuthenticationManager* __sharedInstance = nil;
         [((PSAppDelegate*)([UIApplication sharedApplication].delegate)).window addSubview:loginView];
     }
 }
-
+- (void) addressUpdateCompleted
+{
+    if (authenticatedUser != nil) {
+        [self saveAuthenticatedUserDictionary:[authenticatedUser getUserDictionary]];
+    }
+}
+- (void) profileUpdateCompleted
+{
+    if (authenticatedUser != nil) {
+        [self saveAuthenticatedUserDictionary:[authenticatedUser getUserDictionary]];
+    }
+}
 - (void) closeLoginView
 {
     [loginView removeFromSuperview];
@@ -63,12 +78,13 @@ static PSAuthenticationManager* __sharedInstance = nil;
                                @"full_name":fullName,
                                @"email":email,
                                @"gender":gender,
-                               @"pass_hash":[self sha1:password]};
+                               @"password":password};
     
     User* user = [User CreateUserWithDictionary:userDict];
     if (user) {
         [self saveAuthenticatedUserDictionary:userDict];
         [self saveTokenForAuthenticatedUser:[NSString stringWithFormat:@"auth_token:%f",[[NSDate new] timeIntervalSince1970]]];
+        [self getAuthenticatedUser];
         return YES;
     } else {
         return NO;
