@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PSProfileViewController : UIViewController
+@interface PSProfileViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 
 @end
