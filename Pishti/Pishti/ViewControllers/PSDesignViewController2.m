@@ -27,6 +27,7 @@
 #import "PSAuthenticationManager.h"
 #import "User.h"
 #import "PSDesignOverviewViewController.h"
+#import "PSProfileViewController.h"
 
 @interface PSDesignViewController2 ()
 
@@ -137,6 +138,11 @@
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationWillResignActive:)
                                                  name:UIApplicationWillResignActiveNotification
+                                               object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(openProfile)
+                                                 name:AUTHENTICATION_COMPLETED_NOTIFICATION
                                                object:nil];
 }
 - (void) viewWillAppear:(BOOL)animated
@@ -391,12 +397,10 @@
 {
     [[PSAuthenticationManager sharedInstance] checkAuthentication];
     if ([PSAuthenticationManager sharedInstance].isAuthenticated) {
-        UIAlertView* alertView = [[UIAlertView alloc] initWithTitle:@"Not Yet!"
-                                                            message:@"Profil ekranı kodlaması tamamlanınca profilinizi görüntüleyebilirsiniz."
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"Tamam"
-                                                  otherButtonTitles:nil, nil];
-        [alertView show];
+        PSProfileViewController* profileVC = [[PSProfileViewController alloc] init];
+        profileVC.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+        
+        [self presentViewController:profileVC animated:YES completion:nil];
     }
 }
 - (void) openDesignOverview
