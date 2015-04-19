@@ -15,8 +15,6 @@
 - (UIImage*) UIImageWithUIColor:(UIColor*)color;
 - (UIImage*) maskImage:(UIImage*)image withMask:(UIImage *)maskImage;
 - (CGSize) text:(NSString*)text sizeWithFont:(UIFont*)font constrainedToSize:(CGSize)size;
-- (NSDate*) dateFormString:(NSString*)dateString;
-- (NSString*) stringFromDate:(NSDate*)date;
 - (UIImage*) stretchableImageWithOriginalImage:(UIImage*)originalImage
                                  andEdgeInsets:(UIEdgeInsets)edgeInset;
 
@@ -37,5 +35,8 @@
 - (NSString*) getFontNameForFamily:(NSString*)family
                          andIsBold:(bool)isBold
                        andIsItalic:(bool)isItalic;
+
+- (NSString*) stringFromDate:(NSDate*)date;
+- (NSDate*) dateFromString:(NSString*)string;
 
 @end

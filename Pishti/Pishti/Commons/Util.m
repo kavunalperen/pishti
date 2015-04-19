@@ -100,16 +100,27 @@ static NSArray* groupParticipantColors = nil;
     return number;
 }
 
-- (NSDate*) dateFormString:(NSString*)dateString
+- (NSDate*) dateFromString:(NSString*)dateString
 {
     if (dateString != nil) {
         NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setLocale:[NSLocale currentLocale]];
-        [dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
+        [dateFormatter setDateFormat:@"dd.MM.yyyy"];
         NSDate* createdAt = [dateFormatter dateFromString:dateString];
         
         return createdAt;
+    } else {
+        return nil;
+    }
+}
+- (NSString*) stringFromDate:(NSDate *)date
+{
+    if (date != nil) {
+        NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"dd.MM.yyyy"];
+        NSString* dateString = [dateFormatter stringFromDate:date];
+        
+        return dateString;
+        
     } else {
         return nil;
     }
@@ -161,21 +172,6 @@ static NSArray* groupParticipantColors = nil;
     UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return result;
-}
-- (NSString*) stringFromDate:(NSDate*)date
-{
-    if (date != nil) {
-        NSDateFormatter* dateFormatter = [[NSDateFormatter alloc] init];
-        [dateFormatter setLocale:[NSLocale currentLocale]];
-        [dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
-        [dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
-        
-        NSString* createdAtStr = [dateFormatter stringFromDate:date];
-        
-        return createdAtStr;
-    } else {
-        return nil;
-    }
 }
 -(CGSize)text:(NSString*)text sizeWithFont:(UIFont*)font constrainedToSize:(CGSize)size{
     
