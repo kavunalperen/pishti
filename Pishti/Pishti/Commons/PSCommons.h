@@ -85,5 +85,31 @@
 #define ORDER_DETAILS_DETAILS_TITLE_TEXT_COLOR [UIColor colorWithRed:0.0/255.0 green:62.0/255.0 blue:100.0/255.0 alpha:1.0]
 #define DESIGN_OVERVIEW_BOTTOM_INFO_COLOR [UIColor colorWithRed:182.0/255.0 green:149.0/255.0 blue:108.0/255.0 alpha:1.0]
 
+// profile screen fonts
+#define     PROFILE_TITLES_FONT                 [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:25.0]
+#define     PROFILE_VALUES_FONT                 [UIFont fontWithName:@"HelveticaNeue-Light" size:22.0]
+#define     PROFILE_VIEW_UPDATE_BUTTON_FONT     [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:23.0]
 
+// profile screen colors
+#define     PROFILE_TITLES_COLOR                [UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0]
+#define     PROFILE_TITLES_BORDER_COLOR         [[UIColor colorWithRed:231.0/255.0 green:48.0/255.0 blue:50.0/255.0 alpha:1.0] colorWithAlphaComponent:0.3]
+#define     PROFILE_VALUES_COLOR                [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define     PROFILE_VALUES_BORDER_COLOR         [[UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0] colorWithAlphaComponent:0.13]
+#define     PROFILE_VIEW_UPDATE_BUTTON_NORMAL_COLOR                 [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:0.13]
+#define     PROFILE_VIEW_UPDATE_BUTTON_HIGHLIGHTED_COLOR            [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define     PROFILE_VIEW_UPDATE_BUTTON_TITLE_NORMAL_COLOR           [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+#define     PROFILE_VIEW_UPDATE_BUTTON_TITLE_HIGHLIGHTED_COLOR      [UIColor whiteColor]
+
+// address cell fonts
+#define     ADDRESS_CELL_TITLE_FONT         [UIFont fontWithName:@"HelveticaNeue-CondensedBold" size:22.0]
+#define     ADDRESS_CELL_LABELS_FONT        [UIFont fontWithName:@"HelveticaNeue-Light" size:22.0]
+
+// address cell colors
+#define     ADDRESS_CELL_LABEL_COLORS       [UIColor colorWithRed:40.0/255.0 green:53.0/255.0 blue:144.0/255.0 alpha:1.0]
+
+// address view fonts
+#define     ADDRESS_VIEW_FONTS              [UIFont fontWithName:@"HelveticaNeue" size:22.0]
+
+// profile info fonts
+#define     PROFILE_INFO_FONTS              [UIFont fontWithName:@"HelveticaNeue" size:22.0]
 
